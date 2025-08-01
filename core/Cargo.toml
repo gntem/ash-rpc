@@ -1,0 +1,28 @@
+[package]
+name = "ash-rpc-core"
+version = "0.1.0"
+edition = "2021"
+description = "A comprehensive JSON-RPC 2.0 implementation with multiple transport layers and advanced features"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/username/ash-rpc"
+documentation = "https://docs.rs/ash-rpc-core"
+homepage = "https://github.com/username/ash-rpc"
+keywords = ["json-rpc", "rpc", "json", "tcp", "tower"]
+categories = ["network-programming", "web-programming", "asynchronous"]
+authors = ["Your Name <your.email@example.com>"]
+readme = "../README.md"
+exclude = ["examples/"]
+
+[features]
+default = []
+tcp = []
+tcp-stream = ["tokio"]
+axum = ["dep:axum", "tokio"]
+tower = ["dep:tower"]
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tokio = { version = "1.0", features = ["net", "io-util", "rt", "rt-multi-thread", "sync", "macros"], optional = true }
+axum = { version = "0.7", optional = true }
+tower = { version = "0.4", optional = true }
