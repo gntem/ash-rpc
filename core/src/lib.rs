@@ -1,22 +1,22 @@
 //! # ash-rpc-core
-//! 
+//!
 //! A comprehensive JSON-RPC 2.0 implementation with transport support.
-//! 
+//!
 //! ## Features
-//! 
+//!
 //! - **Complete JSON-RPC 2.0 support** - Request, response, notification, and batch handling
 //! - **Multiple transports** - TCP, TCP streaming, HTTP via Axum, and Tower middleware
 //! - **Type-safe builders** - Fluent API for constructing requests and responses
 //! - **Method registry** - Organize and dispatch JSON-RPC methods
 //! - **Auto-documentation** - Generate OpenAPI/Swagger specs from method definitions
 //! - **Macro support** - Convenient macros for common response patterns
-//! 
+//!
 //! ## Quick Start
-//! 
+//!
 //! ```rust,no_run
 //! use ash_rpc_core::*;
 //! use serde_json::Value;
-//! 
+//!
 //! // Create a method registry
 //! let registry = MethodRegistry::new()
 //!     .register("ping", |_params, id| {
@@ -34,18 +34,18 @@
 //!             rpc_error!(error_codes::INVALID_PARAMS, "Parameters required", id)
 //!         }
 //!     });
-//! 
+//!
 //! // Call a method
 //! let response = registry.call("ping", None, Some(Value::Number(serde_json::Number::from(1))));
 //! ```
 
 // Module declarations
-pub mod types;
 pub mod builders;
-pub mod traits;
-pub mod registry;
-pub mod transport;
 pub mod macros;
+pub mod registry;
+pub mod traits;
+pub mod transport;
+pub mod types;
 pub mod utils;
 
 #[cfg(feature = "tower")]

@@ -1,6 +1,6 @@
-
 use ash_rpc_core::{
-    MethodRegistry, Request, Response, rpc_success, rpc_invalid_params, rpc_internal_error, rpc_error
+    rpc_error, rpc_internal_error, rpc_invalid_params, rpc_success, MethodRegistry, Request,
+    Response,
 };
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
@@ -34,7 +34,9 @@ impl CalculatorEngine {
                 let params: MathParams = match params {
                     Some(p) => match serde_json::from_value(p) {
                         Ok(params) => params,
-                        Err(_) => return rpc_invalid_params!("Invalid parameters for add method", id),
+                        Err(_) => {
+                            return rpc_invalid_params!("Invalid parameters for add method", id)
+                        }
                     },
                     None => return rpc_invalid_params!("Missing parameters for add method", id),
                 };
@@ -52,9 +54,16 @@ impl CalculatorEngine {
                 let params: MathParams = match params {
                     Some(p) => match serde_json::from_value(p) {
                         Ok(params) => params,
-                        Err(_) => return rpc_invalid_params!("Invalid parameters for subtract method", id),
+                        Err(_) => {
+                            return rpc_invalid_params!(
+                                "Invalid parameters for subtract method",
+                                id
+                            )
+                        }
                     },
-                    None => return rpc_invalid_params!("Missing parameters for subtract method", id),
+                    None => {
+                        return rpc_invalid_params!("Missing parameters for subtract method", id)
+                    }
                 };
 
                 let result = CalculationResult {
@@ -70,9 +79,16 @@ impl CalculatorEngine {
                 let params: MathParams = match params {
                     Some(p) => match serde_json::from_value(p) {
                         Ok(params) => params,
-                        Err(_) => return rpc_invalid_params!("Invalid parameters for multiply method", id),
+                        Err(_) => {
+                            return rpc_invalid_params!(
+                                "Invalid parameters for multiply method",
+                                id
+                            )
+                        }
                     },
-                    None => return rpc_invalid_params!("Missing parameters for multiply method", id),
+                    None => {
+                        return rpc_invalid_params!("Missing parameters for multiply method", id)
+                    }
                 };
 
                 let result = CalculationResult {
@@ -88,7 +104,9 @@ impl CalculatorEngine {
                 let params: MathParams = match params {
                     Some(p) => match serde_json::from_value(p) {
                         Ok(params) => params,
-                        Err(_) => return rpc_invalid_params!("Invalid parameters for divide method", id),
+                        Err(_) => {
+                            return rpc_invalid_params!("Invalid parameters for divide method", id)
+                        }
                     },
                     None => return rpc_invalid_params!("Missing parameters for divide method", id),
                 };
@@ -111,11 +129,14 @@ impl CalculatorEngine {
                 rpc_success!(methods, id)
             });
 
-        Self { registry: Arc::new(registry) }
+        Self {
+            registry: Arc::new(registry),
+        }
     }
 
     pub async fn execute(&self, request: Request) -> Response {
-        self.registry.call(&request.method, request.params, request.id)
+        self.registry
+            .call(&request.method, request.params, request.id)
     }
 
     pub fn list_methods(&self) -> Vec<String> {
@@ -140,15 +161,18 @@ impl CalculatorEngine {
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     println!("=== Calculator Engine Demo ===");
-    
+
     let mut engine = CalculatorEngine::new();
-    
-    println!("Engine initialized with methods: {:?}", engine.list_methods());
+
+    println!(
+        "Engine initialized with methods: {:?}",
+        engine.list_methods()
+    );
     println!();
 
     println!("=== Generated API Documentation ===");
     let docs = engine.render_docs();
-    
+
     if let Some(paths) = docs.get("paths") {
         if let Some(root_path) = paths.get("/") {
             if let Some(post) = root_path.get("post") {
@@ -161,11 +185,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
                                         for method in methods {
                                             if let Some(props) = method.get("properties") {
                                                 if let Some(method_name) = props.get("method") {
-                                                    if let Some(enum_val) = method_name.get("enum") {
-                                                        if let serde_json::Value::Array(names) = enum_val {
+                                                    if let Some(enum_val) = method_name.get("enum")
+                                                    {
+                                                        if let serde_json::Value::Array(names) =
+                                                            enum_val
+                                                        {
                                                             if let Some(name) = names.first() {
                                                                 println!("Method: {}", name);
-                                                                if let Some(params) = props.get("params") {
+                                                                if let Some(params) =
+                                                                    props.get("params")
+                                                                {
                                                                     println!("  Parameters: {}", serde_json::to_string_pretty(params).unwrap_or_default());
                                                                 }
                                                                 println!();
@@ -234,7 +263,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     for test_request in test_requests {
         let request: Request = serde_json::from_value(test_request.clone()).unwrap();
         println!("Request: {}", serde_json::to_string_pretty(&test_request)?);
-        
+
         let response = engine.execute(request).await;
         println!("Response: {}", serde_json::to_string_pretty(&response)?);
         println!("---");

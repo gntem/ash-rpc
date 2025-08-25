@@ -335,16 +335,16 @@ pub mod error_codes {
     /// Parse error - Invalid JSON was received by the server.
     /// An error occurred on the server while parsing the JSON text.
     pub const PARSE_ERROR: i32 = -32700;
-    
+
     /// Invalid Request - The JSON sent is not a valid Request object.
     pub const INVALID_REQUEST: i32 = -32600;
-    
+
     /// Method not found - The method does not exist / is not available.
     pub const METHOD_NOT_FOUND: i32 = -32601;
-    
+
     /// Invalid params - Invalid method parameter(s).
     pub const INVALID_PARAMS: i32 = -32602;
-    
+
     /// Internal error - Internal JSON-RPC error.
     pub const INTERNAL_ERROR: i32 = -32603;
 }

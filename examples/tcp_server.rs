@@ -3,11 +3,9 @@ use ash_rpc_core::*;
 
 fn main() -> Result<(), std::io::Error> {
     println!("Starting JSON RPC TCP Server on 127.0.0.1:8080");
-    
+
     let registry = MethodRegistry::new()
-        .register("ping", |_params, id| {
-            rpc_success!("pong", id)
-        })
+        .register("ping", |_params, id| rpc_success!("pong", id))
         .register("echo", |params, id| {
             rpc_success!(params.unwrap_or(serde_json::json!(null)), id)
         })

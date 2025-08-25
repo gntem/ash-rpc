@@ -1,12 +1,11 @@
-
-use ash_rpc_core::{MethodInfo, utils};
+use ash_rpc_core::{utils, MethodInfo};
 use std::collections::HashMap;
 
 fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     println!("=== Utils Standalone Function Demo ===");
-    
+
     let mut method_info = HashMap::new();
-    
+
     method_info.insert(
         "hello".to_string(),
         MethodInfo::new("hello")
@@ -30,9 +29,9 @@ fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
                     }
                 },
                 "required": ["greeting"]
-            }))
+            })),
     );
-    
+
     method_info.insert(
         "goodbye".to_string(),
         MethodInfo::new("goodbye")
@@ -46,27 +45,33 @@ fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
                     }
                 },
                 "required": ["name"]
-            }))
+            })),
     );
-    
+
     println!("Using utils::render_docs() directly...");
     let docs = utils::render_docs(&method_info);
-    
+
     println!("Generated documentation for {} methods", method_info.len());
-    
+
     if let Some(info) = docs.get("info") {
-        println!("API Title: {}", info.get("title").unwrap_or(&serde_json::Value::Null));
-        println!("API Version: {}", info.get("version").unwrap_or(&serde_json::Value::Null));
+        println!(
+            "API Title: {}",
+            info.get("title").unwrap_or(&serde_json::Value::Null)
+        );
+        println!(
+            "API Version: {}",
+            info.get("version").unwrap_or(&serde_json::Value::Null)
+        );
     }
-    
+
     if let Some(paths) = docs.get("paths") {
         if let Some(_root) = paths.get("/") {
             println!("Endpoint: / (POST)");
         }
     }
-    
+
     println!("\n=== Full Documentation ===");
     println!("{}", serde_json::to_string_pretty(&docs)?);
-    
+
     Ok(())
 }

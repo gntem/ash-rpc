@@ -1,9 +1,6 @@
 #[cfg(feature = "tcp-stream")]
 mod example {
-    use ash_rpc_core::{
-        transport::tcp_stream::TcpStreamClientBuilder,
-        RequestBuilder, Message
-    };
+    use ash_rpc_core::{transport::tcp_stream::TcpStreamClientBuilder, Message, RequestBuilder};
 
     pub async fn run_client() -> Result<(), Box<dyn std::error::Error>> {
         println!("Connecting to TCP Stream server...");
@@ -21,9 +18,12 @@ mod example {
             .build();
 
         client.send_message(&Message::Request(request)).await?;
-        
+
         if let Some(response) = client.recv_message().await? {
-            println!("Received response: {}", serde_json::to_string_pretty(&response)?);
+            println!(
+                "Received response: {}",
+                serde_json::to_string_pretty(&response)?
+            );
         }
 
         let request2 = RequestBuilder::new("multiply")
@@ -35,9 +35,12 @@ mod example {
             .build();
 
         client.send_message(&Message::Request(request2)).await?;
-        
+
         if let Some(response) = client.recv_message().await? {
-            println!("Received response: {}", serde_json::to_string_pretty(&response)?);
+            println!(
+                "Received response: {}",
+                serde_json::to_string_pretty(&response)?
+            );
         }
 
         Ok(())

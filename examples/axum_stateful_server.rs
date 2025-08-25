@@ -1,8 +1,8 @@
 #[cfg(feature = "axum")]
 mod example {
     use ash_rpc_core::transport::axum::AxumRpcLayer;
+    use ash_rpc_core::{ErrorBuilder, ResponseBuilder};
     use ash_rpc_stateful::{ServiceContext, StatefulMethodRegistry, StatefulProcessor};
-    use ash_rpc_core::{ResponseBuilder, ErrorBuilder};
     use axum::Router;
     use std::collections::HashMap;
     use std::sync::{Arc, RwLock};
@@ -56,7 +56,9 @@ mod example {
                 last_active: now,
             };
 
-            let mut sessions = self.sessions.write()
+            let mut sessions = self
+                .sessions
+                .write()
                 .map_err(|e| ServiceError(format!("Lock error: {}", e)))?;
             sessions.insert(session_id.clone(), session);
 
@@ -69,7 +71,9 @@ mod example {
                 .map_err(|e| ServiceError(format!("Time error: {}", e)))?
                 .as_secs();
 
-            let sessions = self.sessions.read()
+            let sessions = self
+                .sessions
+                .read()
                 .map_err(|e| ServiceError(format!("Lock error: {}", e)))?;
 
             if let Some(session) = sessions.get(session_id) {
@@ -88,7 +92,9 @@ mod example {
                 .map_err(|e| ServiceError(format!("Time error: {}", e)))?
                 .as_secs();
 
-            let mut sessions = self.sessions.write()
+            let mut sessions = self
+                .sessions
+                .write()
                 .map_err(|e| ServiceError(format!("Lock error: {}", e)))?;
 
             if let Some(session) = sessions.get_mut(session_id) {
@@ -100,7 +106,9 @@ mod example {
         }
 
         fn delete_session(&self, session_id: &str) -> Result<bool, ServiceError> {
-            let mut sessions = self.sessions.write()
+            let mut sessions = self
+                .sessions
+                .write()
                 .map_err(|e| ServiceError(format!("Lock error: {}", e)))?;
             Ok(sessions.remove(session_id).is_some())
         }
@@ -180,7 +188,7 @@ mod example {
     pub async fn run_server() -> Result<(), Box<dyn std::error::Error>> {
         let session_service = SessionService::new(3600); // 1 hour timeout
         let registry = create_session_registry();
-        
+
         let processor = StatefulProcessor::builder(session_service)
             .registry(registry)
             .build()?;
@@ -190,13 +198,12 @@ mod example {
             .path("/api/sessions")
             .build()?;
 
-        let app = Router::new()
-            .merge(rpc_layer.into_router());
+        let app = Router::new().merge(rpc_layer.into_router());
 
         let listener = tokio::net::TcpListener::bind("127.0.0.1:3002").await?;
         println!("Stateful Session Axum server listening on http://127.0.0.1:3002/api/sessions");
         println!("Available methods: create_session, get_session, delete_session");
-        
+
         axum::serve(listener, app).await?;
         Ok(())
     }

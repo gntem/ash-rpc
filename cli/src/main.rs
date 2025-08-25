@@ -1,5 +1,5 @@
 //! # ash-rpc-gen CLI Tool
-//! 
+//!
 //! Generate ready-to-use JSON-RPC implementation files from method specifications.
 
 use clap::Parser;
@@ -15,7 +15,7 @@ struct Args {
     /// Method name to generate implementation for
     #[arg(short, long)]
     method: String,
-    
+
     /// Output file path for the generated Rust file
     #[arg(short, long)]
     output: String,
@@ -23,10 +23,13 @@ struct Args {
 
 fn main() {
     let args = Args::parse();
-    
+
     match generate_rpc_file(&args.method, &args.output) {
         Ok(()) => {
-            println!("Successfully generated JSON-RPC implementation at: {}", args.output);
+            println!(
+                "Successfully generated JSON-RPC implementation at: {}",
+                args.output
+            );
             println!("Method: {}", args.method);
         }
         Err(e) => {
@@ -37,20 +40,24 @@ fn main() {
 }
 
 /// Generate a complete JSON-RPC implementation file
-fn generate_rpc_file(method_name: &str, output_path: &str) -> Result<(), Box<dyn std::error::Error>> {
+fn generate_rpc_file(
+    method_name: &str,
+    output_path: &str,
+) -> Result<(), Box<dyn std::error::Error>> {
     if let Some(parent) = Path::new(output_path).parent() {
         fs::create_dir_all(parent)?;
     }
-    
+
     let content = generate_rpc_implementation(method_name);
     fs::write(output_path, content)?;
-    
+
     Ok(())
 }
 
 /// Generate the implementation code for a JSON-RPC method
 fn generate_rpc_implementation(method_name: &str) -> String {
-    format!(r#"//! Generated JSON-RPC implementation for method: {}
+    format!(
+        r#"//! Generated JSON-RPC implementation for method: {}
 //! 
 //! This file contains a ready-to-use JSON-RPC server implementation.
 //! Fill in the TODOs to complete your implementation.
@@ -188,5 +195,7 @@ mod tests {{
         }}
     }}
 }}
-"#, method_name, method_name, method_name, method_name, method_name, method_name, method_name)
+"#,
+        method_name, method_name, method_name, method_name, method_name, method_name, method_name
+    )
 }

@@ -2,11 +2,9 @@ use ash_rpc_core::*;
 
 fn main() -> Result<(), std::io::Error> {
     println!("Starting TCP JSON-RPC Server with macro on 127.0.0.1:8080");
-    
+
     let registry = MethodRegistry::new()
-        .register("ping", |_params, id| {
-            rpc_success!("pong", id)
-        })
+        .register("ping", |_params, id| rpc_success!("pong", id))
         .register("add", |params, id| {
             if let Some(params) = params {
                 if let Ok(numbers) = serde_json::from_value::<[f64; 2]>(params) {

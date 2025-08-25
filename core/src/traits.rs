@@ -6,7 +6,7 @@ use crate::types::*;
 pub trait Handler {
     /// Handle a JSON-RPC request and return a response
     fn handle_request(&self, request: Request) -> Response;
-    
+
     /// Handle a JSON-RPC notification (no response expected)
     fn handle_notification(&self, notification: Notification);
 

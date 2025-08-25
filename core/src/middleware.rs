@@ -2,10 +2,10 @@
 //!
 //! This module provides Tower-compatible middleware for JSON-RPC request/response handling.
 
-use std::task::{Context, Poll};
-use tower::{Service, Layer};
 use std::future::Future;
 use std::pin::Pin;
+use std::task::{Context, Poll};
+use tower::{Layer, Service};
 
 /// Tower layer for JSON-RPC middleware
 #[derive(Clone)]
@@ -100,13 +100,13 @@ where
         let mut inner = self.inner.clone();
         let validate_version = self.validate_version;
         let require_id = self.require_id;
-        
+
         Box::pin(async move {
             // Note: In a complete implementation, validation would be performed here
             // using the validate_version and require_id flags to check JSON-RPC format
             // For now, these flags are captured to avoid unused field warnings
             let _validation_config = (validate_version, require_id);
-            
+
             // Pass through to the inner service
             inner.call(req).await
         })

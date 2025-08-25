@@ -17,7 +17,7 @@
 ///
 /// let mut registry = MethodRegistry::new();
 /// // ... register methods ...
-/// 
+///
 /// let server = TcpServerBuilder::new("127.0.0.1:8080")
 ///     .processor(Arc::new(registry))
 ///     .build()
@@ -114,7 +114,7 @@ pub mod tcp {
         loop {
             line.clear();
             let bytes_read = reader.read_line(&mut line)?;
-            
+
             if bytes_read == 0 {
                 break;
             }
@@ -143,7 +143,7 @@ pub mod tcp {
                         )
                         .id(None)
                         .build();
-                    
+
                     let response_json = serde_json::to_string(&error_response)?;
                     writeln!(stream, "{response_json}")?;
                     stream.flush()?;
@@ -213,7 +213,7 @@ pub mod tcp_stream {
             loop {
                 let (stream, addr) = listener.accept().await?;
                 println!("New connection from: {addr}");
-                
+
                 let processor = Arc::clone(&self.processor);
                 tokio::spawn(async move {
                     if let Err(e) = handle_stream_client(stream, processor).await {
@@ -248,7 +248,7 @@ pub mod tcp_stream {
         loop {
             line.clear();
             let bytes_read = reader.read_line(&mut line).await?;
-            
+
             if bytes_read == 0 {
                 break;
             }
@@ -278,7 +278,7 @@ pub mod tcp_stream {
                         )
                         .id(None)
                         .build();
-                    
+
                     let response_json = serde_json::to_string(&error_response)?;
                     if tx.send(response_json).await.is_err() {
                         break;
@@ -296,9 +296,7 @@ pub mod tcp_stream {
 
     impl TcpStreamClientBuilder {
         pub fn new(addr: impl Into<String>) -> Self {
-            Self {
-                addr: addr.into(),
-            }
+            Self { addr: addr.into() }
         }
 
         pub async fn connect(self) -> Result<TcpStreamClient, Box<dyn std::error::Error>> {
@@ -359,12 +357,17 @@ pub mod tcp_stream {
             }
         }
 
-        pub async fn send_message(&self, message: &Message) -> Result<(), Box<dyn std::error::Error>> {
+        pub async fn send_message(
+            &self,
+            message: &Message,
+        ) -> Result<(), Box<dyn std::error::Error>> {
             let json = serde_json::to_string(message)?;
             self.tx.send(json).await.map_err(|e| e.into())
         }
 
-        pub async fn recv_message(&mut self) -> Result<Option<Message>, Box<dyn std::error::Error>> {
+        pub async fn recv_message(
+            &mut self,
+        ) -> Result<Option<Message>, Box<dyn std::error::Error>> {
             if let Some(response) = self.rx.recv().await {
                 let message: Message = serde_json::from_str(&response)?;
                 Ok(Some(message))
@@ -377,14 +380,8 @@ pub mod tcp_stream {
 
 #[cfg(feature = "axum")]
 pub mod axum {
-    use crate::{Message, MessageProcessor, Response, ResponseBuilder, ErrorBuilder, error_codes};
-    use axum::{
-        extract::State,
-        http::StatusCode,
-        response::Json,
-        routing::post,
-        Router,
-    };
+    use crate::{error_codes, ErrorBuilder, Message, MessageProcessor, Response, ResponseBuilder};
+    use axum::{extract::State, http::StatusCode, response::Json, routing::post, Router};
     use std::sync::Arc;
 
     pub struct AxumRpcBuilder {
@@ -468,7 +465,7 @@ pub mod axum {
                     )
                     .id(None)
                     .build();
-                
+
                 Err((StatusCode::OK, Json(error_response)))
             }
         }
@@ -479,7 +476,7 @@ pub mod axum {
         Json(messages): Json<Vec<Message>>,
     ) -> Json<Vec<Response>> {
         let mut responses = Vec::new();
-        
+
         for message in messages {
             if let Some(response) = processor.process_message(message) {
                 responses.push(response);

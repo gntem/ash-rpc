@@ -1,6 +1,6 @@
 use ash_rpc_core::{
-    MethodRegistry, ResponseBuilder, ErrorBuilder, error_codes,
-    Message, Request, MessageProcessor, Handler
+    error_codes, ErrorBuilder, Handler, Message, MessageProcessor, MethodRegistry, Request,
+    ResponseBuilder,
 };
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -13,13 +13,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         })
         .register("echo", |params, id| {
             if let Some(params) = params {
-                ResponseBuilder::new()
-                    .success(params)
-                    .id(id)
-                    .build()
+                ResponseBuilder::new().success(params).id(id).build()
             } else {
                 ResponseBuilder::new()
-                    .error(ErrorBuilder::new(error_codes::INVALID_PARAMS, "Missing parameters").build())
+                    .error(
+                        ErrorBuilder::new(error_codes::INVALID_PARAMS, "Missing parameters")
+                            .build(),
+                    )
                     .id(id)
                     .build()
             }
@@ -32,12 +32,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let capabilities = registry.get_capabilities();
     println!("Supports batching: {}", capabilities.supports_batch);
-    println!("Supports notifications: {}", capabilities.supports_notifications);
+    println!(
+        "Supports notifications: {}",
+        capabilities.supports_notifications
+    );
     println!("Max batch size: {:?}", capabilities.max_batch_size);
 
     let request = Request::new("ping").with_id(serde_json::json!(1));
     let message = Message::Request(request);
-    
+
     println!("Message is request: {}", message.is_request());
     println!("Message method: {:?}", message.method());
     println!("Message ID: {:?}", message.id());
@@ -50,9 +53,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let batch = vec![
         Message::Request(Request::new("ping").with_id(serde_json::json!(1))),
-        Message::Request(Request::new("echo")
-            .with_params(serde_json::json!({"message": "hello"}))
-            .with_id(serde_json::json!(2))),
+        Message::Request(
+            Request::new("echo")
+                .with_params(serde_json::json!({"message": "hello"}))
+                .with_id(serde_json::json!(2)),
+        ),
     ];
 
     let batch_responses = registry.process_batch(batch);

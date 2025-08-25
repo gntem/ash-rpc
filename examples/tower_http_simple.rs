@@ -1,11 +1,10 @@
-
-use ash_rpc_core::{JsonRpcLayer, Request, Response, Error, error_codes};
+use ash_rpc_core::{error_codes, Error, JsonRpcLayer, Request, Response};
 use serde::{Deserialize, Serialize};
-use std::task::{Context, Poll};
-use tower::{Service, ServiceBuilder};
-use tokio::net::TcpListener;
 use std::future::Future;
 use std::pin::Pin;
+use std::task::{Context, Poll};
+use tokio::net::TcpListener;
+use tower::{Service, ServiceBuilder};
 
 #[derive(Debug, Deserialize)]
 struct AddParams {
@@ -35,18 +34,33 @@ impl Service<Request> for CalculatorService {
             match req.method() {
                 "add" => {
                     let params: AddParams = match req.params() {
-                        Some(params) => serde_json::from_value(params.clone())
-                            .map_err(|_| Error::new(error_codes::INVALID_PARAMS, "Invalid parameters for add method"))?,
-                        None => return Err(Error::new(error_codes::INVALID_PARAMS, "Missing parameters for add method")),
+                        Some(params) => serde_json::from_value(params.clone()).map_err(|_| {
+                            Error::new(
+                                error_codes::INVALID_PARAMS,
+                                "Invalid parameters for add method",
+                            )
+                        })?,
+                        None => {
+                            return Err(Error::new(
+                                error_codes::INVALID_PARAMS,
+                                "Missing parameters for add method",
+                            ))
+                        }
                     };
 
                     let result = AddResult {
                         sum: params.a + params.b,
                     };
 
-                    Ok(Response::success(serde_json::to_value(result).unwrap(), req.id.clone()))
+                    Ok(Response::success(
+                        serde_json::to_value(result).unwrap(),
+                        req.id.clone(),
+                    ))
                 }
-                _ => Err(Error::new(error_codes::METHOD_NOT_FOUND, format!("Method '{}' not found", req.method()))),
+                _ => Err(Error::new(
+                    error_codes::METHOD_NOT_FOUND,
+                    format!("Method '{}' not found", req.method()),
+                )),
             }
         })
     }
@@ -80,7 +94,7 @@ where
     S::Future: Send,
 {
     use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
-    
+
     let (reader, mut writer) = stream.split();
     let mut reader = BufReader::new(reader);
     let mut headers = Vec::new();
@@ -91,7 +105,7 @@ where
         if let Ok(0) = reader.read_line(&mut line).await {
             return; // EOF
         }
-        
+
         if line.trim().is_empty() {
             break; // End of headers
         }
@@ -141,11 +155,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         .service(CalculatorService);
 
     let listener = TcpListener::bind("127.0.0.1:3000").await?;
-    
+
     loop {
         let (stream, addr) = listener.accept().await?;
         println!("New HTTP connection from: {}", addr);
-        
+
         let service = service.clone();
         tokio::task::spawn(async move {
             handle_http_connection(stream, service).await;

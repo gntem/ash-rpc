@@ -1,5 +1,4 @@
-
-use ash_rpc_core::{MethodRegistry, MethodInfo, rpc_success, rpc_invalid_params, rpc_error};
+use ash_rpc_core::{rpc_error, rpc_invalid_params, rpc_success, MethodInfo, MethodRegistry};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize)]
@@ -29,7 +28,7 @@ struct MathResult {
 
 fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     println!("=== Documentation Generation Demo ===");
-    
+
     let mut registry = MethodRegistry::new()
         .register_with_info(
             "create_user",
@@ -93,7 +92,7 @@ fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
                 };
 
                 rpc_success!(user, id)
-            }
+            },
         )
         .register_with_info(
             "add",
@@ -139,14 +138,9 @@ fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
                 };
 
                 rpc_success!(result, id)
-            }
+            },
         )
-        .register(
-            "ping",
-            |_params, id| {
-                rpc_success!("pong", id)
-            }
-        );
+        .register("ping", |_params, id| rpc_success!("pong", id));
 
     println!("Registry created with {} methods", registry.method_count());
     println!("Available methods: {:?}", registry.get_methods());
@@ -154,7 +148,7 @@ fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
 
     println!("Generating OpenAPI documentation...");
     let docs = registry.render_docs();
-    
+
     println!("Generated OpenAPI Documentation:");
     println!("{}", serde_json::to_string_pretty(&docs)?);
 

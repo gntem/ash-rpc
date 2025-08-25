@@ -1,15 +1,15 @@
 //! Convenience macros for JSON-RPC response creation.
 
 /// Create a success response with a result value and optional ID
-/// 
+///
 /// # Examples:
 /// ```ignore
 /// // Success with ID
 /// rpc_success!(42, Some(1))
-/// 
+///
 /// // Success with ID from variable
 /// rpc_success!(result, id)
-/// 
+///
 /// // Success without ID
 /// rpc_success!({"status": "ok"})
 /// ```
@@ -30,18 +30,18 @@ macro_rules! rpc_success {
 }
 
 /// Create an error response with code, message, and optional ID
-/// 
+///
 /// # Usage:
 /// ```ignore
 /// // Error with explicit code, message and ID
 /// rpc_error!(-32602, "Invalid parameters", Some(1))
-/// 
+///
 /// // Error with code and message, ID from variable
 /// rpc_error!(-32602, "Invalid parameters", id)
-/// 
+///
 /// // Error without ID
 /// rpc_error!(-32601, "Method not found")
-/// 
+///
 /// // Error using predefined error codes
 /// rpc_error!(error_codes::INVALID_PARAMS, "Invalid parameters", id)
 /// ```
@@ -62,12 +62,12 @@ macro_rules! rpc_error {
 }
 
 /// Create an error response with code, message, additional data and optional ID
-/// 
+///
 /// # Usage:
 /// ```ignore
 /// // Error with data
 /// rpc_error_with_data!(-32602, "Invalid parameters", {"expected": "array"}, Some(1))
-/// 
+///
 /// // Error with data but no ID
 /// rpc_error_with_data!(-32602, "Invalid parameters", {"expected": "array"})
 /// ```
@@ -78,7 +78,7 @@ macro_rules! rpc_error_with_data {
             .error(
                 $crate::ErrorBuilder::new($code, $message)
                     .data(serde_json::json!($data))
-                    .build()
+                    .build(),
             )
             .id($id)
             .build()
@@ -88,7 +88,7 @@ macro_rules! rpc_error_with_data {
             .error(
                 $crate::ErrorBuilder::new($code, $message)
                     .data(serde_json::json!($data))
-                    .build()
+                    .build(),
             )
             .id(None)
             .build()
@@ -96,7 +96,7 @@ macro_rules! rpc_error_with_data {
 }
 
 /// Common error response shortcuts using predefined error codes
-/// 
+///
 /// # Usage:
 /// ```ignore
 /// rpc_invalid_params!("Expected array of two numbers", id)
@@ -117,7 +117,11 @@ macro_rules! rpc_invalid_params {
 #[macro_export]
 macro_rules! rpc_method_not_found {
     ($id:expr) => {
-        rpc_error!($crate::error_codes::METHOD_NOT_FOUND, "Method not found", $id)
+        rpc_error!(
+            $crate::error_codes::METHOD_NOT_FOUND,
+            "Method not found",
+            $id
+        )
     };
     () => {
         rpc_error!($crate::error_codes::METHOD_NOT_FOUND, "Method not found")
@@ -145,15 +149,15 @@ macro_rules! rpc_internal_error {
 }
 
 /// Create a JSON-RPC request
-/// 
+///
 /// # Usage:
 /// ```ignore
 /// // Request with method, params and ID
 /// rpc_request!("add", [5, 3], 1)
-/// 
+///
 /// // Request with method and ID (no params)
 /// rpc_request!("ping", 2)
-/// 
+///
 /// // Request with method only (notification - no ID)
 /// rpc_request!("log")
 /// ```
@@ -171,18 +175,17 @@ macro_rules! rpc_request {
             .build()
     };
     ($method:expr) => {
-        $crate::RequestBuilder::new($method)
-            .build()
+        $crate::RequestBuilder::new($method).build()
     };
 }
 
 /// Create a JSON-RPC notification
-/// 
+///
 /// # Usage:
 /// ```ignore
 /// // Notification with method and params
 /// rpc_notification!("log", {"level": "info", "message": "Hello"})
-/// 
+///
 /// // Notification with method only
 /// rpc_notification!("ping")
 /// ```
@@ -194,18 +197,17 @@ macro_rules! rpc_notification {
             .build()
     };
     ($method:expr) => {
-        $crate::NotificationBuilder::new($method)
-            .build()
+        $crate::NotificationBuilder::new($method).build()
     };
 }
 
 /// Create a JSON-RPC error object (not a response)
-/// 
+///
 /// # Usage:
 /// ```ignore
 /// // Error with code and message
 /// rpc_error_obj!(-32602, "Invalid parameters")
-/// 
+///
 /// // Error with code, message and data
 /// rpc_error_obj!(-32602, "Invalid parameters", {"expected": "array"})
 /// ```
@@ -217,8 +219,7 @@ macro_rules! rpc_error_obj {
             .build()
     };
     ($code:expr, $message:expr) => {
-        $crate::ErrorBuilder::new($code, $message)
-            .build()
+        $crate::ErrorBuilder::new($code, $message).build()
     };
 }
 
@@ -227,12 +228,12 @@ macro_rules! rpc_error_obj {
 //
 
 /// Create and run a TCP JSON-RPC server
-/// 
+///
 /// # Usage:
 /// ```ignore
 /// // Basic TCP server with registry
 /// rpc_tcp_server!("127.0.0.1:8080", registry);
-/// 
+///
 /// // TCP server with error handling
 /// rpc_tcp_server!("127.0.0.1:8080", registry).expect("Failed to start server");
 /// ```
@@ -248,12 +249,12 @@ macro_rules! rpc_tcp_server {
 }
 
 /// Create and run a TCP streaming JSON-RPC server
-/// 
+///
 /// # Usage:
 /// ```ignore
 /// // Basic TCP streaming server
 /// rpc_tcp_stream_server!("127.0.0.1:8080", registry).await?;
-/// 
+///
 /// // With error handling
 /// rpc_tcp_stream_server!("127.0.0.1:8080", registry).await.expect("Server failed");
 /// ```
@@ -271,37 +272,35 @@ macro_rules! rpc_tcp_stream_server {
 }
 
 /// Create a TCP streaming JSON-RPC client
-/// 
+///
 /// # Usage:
 /// ```ignore
 /// // Create and connect client
 /// let mut client = rpc_tcp_stream_client!("127.0.0.1:8080").await?;
-/// 
+///
 /// // Send request and get response
 /// let response = client.call("method_name", Some(params)).await?;
 /// ```
 #[cfg(feature = "tcp-stream")]
 #[macro_export]
 macro_rules! rpc_tcp_stream_client {
-    ($addr:expr) => {
-        {
-            $crate::transport::tcp_stream::TcpStreamClient::builder($addr)
-                .build()
-                .connect()
-        }
-    };
+    ($addr:expr) => {{
+        $crate::transport::tcp_stream::TcpStreamClient::builder($addr)
+            .build()
+            .connect()
+    }};
 }
 
 /// Create an Axum router with JSON-RPC endpoint
-/// 
+///
 /// # Usage:
 /// ```ignore
 /// // Basic router with default /rpc path
 /// let app = rpc_axum_router!(registry);
-/// 
+///
 /// // Router with custom path
 /// let app = rpc_axum_router!(registry, "/api/rpc");
-/// 
+///
 /// // Router with additional routes
 /// let app = rpc_axum_router!(registry, "/rpc")
 ///     .route("/health", get(health_check));
@@ -318,45 +317,41 @@ macro_rules! rpc_axum_router {
 }
 
 /// Create and run an Axum server with JSON-RPC
-/// 
+///
 /// # Usage:
 /// ```ignore
 /// // Basic server on default port
 /// rpc_axum_server!("127.0.0.1:3000", registry).await?;
-/// 
+///
 /// // Server with custom RPC path
 /// rpc_axum_server!("127.0.0.1:3000", registry, "/api/rpc").await?;
 /// ```
 #[cfg(feature = "axum")]
 #[macro_export]
 macro_rules! rpc_axum_server {
-    ($addr:expr, $processor:expr, $path:expr) => {
-        {
-            let app = rpc_axum_router!($processor, $path);
-            async move {
-                let listener = tokio::net::TcpListener::bind($addr).await?;
-                axum::serve(listener, app).await
-            }
+    ($addr:expr, $processor:expr, $path:expr) => {{
+        let app = rpc_axum_router!($processor, $path);
+        async move {
+            let listener = tokio::net::TcpListener::bind($addr).await?;
+            axum::serve(listener, app).await
         }
-    };
-    ($addr:expr, $processor:expr) => {
-        {
-            let app = rpc_axum_router!($processor);
-            async move {
-                let listener = tokio::net::TcpListener::bind($addr).await?;
-                axum::serve(listener, app).await
-            }
+    }};
+    ($addr:expr, $processor:expr) => {{
+        let app = rpc_axum_router!($processor);
+        async move {
+            let listener = tokio::net::TcpListener::bind($addr).await?;
+            axum::serve(listener, app).await
         }
-    };
+    }};
 }
 
 /// Create an Axum RPC layer for middleware use
-/// 
+///
 /// # Usage:
 /// ```ignore
 /// // Create RPC layer
 /// let rpc_layer = rpc_axum_layer!(registry);
-/// 
+///
 /// // Use in router
 /// let app = Router::new()
 ///     .route("/health", get(health_check))

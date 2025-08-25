@@ -1,12 +1,11 @@
-
-use ash_rpc_core::{JsonRpcLayer, Request, Response, Error, error_codes};
+use ash_rpc_core::{error_codes, Error, JsonRpcLayer, Request, Response};
 use serde::{Deserialize, Serialize};
-use std::task::{Context, Poll};
-use tower::{Service, ServiceBuilder};
-use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
-use tokio::net::{TcpListener, TcpStream};
 use std::future::Future;
 use std::pin::Pin;
+use std::task::{Context, Poll};
+use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
+use tokio::net::{TcpListener, TcpStream};
+use tower::{Service, ServiceBuilder};
 
 #[derive(Debug, Deserialize)]
 struct AddParams {
@@ -36,18 +35,33 @@ impl Service<Request> for CalculatorService {
             match req.method() {
                 "add" => {
                     let params: AddParams = match req.params() {
-                        Some(params) => serde_json::from_value(params.clone())
-                            .map_err(|_| Error::new(error_codes::INVALID_PARAMS, "Invalid parameters for add method"))?,
-                        None => return Err(Error::new(error_codes::INVALID_PARAMS, "Missing parameters for add method")),
+                        Some(params) => serde_json::from_value(params.clone()).map_err(|_| {
+                            Error::new(
+                                error_codes::INVALID_PARAMS,
+                                "Invalid parameters for add method",
+                            )
+                        })?,
+                        None => {
+                            return Err(Error::new(
+                                error_codes::INVALID_PARAMS,
+                                "Missing parameters for add method",
+                            ))
+                        }
                     };
 
                     let result = AddResult {
                         sum: params.a + params.b,
                     };
 
-                    Ok(Response::success(serde_json::to_value(result).unwrap(), req.id.clone()))
+                    Ok(Response::success(
+                        serde_json::to_value(result).unwrap(),
+                        req.id.clone(),
+                    ))
                 }
-                _ => Err(Error::new(error_codes::METHOD_NOT_FOUND, format!("Method '{}' not found", req.method()))),
+                _ => Err(Error::new(
+                    error_codes::METHOD_NOT_FOUND,
+                    format!("Method '{}' not found", req.method()),
+                )),
             }
         })
     }
@@ -81,15 +95,19 @@ where
                         }
                     }
                     Err(_) => {
-                        let error = Error::new(error_codes::PARSE_ERROR, "Invalid JSON-RPC request");
+                        let error =
+                            Error::new(error_codes::PARSE_ERROR, "Invalid JSON-RPC request");
                         Response::error(error, None)
                     }
                 };
 
                 let response_json = serde_json::to_string(&response).unwrap();
                 println!("Sending response: {}", response_json);
-                
-                if let Err(e) = writer.write_all(format!("{}\n", response_json).as_bytes()).await {
+
+                if let Err(e) = writer
+                    .write_all(format!("{}\n", response_json).as_bytes())
+                    .await
+                {
                     eprintln!("Failed to write response: {}", e);
                     break;
                 }
@@ -112,11 +130,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         .service(CalculatorService);
 
     let listener = TcpListener::bind("127.0.0.1:8080").await?;
-    
+
     loop {
         let (stream, addr) = listener.accept().await?;
         println!("New connection from: {}", addr);
-        
+
         let service = service.clone();
         tokio::task::spawn(async move {
             handle_connection(stream, service).await;

@@ -1,8 +1,8 @@
 #[cfg(feature = "tcp")]
 mod example {
     use ash_rpc_core::transport::tcp::TcpServer;
+    use ash_rpc_core::{ErrorBuilder, ResponseBuilder};
     use ash_rpc_stateful::{ServiceContext, StatefulMethodRegistry, StatefulProcessor};
-    use ash_rpc_core::{ResponseBuilder, ErrorBuilder};
     use std::collections::HashMap;
     use std::sync::{Arc, Mutex};
 
@@ -35,27 +35,36 @@ mod example {
         }
 
         pub fn increment(&self, name: &str) -> Result<i64, ServiceError> {
-            let mut counters = self.counters.lock()
+            let mut counters = self
+                .counters
+                .lock()
                 .map_err(|e| ServiceError(format!("Lock error: {e}")))?;
-            
+
             let current = counters.get(name).unwrap_or(&0);
             if *current >= self.max_value {
-                return Err(ServiceError(format!("Counter {name} has reached maximum value {}", self.max_value)));
+                return Err(ServiceError(format!(
+                    "Counter {name} has reached maximum value {}",
+                    self.max_value
+                )));
             }
-            
+
             let new_value = current + 1;
             counters.insert(name.to_string(), new_value);
             Ok(new_value)
         }
 
         pub fn get(&self, name: &str) -> Result<i64, ServiceError> {
-            let counters = self.counters.lock()
+            let counters = self
+                .counters
+                .lock()
                 .map_err(|e| ServiceError(format!("Lock error: {e}")))?;
             Ok(*counters.get(name).unwrap_or(&0))
         }
 
         pub fn reset(&self, name: &str) -> Result<i64, ServiceError> {
-            let mut counters = self.counters.lock()
+            let mut counters = self
+                .counters
+                .lock()
                 .map_err(|e| ServiceError(format!("Lock error: {e}")))?;
             let old_value = *counters.get(name).unwrap_or(&0);
             counters.insert(name.to_string(), 0);
@@ -67,13 +76,14 @@ mod example {
         StatefulMethodRegistry::new()
             .register_fn("increment", |ctx: &CounterService, params, id| {
                 let name = if let Some(ref params) = params {
-                    params.get("name")
+                    params
+                        .get("name")
                         .and_then(|n| n.as_str())
                         .unwrap_or("default")
                 } else {
                     "default"
                 };
-                
+
                 match ctx.increment(name) {
                     Ok(value) => Ok(ResponseBuilder::new()
                         .success(serde_json::json!({
@@ -90,13 +100,14 @@ mod example {
             })
             .register_fn("get", |ctx: &CounterService, params, id| {
                 let name = if let Some(ref params) = params {
-                    params.get("name")
+                    params
+                        .get("name")
                         .and_then(|n| n.as_str())
                         .unwrap_or("default")
                 } else {
                     "default"
                 };
-                
+
                 match ctx.get(name) {
                     Ok(value) => Ok(ResponseBuilder::new()
                         .success(serde_json::json!({
@@ -113,13 +124,14 @@ mod example {
             })
             .register_fn("reset", |ctx: &CounterService, params, id| {
                 let name = if let Some(ref params) = params {
-                    params.get("name")
+                    params
+                        .get("name")
                         .and_then(|n| n.as_str())
                         .unwrap_or("default")
                 } else {
                     "default"
                 };
-                
+
                 match ctx.reset(name) {
                     Ok(old_value) => Ok(ResponseBuilder::new()
                         .success(serde_json::json!({
@@ -140,7 +152,7 @@ mod example {
     pub fn run_server() -> Result<(), Box<dyn std::error::Error>> {
         let counter_service = CounterService::new(1000);
         let registry = create_counter_registry();
-        
+
         let processor = StatefulProcessor::builder(counter_service)
             .registry(registry)
             .build()?;
@@ -152,7 +164,7 @@ mod example {
         println!("Stateful Counter TCP server listening on 127.0.0.1:3040");
         println!("Available methods: increment, get, reset");
         println!("Example: {{\"jsonrpc\":\"2.0\",\"method\":\"increment\",\"params\":{{\"name\":\"user_clicks\"}},\"id\":1}}");
-        
+
         Ok(server.run()?)
     }
 }

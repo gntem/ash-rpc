@@ -1,21 +1,24 @@
 #[cfg(feature = "tcp-stream")]
 mod example {
-    use ash_rpc_core::{transport::tcp_stream::TcpStreamServer, MessageProcessor, Message, Response, ResponseBuilder};
+    use ash_rpc_core::{
+        transport::tcp_stream::TcpStreamServer, Message, MessageProcessor, Response,
+        ResponseBuilder,
+    };
 
     struct EchoProcessor;
 
     impl MessageProcessor for EchoProcessor {
         fn process_message(&self, message: Message) -> Option<Response> {
             match message {
-                Message::Request(req) => {
-                    Some(ResponseBuilder::new()
+                Message::Request(req) => Some(
+                    ResponseBuilder::new()
                         .success(serde_json::json!({
                             "echo": req.method,
                             "params": req.params
                         }))
                         .id(req.id)
-                        .build())
-                }
+                        .build(),
+                ),
                 Message::Notification(_) => None,
                 Message::Response(_) => None,
             }

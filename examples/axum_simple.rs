@@ -1,8 +1,8 @@
 #[cfg(feature = "axum")]
 mod example {
     use ash_rpc_core::{
-        transport::axum::{AxumRpcLayer, create_rpc_router},
-        MethodRegistry, ResponseBuilder, ErrorBuilder
+        transport::axum::{create_rpc_router, AxumRpcLayer},
+        ErrorBuilder, MethodRegistry, ResponseBuilder,
     };
     use axum::Router;
 
@@ -41,17 +41,13 @@ mod example {
                     .build()
             });
 
-        let rpc_layer = AxumRpcLayer::builder()
-            .processor(registry)
-            .build()?;
+        let rpc_layer = AxumRpcLayer::builder().processor(registry).build()?;
 
-        let app = Router::new()
-            .merge(rpc_layer.into_router());
-
+        let app = Router::new().merge(rpc_layer.into_router());
 
         let listener = tokio::net::TcpListener::bind("127.0.0.1:3001").await?;
         println!("Simple Axum RPC server listening on http://127.0.0.1:3001/rpc");
-        
+
         axum::serve(listener, app).await?;
         Ok(())
     }

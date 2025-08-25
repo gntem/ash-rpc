@@ -1,13 +1,14 @@
 //! Method registry for organizing and dispatching JSON-RPC methods.
 
-use std::collections::HashMap;
-use crate::types::*;
 use crate::builders::*;
 use crate::traits::*;
+use crate::types::*;
 use crate::utils;
+use std::collections::HashMap;
 
 /// Function signature for method handlers
-pub type MethodHandler = Box<dyn Fn(Option<serde_json::Value>, Option<RequestId>) -> Response + Send + Sync>;
+pub type MethodHandler =
+    Box<dyn Fn(Option<serde_json::Value>, Option<RequestId>) -> Response + Send + Sync>;
 
 /// Registry for organizing and dispatching JSON-RPC methods
 pub struct MethodRegistry {
@@ -32,14 +33,20 @@ impl MethodRegistry {
         F: Fn(Option<serde_json::Value>, Option<RequestId>) -> Response + Send + Sync + 'static,
     {
         let method_name = method.into();
-        self.method_info.insert(method_name.clone(), MethodInfo::new(method_name.clone()));
+        self.method_info
+            .insert(method_name.clone(), MethodInfo::new(method_name.clone()));
         self.methods.insert(method_name, Box::new(handler));
         self.cached_docs = None;
         self
     }
 
     /// Register a method with detailed information and handler
-    pub fn register_with_info<F>(mut self, method: impl Into<String>, info: MethodInfo, handler: F) -> Self
+    pub fn register_with_info<F>(
+        mut self,
+        method: impl Into<String>,
+        info: MethodInfo,
+        handler: F,
+    ) -> Self
     where
         F: Fn(Option<serde_json::Value>, Option<RequestId>) -> Response + Send + Sync + 'static,
     {
@@ -51,7 +58,12 @@ impl MethodRegistry {
     }
 
     /// Call a registered method
-    pub fn call(&self, method: &str, params: Option<serde_json::Value>, id: Option<RequestId>) -> Response {
+    pub fn call(
+        &self,
+        method: &str,
+        params: Option<serde_json::Value>,
+        id: Option<RequestId>,
+    ) -> Response {
         if let Some(handler) = self.methods.get(method) {
             handler(params, id)
         } else {
@@ -98,9 +110,10 @@ impl MethodRegistry {
             let docs_json = utils::render_docs(&self.method_info);
             self.cached_docs = Some(serde_json::to_string(&docs_json).unwrap_or_default());
         }
-        
+
         // Parse the cached string back to Value
-        self.cached_docs.as_ref()
+        self.cached_docs
+            .as_ref()
             .and_then(|s| serde_json::from_str(s).ok())
             .unwrap_or_else(|| serde_json::json!({}))
     }

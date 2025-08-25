@@ -12,13 +12,19 @@ fn main() {
                         .build()
                 } else {
                     ResponseBuilder::new()
-                        .error(ErrorBuilder::new(error_codes::INVALID_PARAMS, "Invalid parameters").build())
+                        .error(
+                            ErrorBuilder::new(error_codes::INVALID_PARAMS, "Invalid parameters")
+                                .build(),
+                        )
                         .id(id)
                         .build()
                 }
             } else {
                 ResponseBuilder::new()
-                    .error(ErrorBuilder::new(error_codes::INVALID_PARAMS, "Missing parameters").build())
+                    .error(
+                        ErrorBuilder::new(error_codes::INVALID_PARAMS, "Missing parameters")
+                            .build(),
+                    )
                     .id(id)
                     .build()
             }
@@ -33,13 +39,19 @@ fn main() {
                         .build()
                 } else {
                     ResponseBuilder::new()
-                        .error(ErrorBuilder::new(error_codes::INVALID_PARAMS, "Invalid parameters").build())
+                        .error(
+                            ErrorBuilder::new(error_codes::INVALID_PARAMS, "Invalid parameters")
+                                .build(),
+                        )
                         .id(id)
                         .build()
                 }
             } else {
                 ResponseBuilder::new()
-                    .error(ErrorBuilder::new(error_codes::INVALID_PARAMS, "Missing parameters").build())
+                    .error(
+                        ErrorBuilder::new(error_codes::INVALID_PARAMS, "Missing parameters")
+                            .build(),
+                    )
                     .id(id)
                     .build()
             }
@@ -51,9 +63,12 @@ fn main() {
         .build();
 
     let message = Message::Request(request);
-    
+
     if let Some(response) = registry.process_message(message) {
-        println!("Response: {}", serde_json::to_string_pretty(&response).unwrap());
+        println!(
+            "Response: {}",
+            serde_json::to_string_pretty(&response).unwrap()
+        );
     }
 
     let notification = NotificationBuilder::new("log")
