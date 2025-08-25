@@ -1,0 +1,28 @@
+[package]
+name = "ash-rpc-stateful"
+version = "0.1.0"
+edition = "2021"
+description = "Stateful JSON-RPC handlers with shared context support for ash-rpc"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/username/ash-rpc"
+documentation = "https://docs.rs/ash-rpc-stateful"
+homepage = "https://github.com/username/ash-rpc"
+keywords = ["json-rpc", "rpc", "stateful", "context", "handlers"]
+categories = ["network-programming", "web-programming"]
+authors = ["Your Name <your.email@example.com>"]
+readme = "../README.md"
+exclude = ["examples/"]
+
+[features]
+default = []
+tcp = ["ash-rpc-core/tcp"]
+tcp-stream = ["ash-rpc-core/tcp-stream"]
+axum = ["ash-rpc-core/axum"]
+
+[dependencies]
+ash-rpc-core = { path = "../core" }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+[dev-dependencies]
+uuid = { version = "1.0", features = ["v4"] }

@@ -1,0 +1,96 @@
+[package]
+name = "ash-rpc-examples"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+ash-rpc-core = { path = "../core", features = ["tcp", "tcp-stream", "axum", "tower"] }
+ash-rpc-stateful = { path = "../stateful" }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tokio = { version = "1.0", features = ["full"] }
+tower = "0.4"
+hyper = { version = "1.0", features = ["full"] }
+hyper-util = { version = "0.1", features = ["full"] }
+http-body-util = "0.1"
+
+[[example]]
+name = "basic"
+path = "basic.rs"
+
+[[example]]
+name = "macros_demo"
+path = "macros_demo.rs"
+
+[[example]]
+name = "axum_server"
+path = "axum_server.rs"
+
+[[example]]
+name = "axum_simple"
+path = "axum_simple.rs"
+
+[[example]]
+name = "tcp_server"
+path = "tcp_server.rs"
+
+[[example]]
+name = "tcp_server_macro"
+path = "tcp_server_macro.rs"
+
+[[example]]
+name = "tcp_stream_client"
+path = "tcp_stream_client.rs"
+
+[[example]]
+name = "tcp_stream_server"
+path = "tcp_stream_server.rs"
+
+[[example]]
+name = "tcp_stream_server_macro"
+path = "tcp_stream_server_macro.rs"
+
+[[example]]
+name = "optional_methods_demo"
+path = "optional_methods_demo.rs"
+
+[[example]]
+name = "transport_macros_demo"
+path = "transport_macros_demo.rs"
+
+[[example]]
+name = "axum_stateful_server"
+path = "axum_stateful_server.rs"
+
+[[example]]
+name = "database_service"
+path = "database_service.rs"
+
+[[example]]
+name = "tcp_stateful_server"
+path = "tcp_stateful_server.rs"
+
+[[example]]
+name = "tower_http_simple"
+path = "tower_http_simple.rs"
+
+[[example]]
+name = "tower_tcp_simple"
+path = "tower_tcp_simple.rs"
+
+[[example]]
+name = "calculator_engine"
+path = "calculator_engine.rs"
+
+[[example]]
+name = "docs_demo"
+path = "docs_demo.rs"
+
+[[example]]
+name = "caching_demo"
+path = "caching_demo.rs"
+
+[[example]]
+name = "utils_demo"
+path = "utils_demo.rs"
