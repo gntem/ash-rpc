@@ -86,25 +86,6 @@ mod example {
             }
         }
 
-        fn update_session(&self, session_id: &str) -> Result<bool, ServiceError> {
-            let now = SystemTime::now()
-                .duration_since(UNIX_EPOCH)
-                .map_err(|e| ServiceError(format!("Time error: {}", e)))?
-                .as_secs();
-
-            let mut sessions = self
-                .sessions
-                .write()
-                .map_err(|e| ServiceError(format!("Lock error: {}", e)))?;
-
-            if let Some(session) = sessions.get_mut(session_id) {
-                session.last_active = now;
-                Ok(true)
-            } else {
-                Ok(false)
-            }
-        }
-
         fn delete_session(&self, session_id: &str) -> Result<bool, ServiceError> {
             let mut sessions = self
                 .sessions
@@ -118,11 +99,13 @@ mod example {
         StatefulMethodRegistry::new()
             .register_fn("create_session", |ctx: &SessionService, params, id| {
                 let user_id = params
+                    .as_ref()
                     .and_then(|p| p.get("user_id"))
                     .and_then(|u| u.as_str())
+                    .map(|s| s.to_string())
                     .ok_or_else(|| ServiceError("Missing user_id parameter".to_string()))?;
 
-                match ctx.create_session(user_id.to_string()) {
+                match ctx.create_session(user_id.clone()) {
                     Ok(session_id) => Ok(ResponseBuilder::new()
                         .success(serde_json::json!({
                             "session_id": session_id,
@@ -138,11 +121,13 @@ mod example {
             })
             .register_fn("get_session", |ctx: &SessionService, params, id| {
                 let session_id = params
+                    .as_ref()
                     .and_then(|p| p.get("session_id"))
                     .and_then(|s| s.as_str())
+                    .map(|s| s.to_string())
                     .ok_or_else(|| ServiceError("Missing session_id parameter".to_string()))?;
 
-                match ctx.get_session(session_id) {
+                match ctx.get_session(&session_id) {
                     Ok(Some(session)) => Ok(ResponseBuilder::new()
                         .success(serde_json::json!({
                             "valid": true,
@@ -166,11 +151,13 @@ mod example {
             })
             .register_fn("delete_session", |ctx: &SessionService, params, id| {
                 let session_id = params
+                    .as_ref()
                     .and_then(|p| p.get("session_id"))
                     .and_then(|s| s.as_str())
+                    .map(|s| s.to_string())
                     .ok_or_else(|| ServiceError("Missing session_id parameter".to_string()))?;
 
-                match ctx.delete_session(session_id) {
+                match ctx.delete_session(&session_id) {
                     Ok(deleted) => Ok(ResponseBuilder::new()
                         .success(serde_json::json!({
                             "deleted": deleted

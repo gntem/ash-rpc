@@ -180,26 +180,26 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
                     if let Some(content) = request_body.get("content") {
                         if let Some(json_content) = content.get("application/json") {
                             if let Some(schema) = json_content.get("schema") {
-                                if let Some(one_of) = schema.get("oneOf") {
-                                    if let serde_json::Value::Array(methods) = one_of {
-                                        for method in methods {
-                                            if let Some(props) = method.get("properties") {
-                                                if let Some(method_name) = props.get("method") {
-                                                    if let Some(enum_val) = method_name.get("enum")
-                                                    {
-                                                        if let serde_json::Value::Array(names) =
-                                                            enum_val
-                                                        {
-                                                            if let Some(name) = names.first() {
-                                                                println!("Method: {}", name);
-                                                                if let Some(params) =
-                                                                    props.get("params")
-                                                                {
-                                                                    println!("  Parameters: {}", serde_json::to_string_pretty(params).unwrap_or_default());
-                                                                }
-                                                                println!();
-                                                            }
+                                if let Some(serde_json::Value::Array(methods)) = schema.get("oneOf")
+                                {
+                                    for method in methods {
+                                        if let Some(props) = method.get("properties") {
+                                            if let Some(method_name) = props.get("method") {
+                                                if let Some(serde_json::Value::Array(names)) =
+                                                    method_name.get("enum")
+                                                {
+                                                    if let Some(name) = names.first() {
+                                                        println!("Method: {}", name);
+                                                        if let Some(params) = props.get("params") {
+                                                            println!(
+                                                                "  Parameters: {}",
+                                                                serde_json::to_string_pretty(
+                                                                    params
+                                                                )
+                                                                .unwrap_or_default()
+                                                            );
                                                         }
+                                                        println!();
                                                     }
                                                 }
                                             }
