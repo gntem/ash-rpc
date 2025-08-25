@@ -13,13 +13,12 @@
 /// # Example
 /// ```rust,no_run
 /// use ash_rpc_core::{MethodRegistry, transport::tcp::TcpServerBuilder};
-/// use std::sync::Arc;
 ///
 /// let mut registry = MethodRegistry::new();
 /// // ... register methods ...
 ///
 /// let server = TcpServerBuilder::new("127.0.0.1:8080")
-///     .processor(Arc::new(registry))
+///     .processor(registry)
 ///     .build()
 ///     .expect("Failed to create server");
 ///     
