@@ -1,8 +1,15 @@
 [package]
 name = "ash-rpc-examples"
 version = "0.1.0"
-edition = "2024"
+edition = "2021"
 publish = false
+
+[features]
+default = ["tcp", "tcp-stream", "axum"]
+tcp = ["ash-rpc-core/tcp"]
+tcp-stream = ["ash-rpc-core/tcp-stream"]
+axum = ["ash-rpc-core/axum"]
+tower = ["ash-rpc-core/tower"]
 
 [dependencies]
 ash-rpc-core = { path = "../core", features = ["tcp", "tcp-stream", "axum", "tower"] }

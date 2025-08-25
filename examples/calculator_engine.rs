@@ -21,6 +21,12 @@ pub struct CalculatorEngine {
     registry: Arc<MethodRegistry>,
 }
 
+impl Default for CalculatorEngine {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl CalculatorEngine {
     pub fn new() -> Self {
         let registry = MethodRegistry::new()

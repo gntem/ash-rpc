@@ -112,7 +112,7 @@ where
     }
 
     let mut body = vec![0u8; content_length];
-    if let Err(_) = tokio::io::AsyncReadExt::read_exact(&mut reader, &mut body).await {
+    if (tokio::io::AsyncReadExt::read_exact(&mut reader, &mut body).await).is_err() {
         let response = "HTTP/1.1 400 Bad Request\r\nContent-Length: 0\r\n\r\n";
         let _ = writer.write_all(response.as_bytes()).await;
         return;

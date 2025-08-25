@@ -60,7 +60,7 @@ fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     }
     
     if let Some(paths) = docs.get("paths") {
-        if let Some(root) = paths.get("/") {
+        if let Some(_root) = paths.get("/") {
             println!("Endpoint: / (POST)");
         }
     }
