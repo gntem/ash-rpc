@@ -65,13 +65,17 @@ publish-cli: check-all test-all
 	@echo "publishing ash-rpc-cli..."
 	cd cli && cargo publish
 
-publish-all: publish-core
+publish-all: check-all test-all
+	@echo "publishing ash-rpc-core..."
+	cd core && cargo publish
 	@echo "waiting 30 seconds for core to propagate..."
 	sleep 30
-	$(MAKE) publish-stateful
+	@echo "publishing ash-rpc-stateful..."
+	cd stateful && cargo publish
 	@echo "waiting 30 seconds for stateful to propagate..."
 	sleep 30
-	$(MAKE) publish-cli
+	@echo "publishing ash-rpc-cli..."
+	cd cli && cargo publish
 	@echo "all packages published successfully!"
 
 clean:
