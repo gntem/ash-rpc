@@ -1,7 +1,8 @@
-.PHONY: help publish-core publish-stateful publish-cli publish-all check-all test-all clean tag tag-version
+.PHONY: help publish-core publish-stateful publish-cli publish-all check-all test-all clean tag tag-version bump-version
 
 help:
 	@echo "available targets:"
+	@echo "  bump-version     - bump all crate versions with VERSION=0.2.0"
 	@echo "  tag              - create a new git tag for the next version (interactive)"
 	@echo "  tag-version      - create a new git tag with VERSION=v0.1.0"
 	@echo "  publish-core     - publish the core package"
@@ -15,7 +16,7 @@ help:
 
 tag:
 	@echo "enter version (e.g., v0.1.0):"
-	@read version; \
+	@read -r version; \
 	git tag $$version && \
 	git push origin $$version && \
 	echo "created and pushed tag: $$version"
@@ -28,6 +29,21 @@ tag-version:
 	@git tag $(VERSION) && \
 	git push origin $(VERSION) && \
 	echo "created and pushed tag: $(VERSION)"
+
+bump-version:
+	@if [ -z "$(VERSION)" ]; then \
+		echo "usage: make bump-version VERSION=0.2.0"; \
+		exit 1; \
+	fi
+	@echo "bumping all crate versions to $(VERSION)..."
+	@sed -i.bak 's/^version = ".*"/version = "$(VERSION)"/' core/Cargo.toml
+	@sed -i.bak 's/^version = ".*"/version = "$(VERSION)"/' stateful/Cargo.toml
+	@sed -i.bak 's/^version = ".*"/version = "$(VERSION)"/' cli/Cargo.toml
+	@sed -i.bak 's/ash-rpc-core = { version = "[^"]*"/ash-rpc-core = { version = "$(VERSION)"/g' stateful/Cargo.toml
+	@sed -i.bak 's/ash-rpc-core = { version = "[^"]*"/ash-rpc-core = { version = "$(VERSION)"/g' cli/Cargo.toml
+	@rm -f core/Cargo.toml.bak stateful/Cargo.toml.bak cli/Cargo.toml.bak
+	@echo "updated all crate versions to $(VERSION)"
+	@echo "run 'git add . && git commit -m \"bump version to $(VERSION)\"' to commit changes"
 
 check-all:
 	@echo "checking all packages..."

@@ -1,6 +1,6 @@
 [package]
 name = "ash-rpc-core"
-version = "0.1.0"
+version = "1.0.0"
 edition = "2021"
 description = "A comprehensive JSON-RPC 2.0 implementation with multiple transport layers and advanced features"
 license = "MIT"
