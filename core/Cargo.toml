@@ -3,13 +3,13 @@ name = "ash-rpc-core"
 version = "0.1.0"
 edition = "2021"
 description = "A comprehensive JSON-RPC 2.0 implementation with multiple transport layers and advanced features"
-license = "MIT OR Apache-2.0"
-repository = "https://github.com/username/ash-rpc"
+license = "MIT"
+repository = "https://github.com/gntem/ash-rpc"
 documentation = "https://docs.rs/ash-rpc-core"
-homepage = "https://github.com/username/ash-rpc"
+homepage = "https://github.com/gntem/ash-rpc"
 keywords = ["json-rpc", "rpc", "json", "tcp", "tower"]
 categories = ["network-programming", "web-programming", "asynchronous"]
-authors = ["Your Name <your.email@example.com>"]
+authors = ["Giorgos Ntemiris <ntemirisgiorgos3@gmail.com>"]
 readme = "../README.md"
 exclude = ["examples/"]
 

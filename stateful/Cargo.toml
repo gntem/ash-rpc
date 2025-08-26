@@ -3,13 +3,13 @@ name = "ash-rpc-stateful"
 version = "0.1.0"
 edition = "2021"
 description = "Stateful JSON-RPC handlers with shared context support for ash-rpc"
-license = "MIT OR Apache-2.0"
-repository = "https://github.com/username/ash-rpc"
+license = "MIT"
+repository = "https://github.com/gntem/ash-rpc"
 documentation = "https://docs.rs/ash-rpc-stateful"
-homepage = "https://github.com/username/ash-rpc"
+homepage = "https://github.com/gntem/ash-rpc"
 keywords = ["json-rpc", "rpc", "stateful", "context", "handlers"]
 categories = ["network-programming", "web-programming"]
-authors = ["Your Name <your.email@example.com>"]
+authors = ["Giorgos Ntemiris <ntemirisgiorgos3@gmail.com>"]
 readme = "../README.md"
 exclude = ["examples/"]
 
