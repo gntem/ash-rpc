@@ -26,13 +26,10 @@ This workspace contains four packages:
 
 ## Quick Start
 
-Add to your `Cargo.toml`:
-
-```toml
-[dependencies]
-ash-rpc-core = "0.1.0"
+```bash
+cargo add ash-rpc-core
 # Optional: for stateful handlers
-ash-rpc-stateful = "0.1.0"
+cargo add ash-rpc-stateful
 ```
 
 ### Basic Usage
