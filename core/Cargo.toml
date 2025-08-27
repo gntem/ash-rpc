@@ -23,6 +23,6 @@ tower = ["dep:tower"]
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-tokio = { version = "1.0", features = ["net", "io-util", "rt", "rt-multi-thread", "sync", "macros"], optional = true }
+tokio = { version = "1.47", features = ["net", "io-util", "rt", "rt-multi-thread", "sync", "macros"], optional = true }
 axum = { version = "0.7", optional = true }
 tower = { version = "0.4", optional = true }
