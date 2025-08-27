@@ -22,7 +22,7 @@ hyper = { version = "1.7", features = ["full"] }
 hyper-util = { version = "0.1", features = ["full"] }
 http-body-util = "0.1"
 axum = "0.7"
-uuid = { version = "1.0", features = ["v4"] }
+uuid = { version = "1.18", features = ["v4"] }
 
 [[example]]
 name = "basic"
