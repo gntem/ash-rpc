@@ -1,7 +1,7 @@
 #[cfg(feature = "axum")]
 mod example {
     use ash_rpc_core::{
-        transport::axum::AxumRpcLayer, Message, MessageProcessor, Response, ResponseBuilder,
+        Message, MessageProcessor, Response, ResponseBuilder, transport::axum::AxumRpcLayer,
     };
     use axum::Router;
 

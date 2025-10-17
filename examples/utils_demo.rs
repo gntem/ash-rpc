@@ -1,4 +1,4 @@
-use ash_rpc_core::{utils, MethodInfo};
+use ash_rpc_core::{MethodInfo, utils};
 use std::collections::HashMap;
 
 fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {

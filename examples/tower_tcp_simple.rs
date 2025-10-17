@@ -1,4 +1,4 @@
-use ash_rpc_core::{error_codes, Error, JsonRpcLayer, Request, Response};
+use ash_rpc_core::{Error, JsonRpcLayer, Request, Response, error_codes};
 use serde::{Deserialize, Serialize};
 use std::future::Future;
 use std::pin::Pin;
@@ -45,7 +45,7 @@ impl Service<Request> for CalculatorService {
                             return Err(Error::new(
                                 error_codes::INVALID_PARAMS,
                                 "Missing parameters for add method",
-                            ))
+                            ));
                         }
                     };
 
@@ -123,7 +123,9 @@ where
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     println!("Starting Tower TCP JSON-RPC Calculator Server on 127.0.0.1:8080");
-    println!("Connect with telnet and send: {{\"jsonrpc\":\"2.0\",\"method\":\"add\",\"params\":{{\"a\":5,\"b\":3}},\"id\":1}}");
+    println!(
+        "Connect with telnet and send: {{\"jsonrpc\":\"2.0\",\"method\":\"add\",\"params\":{{\"a\":5,\"b\":3}},\"id\":1}}"
+    );
 
     let service = ServiceBuilder::new()
         .layer(JsonRpcLayer::new().validate_version(true))

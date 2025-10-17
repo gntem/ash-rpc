@@ -163,7 +163,9 @@ mod example {
 
         println!("Stateful Counter TCP server listening on 127.0.0.1:3040");
         println!("Available methods: increment, get, reset");
-        println!("Example: {{\"jsonrpc\":\"2.0\",\"method\":\"increment\",\"params\":{{\"name\":\"user_clicks\"}},\"id\":1}}");
+        println!(
+            "Example: {{\"jsonrpc\":\"2.0\",\"method\":\"increment\",\"params\":{{\"name\":\"user_clicks\"}},\"id\":1}}"
+        );
 
         Ok(server.run()?)
     }
