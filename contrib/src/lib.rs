@@ -24,7 +24,7 @@ pub fn register_healthcheck(registry: MethodRegistry) -> MethodRegistry {
 #[cfg(test)]
 mod tests {
     #[cfg(feature = "healthcheck")]
-    use ash_rpc_core::{RequestBuilder, Message, MessageProcessor};
+    use ash_rpc_core::{Message, MessageProcessor, RequestBuilder};
 
     #[cfg(feature = "healthcheck")]
     #[test]
