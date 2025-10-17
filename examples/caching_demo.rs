@@ -1,4 +1,4 @@
-use ash_rpc_core::{rpc_success, MethodInfo, MethodRegistry};
+use ash_rpc_core::{MethodInfo, MethodRegistry, rpc_success};
 use std::time::Instant;
 
 fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {

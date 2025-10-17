@@ -1,6 +1,6 @@
 #[cfg(feature = "tcp-stream")]
 mod example {
-    use ash_rpc_core::{transport::tcp_stream::TcpStreamClientBuilder, Message, RequestBuilder};
+    use ash_rpc_core::{Message, RequestBuilder, transport::tcp_stream::TcpStreamClientBuilder};
 
     pub async fn run_client() -> Result<(), Box<dyn std::error::Error>> {
         println!("Connecting to TCP Stream server...");

@@ -1,6 +1,6 @@
 use ash_rpc_core::{
-    rpc_error, rpc_internal_error, rpc_invalid_params, rpc_success, MethodRegistry, Request,
-    Response,
+    MethodRegistry, Request, Response, rpc_error, rpc_internal_error, rpc_invalid_params,
+    rpc_success,
 };
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
@@ -35,7 +35,7 @@ impl CalculatorEngine {
                     Some(p) => match serde_json::from_value(p) {
                         Ok(params) => params,
                         Err(_) => {
-                            return rpc_invalid_params!("Invalid parameters for add method", id)
+                            return rpc_invalid_params!("Invalid parameters for add method", id);
                         }
                     },
                     None => return rpc_invalid_params!("Missing parameters for add method", id),
@@ -58,11 +58,11 @@ impl CalculatorEngine {
                             return rpc_invalid_params!(
                                 "Invalid parameters for subtract method",
                                 id
-                            )
+                            );
                         }
                     },
                     None => {
-                        return rpc_invalid_params!("Missing parameters for subtract method", id)
+                        return rpc_invalid_params!("Missing parameters for subtract method", id);
                     }
                 };
 
@@ -83,11 +83,11 @@ impl CalculatorEngine {
                             return rpc_invalid_params!(
                                 "Invalid parameters for multiply method",
                                 id
-                            )
+                            );
                         }
                     },
                     None => {
-                        return rpc_invalid_params!("Missing parameters for multiply method", id)
+                        return rpc_invalid_params!("Missing parameters for multiply method", id);
                     }
                 };
 
@@ -105,7 +105,7 @@ impl CalculatorEngine {
                     Some(p) => match serde_json::from_value(p) {
                         Ok(params) => params,
                         Err(_) => {
-                            return rpc_invalid_params!("Invalid parameters for divide method", id)
+                            return rpc_invalid_params!("Invalid parameters for divide method", id);
                         }
                     },
                     None => return rpc_invalid_params!("Missing parameters for divide method", id),

@@ -379,8 +379,8 @@ pub mod tcp_stream {
 
 #[cfg(feature = "axum")]
 pub mod axum {
-    use crate::{error_codes, ErrorBuilder, Message, MessageProcessor, Response, ResponseBuilder};
-    use axum::{extract::State, http::StatusCode, response::Json, routing::post, Router};
+    use crate::{ErrorBuilder, Message, MessageProcessor, Response, ResponseBuilder, error_codes};
+    use axum::{Router, extract::State, http::StatusCode, response::Json, routing::post};
     use std::sync::Arc;
 
     pub struct AxumRpcBuilder {

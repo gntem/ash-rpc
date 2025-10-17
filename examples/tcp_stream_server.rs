@@ -1,8 +1,8 @@
 #[cfg(feature = "tcp-stream")]
 mod example {
     use ash_rpc_core::{
-        transport::tcp_stream::TcpStreamServer, Message, MessageProcessor, Response,
-        ResponseBuilder,
+        Message, MessageProcessor, Response, ResponseBuilder,
+        transport::tcp_stream::TcpStreamServer,
     };
 
     struct EchoProcessor;
