@@ -54,7 +54,7 @@ dependencies = [
 
 [[package]]
 name = "ash-rpc-cli"
-version = "1.0.2"
+version = "1.0.3"
 dependencies = [
  "ash-rpc-core",
  "clap",
@@ -64,7 +64,7 @@ dependencies = [
 
 [[package]]
 name = "ash-rpc-core"
-version = "1.0.2"
+version = "1.0.3"
 dependencies = [
  "axum",
  "serde",
@@ -92,7 +92,7 @@ dependencies = [
 
 [[package]]
 name = "ash-rpc-stateful"
-version = "1.0.2"
+version = "1.0.3"
 dependencies = [
  "ash-rpc-core",
  "serde",
