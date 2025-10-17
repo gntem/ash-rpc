@@ -1,4 +1,4 @@
-use ash_rpc_core::{rpc_error, rpc_invalid_params, rpc_success, MethodInfo, MethodRegistry};
+use ash_rpc_core::{MethodInfo, MethodRegistry, rpc_error, rpc_invalid_params, rpc_success};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize)]

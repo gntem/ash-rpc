@@ -1,6 +1,6 @@
 use ash_rpc_core::{
-    error_codes, ErrorBuilder, Handler, Message, MessageProcessor, MethodRegistry, Request,
-    ResponseBuilder,
+    ErrorBuilder, Handler, Message, MessageProcessor, MethodRegistry, Request, ResponseBuilder,
+    error_codes,
 };
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {

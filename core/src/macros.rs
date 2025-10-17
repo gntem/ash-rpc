@@ -15,13 +15,13 @@
 /// ```
 #[macro_export]
 macro_rules! rpc_success {
-    ($result:expr, $id:expr) => {
+    ($result:expr_2021, $id:expr_2021) => {
         $crate::ResponseBuilder::new()
             .success(serde_json::json!($result))
             .id($id)
             .build()
     };
-    ($result:expr) => {
+    ($result:expr_2021) => {
         $crate::ResponseBuilder::new()
             .success(serde_json::json!($result))
             .id(None)
@@ -47,13 +47,13 @@ macro_rules! rpc_success {
 /// ```
 #[macro_export]
 macro_rules! rpc_error {
-    ($code:expr, $message:expr, $id:expr) => {
+    ($code:expr_2021, $message:expr_2021, $id:expr_2021) => {
         $crate::ResponseBuilder::new()
             .error($crate::ErrorBuilder::new($code, $message).build())
             .id($id)
             .build()
     };
-    ($code:expr, $message:expr) => {
+    ($code:expr_2021, $message:expr_2021) => {
         $crate::ResponseBuilder::new()
             .error($crate::ErrorBuilder::new($code, $message).build())
             .id(None)
@@ -73,7 +73,7 @@ macro_rules! rpc_error {
 /// ```
 #[macro_export]
 macro_rules! rpc_error_with_data {
-    ($code:expr, $message:expr, $data:expr, $id:expr) => {
+    ($code:expr_2021, $message:expr_2021, $data:expr_2021, $id:expr_2021) => {
         $crate::ResponseBuilder::new()
             .error(
                 $crate::ErrorBuilder::new($code, $message)
@@ -83,7 +83,7 @@ macro_rules! rpc_error_with_data {
             .id($id)
             .build()
     };
-    ($code:expr, $message:expr, $data:expr) => {
+    ($code:expr_2021, $message:expr_2021, $data:expr_2021) => {
         $crate::ResponseBuilder::new()
             .error(
                 $crate::ErrorBuilder::new($code, $message)
@@ -106,17 +106,17 @@ macro_rules! rpc_error_with_data {
 /// ```
 #[macro_export]
 macro_rules! rpc_invalid_params {
-    ($message:expr, $id:expr) => {
+    ($message:expr_2021, $id:expr_2021) => {
         rpc_error!($crate::error_codes::INVALID_PARAMS, $message, $id)
     };
-    ($message:expr) => {
+    ($message:expr_2021) => {
         rpc_error!($crate::error_codes::INVALID_PARAMS, $message)
     };
 }
 
 #[macro_export]
 macro_rules! rpc_method_not_found {
-    ($id:expr) => {
+    ($id:expr_2021) => {
         rpc_error!(
             $crate::error_codes::METHOD_NOT_FOUND,
             "Method not found",
@@ -130,20 +130,20 @@ macro_rules! rpc_method_not_found {
 
 #[macro_export]
 macro_rules! rpc_parse_error {
-    ($message:expr, $id:expr) => {
+    ($message:expr_2021, $id:expr_2021) => {
         rpc_error!($crate::error_codes::PARSE_ERROR, $message, $id)
     };
-    ($message:expr) => {
+    ($message:expr_2021) => {
         rpc_error!($crate::error_codes::PARSE_ERROR, $message)
     };
 }
 
 #[macro_export]
 macro_rules! rpc_internal_error {
-    ($message:expr, $id:expr) => {
+    ($message:expr_2021, $id:expr_2021) => {
         rpc_error!($crate::error_codes::INTERNAL_ERROR, $message, $id)
     };
-    ($message:expr) => {
+    ($message:expr_2021) => {
         rpc_error!($crate::error_codes::INTERNAL_ERROR, $message)
     };
 }
@@ -163,18 +163,18 @@ macro_rules! rpc_internal_error {
 /// ```
 #[macro_export]
 macro_rules! rpc_request {
-    ($method:expr, $params:expr, $id:expr) => {
+    ($method:expr_2021, $params:expr_2021, $id:expr_2021) => {
         $crate::RequestBuilder::new($method)
             .params(serde_json::json!($params))
             .id(serde_json::json!($id))
             .build()
     };
-    ($method:expr, $id:expr) => {
+    ($method:expr_2021, $id:expr_2021) => {
         $crate::RequestBuilder::new($method)
             .id(serde_json::json!($id))
             .build()
     };
-    ($method:expr) => {
+    ($method:expr_2021) => {
         $crate::RequestBuilder::new($method).build()
     };
 }
@@ -191,12 +191,12 @@ macro_rules! rpc_request {
 /// ```
 #[macro_export]
 macro_rules! rpc_notification {
-    ($method:expr, $params:expr) => {
+    ($method:expr_2021, $params:expr_2021) => {
         $crate::NotificationBuilder::new($method)
             .params(serde_json::json!($params))
             .build()
     };
-    ($method:expr) => {
+    ($method:expr_2021) => {
         $crate::NotificationBuilder::new($method).build()
     };
 }
@@ -213,12 +213,12 @@ macro_rules! rpc_notification {
 /// ```
 #[macro_export]
 macro_rules! rpc_error_obj {
-    ($code:expr, $message:expr, $data:expr) => {
+    ($code:expr_2021, $message:expr_2021, $data:expr_2021) => {
         $crate::ErrorBuilder::new($code, $message)
             .data(serde_json::json!($data))
             .build()
     };
-    ($code:expr, $message:expr) => {
+    ($code:expr_2021, $message:expr_2021) => {
         $crate::ErrorBuilder::new($code, $message).build()
     };
 }
@@ -240,7 +240,7 @@ macro_rules! rpc_error_obj {
 #[cfg(feature = "tcp")]
 #[macro_export]
 macro_rules! rpc_tcp_server {
-    ($addr:expr, $processor:expr) => {{
+    ($addr:expr_2021, $processor:expr_2021) => {{
         let server = $crate::transport::tcp::TcpServer::builder($addr)
             .processor($processor)
             .build()?;
@@ -261,7 +261,7 @@ macro_rules! rpc_tcp_server {
 #[cfg(feature = "tcp-stream")]
 #[macro_export]
 macro_rules! rpc_tcp_stream_server {
-    ($addr:expr, $processor:expr) => {
+    ($addr:expr_2021, $processor:expr_2021) => {
         async move {
             let server = $crate::transport::tcp_stream::TcpStreamServer::builder($addr)
                 .processor($processor)
@@ -284,7 +284,7 @@ macro_rules! rpc_tcp_stream_server {
 #[cfg(feature = "tcp-stream")]
 #[macro_export]
 macro_rules! rpc_tcp_stream_client {
-    ($addr:expr) => {{
+    ($addr:expr_2021) => {{
         $crate::transport::tcp_stream::TcpStreamClient::builder($addr)
             .build()
             .connect()
@@ -308,10 +308,10 @@ macro_rules! rpc_tcp_stream_client {
 #[cfg(feature = "axum")]
 #[macro_export]
 macro_rules! rpc_axum_router {
-    ($processor:expr, $path:expr) => {
+    ($processor:expr_2021, $path:expr_2021) => {
         $crate::transport::axum::create_rpc_router($processor, $path)
     };
-    ($processor:expr) => {
+    ($processor:expr_2021) => {
         $crate::transport::axum::create_rpc_router($processor, "/rpc")
     };
 }
@@ -329,14 +329,14 @@ macro_rules! rpc_axum_router {
 #[cfg(feature = "axum")]
 #[macro_export]
 macro_rules! rpc_axum_server {
-    ($addr:expr, $processor:expr, $path:expr) => {{
+    ($addr:expr_2021, $processor:expr_2021, $path:expr_2021) => {{
         let app = rpc_axum_router!($processor, $path);
         async move {
             let listener = tokio::net::TcpListener::bind($addr).await?;
             axum::serve(listener, app).await
         }
     }};
-    ($addr:expr, $processor:expr) => {{
+    ($addr:expr_2021, $processor:expr_2021) => {{
         let app = rpc_axum_router!($processor);
         async move {
             let listener = tokio::net::TcpListener::bind($addr).await?;
@@ -360,14 +360,14 @@ macro_rules! rpc_axum_server {
 #[cfg(feature = "axum")]
 #[macro_export]
 macro_rules! rpc_axum_layer {
-    ($processor:expr, $path:expr) => {
+    ($processor:expr_2021, $path:expr_2021) => {
         $crate::transport::axum::AxumRpcLayer::builder()
             .processor($processor)
             .path($path)
             .build()
             .expect("Failed to build Axum RPC layer")
     };
-    ($processor:expr) => {
+    ($processor:expr_2021) => {
         $crate::transport::axum::AxumRpcLayer::builder()
             .processor($processor)
             .build()

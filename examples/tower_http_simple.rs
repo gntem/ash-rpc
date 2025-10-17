@@ -1,4 +1,4 @@
-use ash_rpc_core::{error_codes, Error, JsonRpcLayer, Request, Response};
+use ash_rpc_core::{Error, JsonRpcLayer, Request, Response, error_codes};
 use serde::{Deserialize, Serialize};
 use std::future::Future;
 use std::pin::Pin;
@@ -44,7 +44,7 @@ impl Service<Request> for CalculatorService {
                             return Err(Error::new(
                                 error_codes::INVALID_PARAMS,
                                 "Missing parameters for add method",
-                            ))
+                            ));
                         }
                     };
 
@@ -147,8 +147,12 @@ where
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     println!("Starting Tower HTTP JSON-RPC Calculator Server on http://127.0.0.1:3000");
-    println!("Try: curl -X POST http://127.0.0.1:3000 -H \"Content-Type: application/json\" -d @test.json");
-    println!("Or create test.json with: {{\"jsonrpc\":\"2.0\",\"method\":\"add\",\"params\":{{\"a\":5,\"b\":3}},\"id\":1}}");
+    println!(
+        "Try: curl -X POST http://127.0.0.1:3000 -H \"Content-Type: application/json\" -d @test.json"
+    );
+    println!(
+        "Or create test.json with: {{\"jsonrpc\":\"2.0\",\"method\":\"add\",\"params\":{{\"a\":5,\"b\":3}},\"id\":1}}"
+    );
 
     let service = ServiceBuilder::new()
         .layer(JsonRpcLayer::new().validate_version(true))
