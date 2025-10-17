@@ -63,6 +63,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "ash-rpc-contrib"
+version = "0.1.0"
+dependencies = [
+ "ash-rpc-core",
+ "serde_json",
+]
+
+[[package]]
 name = "ash-rpc-core"
 version = "1.0.3"
 dependencies = [
@@ -77,6 +85,7 @@ dependencies = [
 name = "ash-rpc-examples"
 version = "0.1.0"
 dependencies = [
+ "ash-rpc-contrib",
  "ash-rpc-core",
  "ash-rpc-stateful",
  "axum",
