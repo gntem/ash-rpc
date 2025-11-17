@@ -13,5 +13,5 @@ default = []
 healthcheck = []
 
 [dependencies]
-ash-rpc-core = { path = "../core" }
+ash-rpc-core = { version = "1.0.3", path = "../core" }
 serde_json = "1.0"
