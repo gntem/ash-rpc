@@ -1,4 +1,4 @@
-.PHONY: help publish-core publish-stateful publish-cli publish-all check-all test-all clean tag tag-version bump-version
+.PHONY: help publish-core publish-stateful publish-contrib publish-cli publish-all check-all test-all clean tag tag-version bump-version
 
 help:
 	@echo "available targets:"
@@ -7,6 +7,7 @@ help:
 	@echo "  tag-version      - create a new git tag with VERSION=v0.1.0"
 	@echo "  publish-core     - publish the core package"
 	@echo "  publish-stateful - publish the stateful package"
+	@echo "  publish-contrib  - publish the contrib package"
 	@echo "  publish-cli      - publish the cli package"
 	@echo "  publish-all      - publish all packages in dependency order"
 	@echo "  check-all        - run cargo check on all packages"
@@ -38,10 +39,12 @@ bump-version:
 	@echo "bumping all crate versions to $(VERSION)..."
 	@sed -i.bak 's/^version = ".*"/version = "$(VERSION)"/' core/Cargo.toml
 	@sed -i.bak 's/^version = ".*"/version = "$(VERSION)"/' stateful/Cargo.toml
+	@sed -i.bak 's/^version = ".*"/version = "$(VERSION)"/' contrib/Cargo.toml
 	@sed -i.bak 's/^version = ".*"/version = "$(VERSION)"/' cli/Cargo.toml
 	@sed -i.bak 's/ash-rpc-core = { version = "[^"]*"/ash-rpc-core = { version = "$(VERSION)"/g' stateful/Cargo.toml
+	@sed -i.bak 's/ash-rpc-core = { version = "[^"]*"/ash-rpc-core = { version = "$(VERSION)"/g' contrib/Cargo.toml
 	@sed -i.bak 's/ash-rpc-core = { version = "[^"]*"/ash-rpc-core = { version = "$(VERSION)"/g' cli/Cargo.toml
-	@rm -f core/Cargo.toml.bak stateful/Cargo.toml.bak cli/Cargo.toml.bak
+	@rm -f core/Cargo.toml.bak stateful/Cargo.toml.bak contrib/Cargo.toml.bak cli/Cargo.toml.bak
 	@echo "updated all crate versions to $(VERSION)"
 	@echo "run 'git add . && git commit -m \"bump version to $(VERSION)\"' to commit changes"
 
@@ -61,6 +64,10 @@ publish-stateful: check-all test-all
 	@echo "publishing ash-rpc-stateful..."
 	cd stateful && cargo publish
 
+publish-contrib: check-all test-all
+	@echo "publishing ash-rpc-contrib..."
+	cd contrib && cargo publish
+
 publish-cli: check-all test-all
 	@echo "publishing ash-rpc-cli..."
 	cd cli && cargo publish
@@ -73,6 +80,10 @@ publish-all: check-all test-all
 	@echo "publishing ash-rpc-stateful..."
 	cd stateful && cargo publish
 	@echo "waiting 30 seconds for stateful to propagate..."
+	sleep 30
+	@echo "publishing ash-rpc-contrib..."
+	cd contrib && cargo publish
+	@echo "waiting 30 seconds for contrib to propagate..."
 	sleep 30
 	@echo "publishing ash-rpc-cli..."
 	cd cli && cargo publish
@@ -90,9 +101,13 @@ dry-run-stateful:
 	@echo "dry run publishing ash-rpc-stateful..."
 	cd stateful && cargo publish --dry-run
 
+dry-run-contrib:
+	@echo "dry run publishing ash-rpc-contrib..."
+	cd contrib && cargo publish --dry-run
+
 dry-run-cli:
 	@echo "dry run publishing ash-rpc-cli..."
 	cd cli && cargo publish --dry-run
 
-dry-run-all: dry-run-core dry-run-stateful dry-run-cli
+dry-run-all: dry-run-core dry-run-stateful dry-run-contrib dry-run-cli
 	@echo "all dry runs completed!"
