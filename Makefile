@@ -89,8 +89,8 @@ bump-version:
 	@sed -i.bak 's/^version = ".*"/version = "$(VERSION)"/' core/Cargo.toml
 	@sed -i.bak 's/^version = ".*"/version = "$(VERSION)"/' contrib/Cargo.toml
 	@sed -i.bak 's/ash-rpc-core = { version = "[^"]*"/ash-rpc-core = { version = "$(VERSION)"/g' contrib/Cargo.toml
-	@sed -i.bak 's/ash-rpc-core = { version = "[^"]*"/ash-rpc-core = { version = "$(VERSION)"/g' examples/Cargo.toml
-	@rm -f core/Cargo.toml.bak contrib/Cargo.toml.bak examples/Cargo.toml.bak
+	@sed -i.bak 's/ash-rpc-contrib = { version = "[^"]*"/ash-rpc-contrib = { version = "$(VERSION)"/g' core/Cargo.toml
+	@rm -f core/Cargo.toml.bak contrib/Cargo.toml.bak
 	@echo "✓ Updated all crate versions to $(VERSION)"
 	@echo "To commit: git add . && git commit -m \"Bump version to $(VERSION)\""
 
