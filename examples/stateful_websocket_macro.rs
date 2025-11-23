@@ -13,10 +13,10 @@
 //!
 //! ```bash
 //! # Install websocat if needed: cargo install websocat
-//! 
+//!
 //! # Connect and send commands
 //! websocat ws://127.0.0.1:9001
-//! 
+//!
 //! # Then type:
 //! {"jsonrpc":"2.0","method":"increment","params":{"counter":"clicks"},"id":1}
 //! {"jsonrpc":"2.0","method":"get","params":{"counter":"clicks"},"id":2}
@@ -26,8 +26,8 @@
 #[cfg(all(feature = "websocket", feature = "stateful"))]
 mod example {
     use ash_rpc_core::stateful::{ServiceContext, StatefulMethodRegistry};
-    use ash_rpc_core::{rpc_stateful_processor, rpc_stateful_registry, rpc_websocket_server};
     use ash_rpc_core::{ErrorBuilder, ResponseBuilder};
+    use ash_rpc_core::{rpc_stateful_processor, rpc_stateful_registry, rpc_websocket_server};
     use std::collections::HashMap;
     use std::sync::{Arc, Mutex};
 
@@ -197,7 +197,9 @@ mod example {
 mod example {
     pub async fn run() -> Result<(), Box<dyn std::error::Error>> {
         eprintln!("This example requires 'websocket' and 'stateful' features.");
-        eprintln!("Run with: cargo run --example stateful_websocket_macro --features websocket,stateful");
+        eprintln!(
+            "Run with: cargo run --example stateful_websocket_macro --features websocket,stateful"
+        );
         std::process::exit(1);
     }
 }

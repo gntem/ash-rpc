@@ -118,14 +118,15 @@ mod example {
     pub fn create_kv_registry() -> StatefulMethodRegistry<KeyValueService> {
         StatefulMethodRegistry::new()
             .register_fn("set", |ctx: &KeyValueService, params, id| {
-                let params = params.ok_or_else(|| ServiceError("Missing parameters".to_string()))?;
-                
+                let params =
+                    params.ok_or_else(|| ServiceError("Missing parameters".to_string()))?;
+
                 let key = params
                     .get("key")
                     .and_then(|k| k.as_str())
                     .ok_or_else(|| ServiceError("Missing 'key' parameter".to_string()))?
                     .to_string();
-                
+
                 let value = params
                     .get("value")
                     .ok_or_else(|| ServiceError("Missing 'value' parameter".to_string()))?
@@ -147,8 +148,9 @@ mod example {
                 }
             })
             .register_fn("get", |ctx: &KeyValueService, params, id| {
-                let params = params.ok_or_else(|| ServiceError("Missing parameters".to_string()))?;
-                
+                let params =
+                    params.ok_or_else(|| ServiceError("Missing parameters".to_string()))?;
+
                 let key = params
                     .get("key")
                     .and_then(|k| k.as_str())
@@ -178,8 +180,9 @@ mod example {
                 }
             })
             .register_fn("delete", |ctx: &KeyValueService, params, id| {
-                let params = params.ok_or_else(|| ServiceError("Missing parameters".to_string()))?;
-                
+                let params =
+                    params.ok_or_else(|| ServiceError("Missing parameters".to_string()))?;
+
                 let key = params
                     .get("key")
                     .and_then(|k| k.as_str())
@@ -224,8 +227,9 @@ mod example {
                 }
             })
             .register_fn("contains", |ctx: &KeyValueService, params, id| {
-                let params = params.ok_or_else(|| ServiceError("Missing parameters".to_string()))?;
-                
+                let params =
+                    params.ok_or_else(|| ServiceError("Missing parameters".to_string()))?;
+
                 let key = params
                     .get("key")
                     .and_then(|k| k.as_str())
@@ -293,13 +297,13 @@ mod example {
 
         // Create service with max 1000 keys
         let service = KeyValueService::new(1000);
-        
+
         // Create registry with methods
         let registry = create_kv_registry();
-        
+
         // Create processor
         let processor = StatefulProcessor::new(service, registry);
-        
+
         // Start TCP server
         let server = TcpServer::builder("127.0.0.1:8080")
             .processor(processor)
