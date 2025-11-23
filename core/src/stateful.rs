@@ -1,8 +1,8 @@
-//! # ash-rpc-stateful
+//! # Stateful JSON-RPC Handlers
 //!
 //! Stateful JSON-RPC handlers with shared context support.
 //!
-//! This crate extends ash-rpc-core with stateful method handlers that can access
+//! This module extends ash-rpc-core with stateful method handlers that can access
 //! shared application state through a service context.
 //!
 //! ## Features
@@ -12,7 +12,9 @@
 //! - **Method registry** - Organize stateful methods in a registry
 //! - **Type safety** - Generic over context types for compile-time guarantees
 
-use ash_rpc_core::{Message, MessageProcessor, Request, Response};
+use crate::{
+    ErrorBuilder, Message, MessageProcessor, Request, Response, ResponseBuilder, error_codes,
+};
 use std::sync::Arc;
 
 /// Trait for service context shared across stateful handlers
@@ -29,7 +31,7 @@ pub trait StatefulHandler<C: ServiceContext>: Send + Sync {
     fn handle_notification(
         &self,
         context: &C,
-        notification: ash_rpc_core::Notification,
+        notification: crate::Notification,
     ) -> Result<(), C::Error> {
         let _ = context;
         let _ = notification;
@@ -44,18 +46,14 @@ pub trait StatefulMethodHandler<C: ServiceContext>: Send + Sync {
         &self,
         context: &C,
         params: Option<serde_json::Value>,
-        id: Option<ash_rpc_core::RequestId>,
+        id: Option<crate::RequestId>,
     ) -> Result<Response, C::Error>;
 }
 
 impl<C, F> StatefulMethodHandler<C> for F
 where
     C: ServiceContext,
-    F: Fn(
-            &C,
-            Option<serde_json::Value>,
-            Option<ash_rpc_core::RequestId>,
-        ) -> Result<Response, C::Error>
+    F: Fn(&C, Option<serde_json::Value>, Option<crate::RequestId>) -> Result<Response, C::Error>
         + Send
         + Sync,
 {
@@ -63,7 +61,7 @@ where
         &self,
         context: &C,
         params: Option<serde_json::Value>,
-        id: Option<ash_rpc_core::RequestId>,
+        id: Option<crate::RequestId>,
     ) -> Result<Response, C::Error> {
         self(context, params, id)
     }
@@ -97,7 +95,7 @@ impl<C: ServiceContext> StatefulMethodRegistry<C> {
         F: Fn(
                 &C,
                 Option<serde_json::Value>,
-                Option<ash_rpc_core::RequestId>,
+                Option<crate::RequestId>,
             ) -> Result<Response, C::Error>
             + Send
             + Sync
@@ -113,19 +111,13 @@ impl<C: ServiceContext> StatefulMethodRegistry<C> {
         context: &C,
         method: &str,
         params: Option<serde_json::Value>,
-        id: Option<ash_rpc_core::RequestId>,
+        id: Option<crate::RequestId>,
     ) -> Result<Response, C::Error> {
         if let Some(handler) = self.methods.get(method) {
             handler.call(context, params, id)
         } else {
-            Ok(ash_rpc_core::ResponseBuilder::new()
-                .error(
-                    ash_rpc_core::ErrorBuilder::new(
-                        ash_rpc_core::error_codes::METHOD_NOT_FOUND,
-                        "Method not found",
-                    )
-                    .build(),
-                )
+            Ok(ResponseBuilder::new()
+                .error(ErrorBuilder::new(error_codes::METHOD_NOT_FOUND, "Method not found").build())
                 .id(id)
                 .build())
         }
@@ -146,19 +138,21 @@ impl<C: ServiceContext> StatefulHandler<C> for StatefulMethodRegistry<C> {
     fn handle_notification(
         &self,
         context: &C,
-        notification: ash_rpc_core::Notification,
+        notification: crate::Notification,
     ) -> Result<(), C::Error> {
         let _ = self.call(context, &notification.method, notification.params, None)?;
         Ok(())
     }
 }
 
+/// Stateful message processor that wraps a context and handler
 pub struct StatefulProcessor<C: ServiceContext> {
     context: Arc<C>,
     handler: Arc<dyn StatefulHandler<C>>,
 }
 
 impl<C: ServiceContext> StatefulProcessor<C> {
+    /// Create a new stateful processor with context and handler
     pub fn new<H>(context: C, handler: H) -> Self
     where
         H: StatefulHandler<C> + 'static,
@@ -169,6 +163,7 @@ impl<C: ServiceContext> StatefulProcessor<C> {
         }
     }
 
+    /// Create a builder for configuring the processor
     pub fn builder(context: C) -> StatefulProcessorBuilder<C> {
         StatefulProcessorBuilder::new(context)
     }
@@ -181,10 +176,10 @@ impl<C: ServiceContext> MessageProcessor for StatefulProcessor<C> {
                 match self.handler.handle_request(&self.context, request) {
                     Ok(response) => Some(response),
                     Err(_) => Some(
-                        ash_rpc_core::ResponseBuilder::new()
+                        ResponseBuilder::new()
                             .error(
-                                ash_rpc_core::ErrorBuilder::new(
-                                    ash_rpc_core::error_codes::INTERNAL_ERROR,
+                                ErrorBuilder::new(
+                                    error_codes::INTERNAL_ERROR,
                                     "Internal server error",
                                 )
                                 .build(),
@@ -205,12 +200,14 @@ impl<C: ServiceContext> MessageProcessor for StatefulProcessor<C> {
     }
 }
 
+/// Builder for creating stateful processors
 pub struct StatefulProcessorBuilder<C: ServiceContext> {
     context: C,
     handler: Option<Arc<dyn StatefulHandler<C>>>,
 }
 
 impl<C: ServiceContext> StatefulProcessorBuilder<C> {
+    /// Create a new builder with the given context
     pub fn new(context: C) -> Self {
         Self {
             context,
@@ -218,6 +215,7 @@ impl<C: ServiceContext> StatefulProcessorBuilder<C> {
         }
     }
 
+    /// Set the handler for processing requests
     pub fn handler<H>(mut self, handler: H) -> Self
     where
         H: StatefulHandler<C> + 'static,
@@ -226,11 +224,13 @@ impl<C: ServiceContext> StatefulProcessorBuilder<C> {
         self
     }
 
+    /// Set a method registry as the handler
     pub fn registry(mut self, registry: StatefulMethodRegistry<C>) -> Self {
         self.handler = Some(Arc::new(registry));
         self
     }
 
+    /// Build the stateful processor
     pub fn build(self) -> Result<StatefulProcessor<C>, Box<dyn std::error::Error>> {
         let handler = self.handler.ok_or("Handler not set")?;
         Ok(StatefulProcessor {

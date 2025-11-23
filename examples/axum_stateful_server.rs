@@ -1,8 +1,8 @@
 #[cfg(feature = "axum")]
 mod example {
+    use ash_rpc_core::stateful::{ServiceContext, StatefulMethodRegistry, StatefulProcessor};
     use ash_rpc_core::transport::axum::AxumRpcLayer;
     use ash_rpc_core::{ErrorBuilder, ResponseBuilder};
-    use ash_rpc_stateful::{ServiceContext, StatefulMethodRegistry, StatefulProcessor};
     use axum::Router;
     use std::collections::HashMap;
     use std::sync::{Arc, RwLock};

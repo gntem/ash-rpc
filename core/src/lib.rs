@@ -5,10 +5,12 @@
 //! ## Features
 //!
 //! - **Complete JSON-RPC 2.0 support** - Request, response, notification, and batch handling
-//! - **Multiple transports** - TCP, TCP streaming, HTTP via Axum, and Tower middleware
+//! - **Multiple transports** - TCP, TCP streaming, WebSocket, HTTP via Axum, and Tower middleware
+//! - **Stateful handlers** - Context-aware method handlers with shared application state
 //! - **Type-safe builders** - Fluent API for constructing requests and responses
 //! - **Method registry** - Organize and dispatch JSON-RPC methods
 //! - **Auto-documentation** - Generate OpenAPI/Swagger specs from method definitions
+//! - **Code generation** - CLI tool for generating boilerplate implementations
 //! - **Macro support** - Convenient macros for common response patterns
 //!
 //! ## Quick Start
@@ -51,6 +53,9 @@ pub mod utils;
 #[cfg(feature = "tower")]
 pub mod middleware;
 
+#[cfg(feature = "stateful")]
+pub mod stateful;
+
 // Re-export tokio for tcp-stream feature
 #[cfg(feature = "tcp-stream")]
 pub use tokio;
@@ -77,3 +82,7 @@ pub use transport::*;
 // Re-export middleware when tower feature is enabled
 #[cfg(feature = "tower")]
 pub use middleware::*;
+
+// Re-export stateful module when stateful feature is enabled
+#[cfg(feature = "stateful")]
+pub use stateful::*;

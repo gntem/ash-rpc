@@ -1,8 +1,8 @@
 #[cfg(feature = "tcp")]
 mod example {
+    use ash_rpc_core::stateful::{ServiceContext, StatefulMethodRegistry, StatefulProcessor};
     use ash_rpc_core::transport::tcp::TcpServer;
     use ash_rpc_core::{ErrorBuilder, ResponseBuilder};
-    use ash_rpc_stateful::{ServiceContext, StatefulMethodRegistry, StatefulProcessor};
     use std::collections::HashMap;
     use std::sync::{Arc, Mutex};
 

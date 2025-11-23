@@ -10,7 +10,7 @@ use std::path::Path;
 #[derive(Parser)]
 #[command(name = "ash-rpc-gen")]
 #[command(about = "Generate ready-to-use JSON-RPC implementation files")]
-#[command(version = "0.1.0")]
+#[command(version = "1.0.4")]
 struct Args {
     /// Method name to generate implementation for
     #[arg(short, long)]
@@ -68,6 +68,7 @@ fn generate_rpc_implementation(method_name: &str) -> String {
 //! ash-rpc-core = {{ features = ["tcp"] }}  # For TCP transport
 //! # OR ash-rpc-core = {{ features = ["tcp-stream"] }}  # For TCP streaming
 //! # OR ash-rpc-core = {{ features = ["axum"] }}  # For HTTP/Axum transport
+//! # OR ash-rpc-core = {{ features = ["websocket"] }}  # For WebSocket transport
 //! ```
 
 use ash_rpc_core::*;
@@ -131,23 +132,31 @@ fn main() {{
     //     use ash_rpc_core::transport::tcp_stream::TcpStreamServer;
     //     let server = TcpStreamServer::builder("127.0.0.1:8080")
     //         .processor(registry)
-    //         .build();
+    //         .build()?;
+    //     server.run().await
+    // }}
+    
+    // For WebSocket server (requires "websocket" feature):
+    // #[tokio::main]
+    // async fn main() -> Result<(), Box<dyn std::error::Error>> {{
+    //     use ash_rpc_core::transport::websocket::WebSocketServer;
+    //     let server = WebSocketServer::builder("127.0.0.1:9001")
+    //         .processor(registry)
+    //         .build()?;
     //     server.run().await
     // }}
     
     // For HTTP server with Axum (requires "axum" feature):
     // #[tokio::main] 
     // async fn main() -> Result<(), Box<dyn std::error::Error>> {{
-    //     use ash_rpc_core::transport::axum::{{AxumRpcLayer, AxumRpcLayerBuilder}};
-    //     use axum::{{routing::post, Router}};
+    //     use ash_rpc_core::transport::axum::AxumRpcLayer;
+    //     use axum::Router;
     //     
-    //     let rpc_layer = AxumRpcLayerBuilder::new()
+    //     let rpc_layer = AxumRpcLayer::builder()
     //         .processor(registry)
-    //         .build();
+    //         .build()?;
     //     
-    //     let app = Router::new()
-    //         .route("/rpc", post(|| async {{ "RPC endpoint" }}))
-    //         .layer(rpc_layer);
+    //     let app = rpc_layer.into_router();
     //     
     //     let listener = tokio::net::TcpListener::bind("127.0.0.1:3000").await?;
     //     axum::serve(listener, app).await?;
