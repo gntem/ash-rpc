@@ -595,70 +595,70 @@ pub mod websocket {
         // Process incoming messages
         while let Some(msg) = read.next().await {
             match msg {
-                Ok(WsMessage::Text(text)) => {
-                    match serde_json::from_str::<Message>(&text) {
-                        Ok(message) => {
-                            if let Some(response) = processor.process_message(message) {
-                                let response_json = serde_json::to_string(&response)?;
-                                if tx.send(response_json).await.is_err() {
-                                    break;
-                                }
-                            }
-                        }
-                        Err(e) => {
-                            let error_response = ResponseBuilder::new()
-                                .error(
-                                    ErrorBuilder::new(
-                                        error_codes::PARSE_ERROR,
-                                        format!("Parse error: {e}"),
-                                    )
-                                    .build(),
-                                )
-                                .id(None)
-                                .build();
-
-                            let response_json = serde_json::to_string(&error_response)?;
+                Ok(WsMessage::Text(text)) => match serde_json::from_str::<Message>(&text) {
+                    Ok(message) => {
+                        if let Some(response) = processor.process_message(message) {
+                            let response_json = serde_json::to_string(&response)?;
                             if tx.send(response_json).await.is_err() {
                                 break;
                             }
                         }
                     }
-                }
-                Ok(WsMessage::Binary(data)) => {
-                    match serde_json::from_slice::<Message>(&data) {
-                        Ok(message) => {
-                            if let Some(response) = processor.process_message(message) {
-                                let response_json = serde_json::to_string(&response)?;
-                                if tx.send(response_json).await.is_err() {
-                                    break;
-                                }
-                            }
-                        }
-                        Err(e) => {
-                            let error_response = ResponseBuilder::new()
-                                .error(
-                                    ErrorBuilder::new(
-                                        error_codes::PARSE_ERROR,
-                                        format!("Parse error: {e}"),
-                                    )
-                                    .build(),
+                    Err(e) => {
+                        let error_response = ResponseBuilder::new()
+                            .error(
+                                ErrorBuilder::new(
+                                    error_codes::PARSE_ERROR,
+                                    format!("Parse error: {e}"),
                                 )
-                                .id(None)
-                                .build();
+                                .build(),
+                            )
+                            .id(None)
+                            .build();
 
-                            let response_json = serde_json::to_string(&error_response)?;
+                        let response_json = serde_json::to_string(&error_response)?;
+                        if tx.send(response_json).await.is_err() {
+                            break;
+                        }
+                    }
+                },
+                Ok(WsMessage::Binary(data)) => match serde_json::from_slice::<Message>(&data) {
+                    Ok(message) => {
+                        if let Some(response) = processor.process_message(message) {
+                            let response_json = serde_json::to_string(&response)?;
                             if tx.send(response_json).await.is_err() {
                                 break;
                             }
                         }
                     }
-                }
+                    Err(e) => {
+                        let error_response = ResponseBuilder::new()
+                            .error(
+                                ErrorBuilder::new(
+                                    error_codes::PARSE_ERROR,
+                                    format!("Parse error: {e}"),
+                                )
+                                .build(),
+                            )
+                            .id(None)
+                            .build();
+
+                        let response_json = serde_json::to_string(&error_response)?;
+                        if tx.send(response_json).await.is_err() {
+                            break;
+                        }
+                    }
+                },
                 Ok(WsMessage::Close(_)) => {
                     break;
                 }
                 Ok(WsMessage::Ping(data)) => {
                     // Respond to ping with pong
-                    if tx.send(format!("{{\"pong\":{}}}", data.len())).await.is_err() {
+                    if tx
+                        .send(format!("{{\"pong\":{}}}", data.len()))
+                        .await
+                        .is_err()
+                    {
                         break;
                     }
                 }
@@ -702,7 +702,11 @@ pub mod websocket {
     }
 
     impl WebSocketClient {
-        fn new(ws_stream: tokio_tungstenite::WebSocketStream<tokio_tungstenite::MaybeTlsStream<TcpStream>>) -> Self {
+        fn new(
+            ws_stream: tokio_tungstenite::WebSocketStream<
+                tokio_tungstenite::MaybeTlsStream<TcpStream>,
+            >,
+        ) -> Self {
             let (mut write, mut read) = ws_stream.split();
             let (write_tx, mut write_rx) = mpsc::channel::<String>(100);
             let (read_tx, read_rx) = mpsc::channel::<String>(100);

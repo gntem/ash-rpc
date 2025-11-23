@@ -44,11 +44,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 if let Some(name) = params.get("name").and_then(|v| v.as_str()) {
                     rpc_success!(format!("Hello, {name}!"), id)
                 } else {
-                    rpc_error!(
-                        error_codes::INVALID_PARAMS,
-                        "Missing 'name' parameter",
-                        id
-                    )
+                    rpc_error!(error_codes::INVALID_PARAMS, "Missing 'name' parameter", id)
                 }
             } else {
                 rpc_error!(error_codes::INVALID_PARAMS, "Parameters required", id)
@@ -71,8 +67,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("WebSocket JSON-RPC server starting on ws://127.0.0.1:9001");
     println!("Available methods: ping, echo, add, greet, get_time");
     println!("\nExample using websocat:");
-    println!("  echo '{{\"jsonrpc\":\"2.0\",\"method\":\"ping\",\"id\":1}}' | websocat ws://127.0.0.1:9001");
-    println!("  echo '{{\"jsonrpc\":\"2.0\",\"method\":\"add\",\"params\":[5,3],\"id\":2}}' | websocat ws://127.0.0.1:9001");
+    println!(
+        "  echo '{{\"jsonrpc\":\"2.0\",\"method\":\"ping\",\"id\":1}}' | websocat ws://127.0.0.1:9001"
+    );
+    println!(
+        "  echo '{{\"jsonrpc\":\"2.0\",\"method\":\"add\",\"params\":[5,3],\"id\":2}}' | websocat ws://127.0.0.1:9001"
+    );
 
     server.run().await?;
 

@@ -25,7 +25,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     client.send_message(&Message::Request(ping_request)).await?;
     if let Some(response) = client.recv_response().await? {
-        println!("Ping response: {}", serde_json::to_string_pretty(&response)?);
+        println!(
+            "Ping response: {}",
+            serde_json::to_string_pretty(&response)?
+        );
     }
 
     // Send add request
@@ -36,7 +39,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     client.send_message(&Message::Request(add_request)).await?;
     if let Some(response) = client.recv_response().await? {
-        println!("\nAdd response: {}", serde_json::to_string_pretty(&response)?);
+        println!(
+            "\nAdd response: {}",
+            serde_json::to_string_pretty(&response)?
+        );
     }
 
     // Send greet request
@@ -45,9 +51,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .id(serde_json::Value::Number(3.into()))
         .build();
 
-    client.send_message(&Message::Request(greet_request)).await?;
+    client
+        .send_message(&Message::Request(greet_request))
+        .await?;
     if let Some(response) = client.recv_response().await? {
-        println!("\nGreet response: {}", serde_json::to_string_pretty(&response)?);
+        println!(
+            "\nGreet response: {}",
+            serde_json::to_string_pretty(&response)?
+        );
     }
 
     // Send echo request
@@ -58,7 +69,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     client.send_message(&Message::Request(echo_request)).await?;
     if let Some(response) = client.recv_response().await? {
-        println!("\nEcho response: {}", serde_json::to_string_pretty(&response)?);
+        println!(
+            "\nEcho response: {}",
+            serde_json::to_string_pretty(&response)?
+        );
     }
 
     // Send get_time request
@@ -68,7 +82,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     client.send_message(&Message::Request(time_request)).await?;
     if let Some(response) = client.recv_response().await? {
-        println!("\nTime response: {}", serde_json::to_string_pretty(&response)?);
+        println!(
+            "\nTime response: {}",
+            serde_json::to_string_pretty(&response)?
+        );
     }
 
     // Test error handling with invalid method
@@ -76,9 +93,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .id(serde_json::Value::Number(6.into()))
         .build();
 
-    client.send_message(&Message::Request(invalid_request)).await?;
+    client
+        .send_message(&Message::Request(invalid_request))
+        .await?;
     if let Some(response) = client.recv_response().await? {
-        println!("\nInvalid method response: {}", serde_json::to_string_pretty(&response)?);
+        println!(
+            "\nInvalid method response: {}",
+            serde_json::to_string_pretty(&response)?
+        );
     }
 
     println!("\nAll requests completed successfully!");

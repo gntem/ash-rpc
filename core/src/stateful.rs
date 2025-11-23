@@ -12,7 +12,9 @@
 //! - **Method registry** - Organize stateful methods in a registry
 //! - **Type safety** - Generic over context types for compile-time guarantees
 
-use crate::{Message, MessageProcessor, Request, Response, ResponseBuilder, ErrorBuilder, error_codes};
+use crate::{
+    ErrorBuilder, Message, MessageProcessor, Request, Response, ResponseBuilder, error_codes,
+};
 use std::sync::Arc;
 
 /// Trait for service context shared across stateful handlers
@@ -51,11 +53,7 @@ pub trait StatefulMethodHandler<C: ServiceContext>: Send + Sync {
 impl<C, F> StatefulMethodHandler<C> for F
 where
     C: ServiceContext,
-    F: Fn(
-            &C,
-            Option<serde_json::Value>,
-            Option<crate::RequestId>,
-        ) -> Result<Response, C::Error>
+    F: Fn(&C, Option<serde_json::Value>, Option<crate::RequestId>) -> Result<Response, C::Error>
         + Send
         + Sync,
 {
@@ -119,13 +117,7 @@ impl<C: ServiceContext> StatefulMethodRegistry<C> {
             handler.call(context, params, id)
         } else {
             Ok(ResponseBuilder::new()
-                .error(
-                    ErrorBuilder::new(
-                        error_codes::METHOD_NOT_FOUND,
-                        "Method not found",
-                    )
-                    .build(),
-                )
+                .error(ErrorBuilder::new(error_codes::METHOD_NOT_FOUND, "Method not found").build())
                 .id(id)
                 .build())
         }

@@ -112,7 +112,9 @@ path = "healthcheck_example.rs"
 [[example]]
 name = "websocket_server"
 path = "websocket_server.rs"
+required-features = ["websocket"]
 
 [[example]]
 name = "websocket_client"
 path = "websocket_client.rs"
+required-features = ["websocket"]
