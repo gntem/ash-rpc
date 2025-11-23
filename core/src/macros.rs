@@ -374,3 +374,90 @@ macro_rules! rpc_axum_layer {
             .expect("Failed to build Axum RPC layer")
     };
 }
+
+/// Create and run a WebSocket JSON-RPC server
+///
+/// # Usage:
+/// ```ignore
+/// // Basic WebSocket server
+/// rpc_websocket_server!("127.0.0.1:9001", registry).await?;
+///
+/// // With error handling
+/// rpc_websocket_server!("127.0.0.1:9001", registry).await.expect("Server failed");
+/// ```
+#[cfg(feature = "websocket")]
+#[macro_export]
+macro_rules! rpc_websocket_server {
+    ($addr:expr_2021, $processor:expr_2021) => {
+        async move {
+            let server = $crate::transport::websocket::WebSocketServer::builder($addr)
+                .processor($processor)
+                .build()?;
+            server.run().await
+        }
+    };
+}
+
+//
+// Stateful Macros - Easy stateful processor creation
+//
+
+/// Create a stateful JSON-RPC processor
+///
+/// # Usage:
+/// ```ignore
+/// // Create processor with context and handler
+/// let processor = rpc_stateful_processor!(service_context, handler);
+///
+/// // Create processor with context and method registry
+/// let processor = rpc_stateful_processor!(service_context, registry);
+/// ```
+#[cfg(feature = "stateful")]
+#[macro_export]
+macro_rules! rpc_stateful_processor {
+    ($context:expr_2021, $handler:expr_2021) => {
+        $crate::stateful::StatefulProcessor::new($context, $handler)
+    };
+}
+
+/// Create a stateful method registry
+///
+/// # Usage:
+/// ```ignore
+/// // Create empty registry
+/// let registry: StatefulMethodRegistry<MyContext> = rpc_stateful_registry!();
+///
+/// // Add methods with builder pattern
+/// let registry = rpc_stateful_registry!()
+///     .register_fn("method1", handler1)
+///     .register_fn("method2", handler2);
+/// ```
+#[cfg(feature = "stateful")]
+#[macro_export]
+macro_rules! rpc_stateful_registry {
+    () => {
+        $crate::stateful::StatefulMethodRegistry::new()
+    };
+}
+
+/// Create a stateful processor with builder pattern
+///
+/// # Usage:
+/// ```ignore
+/// // Create processor with builder
+/// let processor = rpc_stateful_builder!(context)
+///     .handler(handler)
+///     .build()?;
+///
+/// // Create processor with registry
+/// let processor = rpc_stateful_builder!(context)
+///     .registry(registry)
+///     .build()?;
+/// ```
+#[cfg(feature = "stateful")]
+#[macro_export]
+macro_rules! rpc_stateful_builder {
+    ($context:expr_2021) => {
+        $crate::stateful::StatefulProcessor::builder($context)
+    };
+}

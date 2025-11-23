@@ -46,6 +46,7 @@ hyper = { version = "1.7", features = ["full"] }
 hyper-util = { version = "0.1", features = ["full"] }
 http-body-util = "0.1"
 tower = "0.5"
+dashmap = "6.1"
 
 [[example]]
 name = "basic"
@@ -152,3 +153,13 @@ required-features = ["websocket"]
 name = "websocket_client"
 path = "../examples/websocket_client.rs"
 required-features = ["websocket"]
+
+[[example]]
+name = "dashmap_stateful_server"
+path = "../examples/dashmap_stateful_server.rs"
+required-features = ["tcp", "stateful"]
+
+[[example]]
+name = "stateful_websocket_macro"
+path = "../examples/stateful_websocket_macro.rs"
+required-features = ["websocket", "stateful"]
