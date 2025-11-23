@@ -17,19 +17,18 @@ A comprehensive, modular JSON-RPC 2.0 implementation for Rust with multiple tran
 
 ## Packages
 
-This workspace contains four packages:
+This workspace contains the following packages:
 
-- **`ash-rpc-core`** - Core JSON-RPC implementation with transport support
-- **`ash-rpc-stateful`** - Stateful JSON-RPC handlers with shared context
-- **`ash-rpc-cli`** - Code generation CLI tool
+- **`ash-rpc-core`** - Core JSON-RPC implementation with transport support, stateful handlers, and CLI tool
+- **`ash-rpc-contrib`** - Additional utilities and middleware (health checks, caching, etc.)
 - **`examples`** - Comprehensive examples and demos
 
 ## Quick Start
 
 ```bash
 cargo add ash-rpc-core
-# Optional: for stateful handlers
-cargo add ash-rpc-stateful
+# Optional: enable features as needed
+cargo add ash-rpc-core --features stateful,websocket,axum
 ```
 
 ### Basic Usage
@@ -182,23 +181,34 @@ let middleware = ServiceBuilder::new()
 ### Stateful Handlers
 
 ```rust
-use ash_rpc_stateful::*;
+use ash_rpc_core::stateful::*;
 use std::sync::{Arc, Mutex};
 
-#[derive(Clone)]
+#[derive(Debug)]
+struct AppError(String);
+
+impl std::fmt::Display for AppError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+impl std::error::Error for AppError {}
+
 struct AppContext {
     counter: Arc<Mutex<i32>>,
 }
 
-impl ServiceContext for AppContext {}
+impl ServiceContext for AppContext {
+    type Error = AppError;
+}
 
 let context = AppContext {
     counter: Arc::new(Mutex::new(0)),
 };
 
-let mut registry = StatefulMethodRegistry::new(context);
-
-registry.register_stateful("increment", |ctx, _params, id| {
+let registry = StatefulMethodRegistry::new()
+    .register_fn("increment", |ctx: &AppContext, _params, id| {
     let mut counter = ctx.counter.lock().unwrap();
     *counter += 1;
     rpc_success!(*counter, id)
@@ -258,18 +268,19 @@ Available features:
 - `websocket` - WebSocket transport support
 - `axum` - Axum HTTP server integration
 - `tower` - Tower middleware support
-- `docs` - Documentation generation
-- `macros` - Convenience macros
+- `stateful` - Stateful handlers with shared context
+- `cli` - Code generation CLI tool
 
 ## CLI Tool
 
 Generate boilerplate code with the CLI tool:
 
 ```bash
-cargo install ash-rpc-cli
+# Install the CLI tool
+cargo install ash-rpc-core --features cli
 
-# Generate a new service
-ash-rpc-gen --template server --name MyService
+# Generate a new method implementation
+ash-rpc-gen --method my_method --output src/my_method.rs
 ```
 
 ## Performance

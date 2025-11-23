@@ -13,6 +13,11 @@ authors = ["Giorgos Ntemiris <ntemirisgiorgos3@gmail.com>"]
 readme = "../README.md"
 exclude = ["examples/"]
 
+[[bin]]
+name = "ash-rpc-gen"
+path = "src/bin/ash-rpc-gen.rs"
+required-features = ["cli"]
+
 [features]
 default = []
 tcp = []
@@ -20,6 +25,8 @@ tcp-stream = ["tokio"]
 axum = ["dep:axum", "tokio"]
 tower = ["dep:tower"]
 websocket = ["tokio", "tokio-tungstenite", "futures-util"]
+stateful = []
+cli = ["dep:clap"]
 
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }
@@ -29,3 +36,4 @@ axum = { version = "0.8", optional = true }
 tower = { version = "0.5", optional = true }
 tokio-tungstenite = { version = "0.24", optional = true }
 futures-util = { version = "0.3", optional = true }
+clap = { version = "4.5", features = ["derive"], optional = true }

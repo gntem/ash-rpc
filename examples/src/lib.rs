@@ -6,5 +6,5 @@
 
 #![allow(unused)]
 
+// Re-export for use in examples
 pub use ash_rpc_core;
-pub use ash_rpc_stateful;

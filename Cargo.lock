@@ -53,16 +53,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "ash-rpc-cli"
-version = "1.0.4"
-dependencies = [
- "ash-rpc-core",
- "clap",
- "serde",
- "serde_json",
-]
-
-[[package]]
 name = "ash-rpc-contrib"
 version = "1.0.4"
 dependencies = [
@@ -75,6 +65,7 @@ name = "ash-rpc-core"
 version = "1.0.4"
 dependencies = [
  "axum",
+ "clap",
  "futures-util",
  "serde",
  "serde_json",
@@ -89,7 +80,6 @@ version = "0.1.0"
 dependencies = [
  "ash-rpc-contrib",
  "ash-rpc-core",
- "ash-rpc-stateful",
  "axum",
  "http-body-util",
  "hyper",
@@ -98,16 +88,6 @@ dependencies = [
  "serde_json",
  "tokio",
  "tower",
- "uuid",
-]
-
-[[package]]
-name = "ash-rpc-stateful"
-version = "1.0.4"
-dependencies = [
- "ash-rpc-core",
- "serde",
- "serde_json",
  "uuid",
 ]
 
