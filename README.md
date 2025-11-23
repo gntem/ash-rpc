@@ -5,7 +5,7 @@ A comprehensive, modular JSON-RPC 2.0 implementation for Rust with multiple tran
 ## Features
 
 - Full implementation with requests, responses, notifications, and batch operations
-- TCP, TCP streaming, HTTP via Axum, and Tower middleware
+- TCP, TCP streaming, WebSocket, HTTP via Axum, and Tower middleware
 - Fluent API for constructing requests and responses
 - Organize and dispatch JSON-RPC methods with automatic routing
 - Generate OpenAPI/Swagger specifications from method definitions
@@ -118,6 +118,53 @@ async fn main() {
 }
 ```
 
+### WebSocket Server
+
+```rust
+use ash_rpc_core::*;
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let registry = MethodRegistry::new()
+        .register("ping", |_params, id| rpc_success!("pong", id))
+        .register("echo", |params, id| rpc_success!(params, id));
+    
+    let server = transport::websocket::WebSocketServer::builder("127.0.0.1:9001")
+        .processor(registry)
+        .build()?;
+    
+    println!("WebSocket JSON-RPC server on ws://127.0.0.1:9001");
+    server.run().await?;
+    Ok(())
+}
+```
+
+### WebSocket Client
+
+```rust
+use ash_rpc_core::*;
+use serde_json::json;
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let mut client = transport::websocket::WebSocketClientBuilder::new("ws://127.0.0.1:9001")
+        .connect()
+        .await?;
+    
+    let request = RequestBuilder::new("ping")
+        .id(json!(1))
+        .build();
+    
+    client.send_message(&Message::Request(request)).await?;
+    
+    if let Some(response) = client.recv_response().await? {
+        println!("Response: {:?}", response);
+    }
+    
+    Ok(())
+}
+```
+
 ### Tower Middleware
 
 ```rust
@@ -207,7 +254,9 @@ ash-rpc-core = { version = "0.1.0", features = ["tcp", "tower", "docs"] }
 Available features:
 
 - `tcp` - TCP transport support
-- `tcp-stream` - TCP streaming support  
+- `tcp-stream` - TCP streaming support
+- `websocket` - WebSocket transport support
+- `axum` - Axum HTTP server integration
 - `tower` - Tower middleware support
 - `docs` - Documentation generation
 - `macros` - Convenience macros

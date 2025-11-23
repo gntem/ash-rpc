@@ -10,6 +10,7 @@ tcp = ["ash-rpc-core/tcp"]
 tcp-stream = ["ash-rpc-core/tcp-stream"]
 axum = ["ash-rpc-core/axum"]
 tower = ["ash-rpc-core/tower"]
+websocket = ["ash-rpc-core/websocket"]
 
 [dependencies]
 ash-rpc-core = { path = "../core", features = ["tcp", "tcp-stream", "axum", "tower"] }
@@ -108,3 +109,11 @@ path = "utils_demo.rs"
 [[example]]
 name = "healthcheck_example"
 path = "healthcheck_example.rs"
+
+[[example]]
+name = "websocket_server"
+path = "websocket_server.rs"
+
+[[example]]
+name = "websocket_client"
+path = "websocket_client.rs"
