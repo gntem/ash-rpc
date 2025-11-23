@@ -1,6 +1,6 @@
 [package]
 name = "ash-rpc-core"
-version = "1.0.4"
+version = "2.0.0"
 edition = "2024"
 description = "A comprehensive JSON-RPC 2.0 implementation with multiple transport layers and advanced features"
 license = "MIT"
@@ -39,7 +39,7 @@ futures-util = { version = "0.3", optional = true }
 clap = { version = "4.5", features = ["derive"], optional = true }
 
 [dev-dependencies]
-ash-rpc-contrib = { version = "1.0.4", path = "../contrib", features = ["healthcheck"] }
+ash-rpc-contrib = { version = "2.0.0", path = "../contrib", features = ["healthcheck"] }
 tokio = { version = "1.47", features = ["full"] }
 uuid = { version = "1.18", features = ["v4"] }
 hyper = { version = "1.7", features = ["full"] }
