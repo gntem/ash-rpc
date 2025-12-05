@@ -586,7 +586,7 @@ pub mod websocket {
         // Spawn task to send responses
         tokio::spawn(async move {
             while let Some(response) = rx.recv().await {
-                if write.send(WsMessage::Text(response)).await.is_err() {
+                if write.send(WsMessage::Text(response.into())).await.is_err() {
                     break;
                 }
             }
@@ -714,7 +714,7 @@ pub mod websocket {
             // Spawn task to send messages
             tokio::spawn(async move {
                 while let Some(message) = write_rx.recv().await {
-                    if write.send(WsMessage::Text(message)).await.is_err() {
+                    if write.send(WsMessage::Text(message.into())).await.is_err() {
                         break;
                     }
                 }
@@ -725,7 +725,7 @@ pub mod websocket {
                 while let Some(msg) = read.next().await {
                     match msg {
                         Ok(WsMessage::Text(text)) => {
-                            if read_tx.send(text).await.is_err() {
+                            if read_tx.send(text.to_string()).await.is_err() {
                                 break;
                             }
                         }
