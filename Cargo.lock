@@ -54,7 +54,7 @@ dependencies = [
 
 [[package]]
 name = "ash-rpc-contrib"
-version = "2.0.1"
+version = "2.1.0"
 dependencies = [
  "ash-rpc-core",
  "serde_json",
@@ -62,7 +62,7 @@ dependencies = [
 
 [[package]]
 name = "ash-rpc-core"
-version = "2.0.1"
+version = "2.1.0"
 dependencies = [
  "ash-rpc-contrib",
  "axum",
