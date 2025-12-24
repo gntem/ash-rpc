@@ -1,5 +1,10 @@
 //! Contributed JSON-RPC methods and utilities for ash-rpc
 
+pub mod logging;
+
+#[cfg(any(feature = "observability", feature = "prometheus", feature = "opentelemetry"))]
+pub mod observability;
+
 #[cfg(feature = "healthcheck")]
 use ash_rpc_core::{MethodRegistry, RequestId, Response, ResponseBuilder};
 

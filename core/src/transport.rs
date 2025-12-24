@@ -26,7 +26,7 @@
 /// ```
 #[cfg(feature = "tcp")]
 pub mod tcp {
-    use crate::{Message, MessageProcessor};
+    use crate::{Logger, Message, MessageProcessor, NoopLogger};
     use std::io::{BufRead, BufReader, Write};
     use std::net::{TcpListener, TcpStream};
     use std::sync::Arc;
@@ -39,6 +39,7 @@ pub mod tcp {
     pub struct TcpServerBuilder {
         addr: String,
         processor: Option<Arc<dyn MessageProcessor + Send + Sync>>,
+        logger: Arc<dyn Logger>,
     }
 
     impl TcpServerBuilder {
@@ -46,6 +47,7 @@ pub mod tcp {
             Self {
                 addr: addr.into(),
                 processor: None,
+                logger: Arc::new(NoopLogger),
             }
         }
 
@@ -57,6 +59,14 @@ pub mod tcp {
             self
         }
 
+        pub fn logger<L>(mut self, logger: L) -> Self
+        where
+            L: Logger + 'static,
+        {
+            self.logger = Arc::new(logger);
+            self
+        }
+
         pub fn build(self) -> Result<TcpServer, std::io::Error> {
             let processor = self.processor.ok_or_else(|| {
                 std::io::Error::new(std::io::ErrorKind::InvalidInput, "Processor not set")
@@ -65,6 +75,7 @@ pub mod tcp {
             Ok(TcpServer {
                 addr: self.addr,
                 processor,
+                logger: self.logger,
             })
         }
     }
@@ -72,6 +83,7 @@ pub mod tcp {
     pub struct TcpServer {
         addr: String,
         processor: Arc<dyn MessageProcessor + Send + Sync>,
+        logger: Arc<dyn Logger>,
     }
 
     impl TcpServer {
@@ -81,20 +93,23 @@ pub mod tcp {
 
         pub fn run(&self) -> Result<(), std::io::Error> {
             let listener = TcpListener::bind(&self.addr)?;
-            println!("TCP RPC Server listening on {}", self.addr);
+            self.logger
+                .info("TCP RPC Server listening", &[("addr", &self.addr)]);
 
             for stream in listener.incoming() {
                 match stream {
                     Ok(stream) => {
                         let processor = Arc::clone(&self.processor);
+                        let logger = Arc::clone(&self.logger);
                         thread::spawn(move || {
-                            if let Err(e) = handle_client(stream, processor) {
-                                eprintln!("Error handling client: {e}");
+                            if let Err(e) = handle_client(stream, processor, logger.clone()) {
+                                logger.error("Error handling client", &[("error", &e)]);
                             }
                         });
                     }
                     Err(e) => {
-                        eprintln!("Error accepting connection: {e}");
+                        self.logger
+                            .error("Error accepting connection", &[("error", &e)]);
                     }
                 }
             }
@@ -106,6 +121,7 @@ pub mod tcp {
     fn handle_client(
         mut stream: TcpStream,
         processor: Arc<dyn MessageProcessor + Send + Sync>,
+        logger: Arc<dyn Logger>,
     ) -> Result<(), Box<dyn std::error::Error>> {
         let mut reader = BufReader::new(stream.try_clone()?);
         let mut line = String::new();
@@ -125,6 +141,7 @@ pub mod tcp {
 
             match serde_json::from_str::<Message>(line) {
                 Ok(message) => {
+                    logger.debug("Processing message", &[]);
                     if let Some(response) = processor.process_message(message) {
                         let response_json = serde_json::to_string(&response)?;
                         writeln!(stream, "{response_json}")?;
@@ -132,6 +149,7 @@ pub mod tcp {
                     }
                 }
                 Err(e) => {
+                    logger.warn("Parse error", &[("error", &e)]);
                     let error_response = crate::ResponseBuilder::new()
                         .error(
                             crate::ErrorBuilder::new(
@@ -156,7 +174,7 @@ pub mod tcp {
 
 #[cfg(feature = "tcp-stream")]
 pub mod tcp_stream {
-    use crate::{Message, MessageProcessor};
+    use crate::{Logger, Message, MessageProcessor, NoopLogger};
     use std::sync::Arc;
     use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
     use tokio::net::{TcpListener, TcpStream};
@@ -165,6 +183,7 @@ pub mod tcp_stream {
     pub struct TcpStreamServerBuilder {
         addr: String,
         processor: Option<Arc<dyn MessageProcessor + Send + Sync>>,
+        logger: Arc<dyn Logger>,
     }
 
     impl TcpStreamServerBuilder {
@@ -172,6 +191,7 @@ pub mod tcp_stream {
             Self {
                 addr: addr.into(),
                 processor: None,
+                logger: Arc::new(NoopLogger),
             }
         }
 
@@ -183,6 +203,14 @@ pub mod tcp_stream {
             self
         }
 
+        pub fn logger<L>(mut self, logger: L) -> Self
+        where
+            L: Logger + 'static,
+        {
+            self.logger = Arc::new(logger);
+            self
+        }
+
         pub fn build(self) -> Result<TcpStreamServer, std::io::Error> {
             let processor = self.processor.ok_or_else(|| {
                 std::io::Error::new(std::io::ErrorKind::InvalidInput, "Processor not set")
@@ -191,6 +219,7 @@ pub mod tcp_stream {
             Ok(TcpStreamServer {
                 addr: self.addr,
                 processor,
+                logger: self.logger,
             })
         }
     }
@@ -198,6 +227,7 @@ pub mod tcp_stream {
     pub struct TcpStreamServer {
         addr: String,
         processor: Arc<dyn MessageProcessor + Send + Sync>,
+        logger: Arc<dyn Logger>,
     }
 
     impl TcpStreamServer {
@@ -207,16 +237,20 @@ pub mod tcp_stream {
 
         pub async fn run(&self) -> Result<(), Box<dyn std::error::Error>> {
             let listener = TcpListener::bind(&self.addr).await?;
-            println!("TCP Stream RPC Server listening on {}", self.addr);
+            self.logger
+                .info("TCP Stream RPC Server listening", &[("addr", &self.addr)]);
 
             loop {
                 let (stream, addr) = listener.accept().await?;
-                println!("New connection from: {addr}");
+                self.logger
+                    .debug("New connection", &[("addr", &addr.to_string())]);
 
                 let processor = Arc::clone(&self.processor);
+                let logger = Arc::clone(&self.logger);
                 tokio::spawn(async move {
-                    if let Err(e) = handle_stream_client(stream, processor).await {
-                        eprintln!("Error handling client {addr}: {e}");
+                    if let Err(e) = handle_stream_client(stream, processor, logger.clone()).await {
+                        logger
+                            .error("Error handling client", &[("addr", &addr), ("error", &e)]);
                     }
                 });
             }
@@ -226,6 +260,7 @@ pub mod tcp_stream {
     async fn handle_stream_client(
         stream: TcpStream,
         processor: Arc<dyn MessageProcessor + Send + Sync>,
+        logger: Arc<dyn Logger>,
     ) -> Result<(), Box<dyn std::error::Error>> {
         let (reader, writer) = stream.into_split();
         let mut reader = BufReader::new(reader);
@@ -259,6 +294,7 @@ pub mod tcp_stream {
 
             match serde_json::from_str::<Message>(line_content) {
                 Ok(message) => {
+                    logger.debug("Processing message", &[]);
                     if let Some(response) = processor.process_message(message) {
                         let response_json = serde_json::to_string(&response)?;
                         if tx.send(response_json).await.is_err() {
@@ -267,6 +303,7 @@ pub mod tcp_stream {
                     }
                 }
                 Err(e) => {
+                    logger.warn("Parse error", &[("error", &e)]);
                     let error_response = crate::ResponseBuilder::new()
                         .error(
                             crate::ErrorBuilder::new(
@@ -494,7 +531,7 @@ pub mod axum {
 
 #[cfg(feature = "websocket")]
 pub mod websocket {
-    use crate::{ErrorBuilder, Message, MessageProcessor, Response, ResponseBuilder, error_codes};
+    use crate::{ErrorBuilder, Logger, Message, MessageProcessor, NoopLogger, Response, ResponseBuilder, error_codes};
     use futures_util::{SinkExt, StreamExt};
     use std::sync::Arc;
     use tokio::net::{TcpListener, TcpStream};
@@ -508,6 +545,7 @@ pub mod websocket {
     pub struct WebSocketServerBuilder {
         addr: String,
         processor: Option<Arc<dyn MessageProcessor + Send + Sync>>,
+        logger: Arc<dyn Logger>,
     }
 
     impl WebSocketServerBuilder {
@@ -515,6 +553,7 @@ pub mod websocket {
             Self {
                 addr: addr.into(),
                 processor: None,
+                logger: Arc::new(NoopLogger),
             }
         }
 
@@ -526,6 +565,14 @@ pub mod websocket {
             self
         }
 
+        pub fn logger<L>(mut self, logger: L) -> Self
+        where
+            L: Logger + 'static,
+        {
+            self.logger = Arc::new(logger);
+            self
+        }
+
         pub fn build(self) -> Result<WebSocketServer, std::io::Error> {
             let processor = self.processor.ok_or_else(|| {
                 std::io::Error::new(std::io::ErrorKind::InvalidInput, "Processor not set")
@@ -534,6 +581,7 @@ pub mod websocket {
             Ok(WebSocketServer {
                 addr: self.addr,
                 processor,
+                logger: self.logger,
             })
         }
     }
@@ -545,6 +593,7 @@ pub mod websocket {
     pub struct WebSocketServer {
         addr: String,
         processor: Arc<dyn MessageProcessor + Send + Sync>,
+        logger: Arc<dyn Logger>,
     }
 
     impl WebSocketServer {
@@ -558,16 +607,17 @@ pub mod websocket {
         /// spawning a new task for each connection.
         pub async fn run(&self) -> Result<(), Box<dyn std::error::Error>> {
             let listener = TcpListener::bind(&self.addr).await?;
-            println!("WebSocket RPC Server listening on {}", self.addr);
+            self.logger.info("WebSocket RPC Server listening", &[("addr", &self.addr)]);
 
             loop {
                 let (stream, addr) = listener.accept().await?;
-                println!("New WebSocket connection from: {addr}");
+                self.logger.debug("New WebSocket connection", &[("addr", &addr.to_string())]);
 
                 let processor = Arc::clone(&self.processor);
+                let logger = Arc::clone(&self.logger);
                 tokio::spawn(async move {
-                    if let Err(e) = handle_websocket_connection(stream, processor).await {
-                        eprintln!("Error handling WebSocket client {addr}: {e}");
+                    if let Err(e) = handle_websocket_connection(stream, processor, logger.clone()).await {
+                        logger.error("Error handling WebSocket client", &[("addr", &addr), ("error", &e)]);
                     }
                 });
             }
@@ -577,6 +627,7 @@ pub mod websocket {
     async fn handle_websocket_connection(
         stream: TcpStream,
         processor: Arc<dyn MessageProcessor + Send + Sync>,
+        logger: Arc<dyn Logger>,
     ) -> Result<(), Box<dyn std::error::Error>> {
         let ws_stream = accept_async(stream).await?;
         let (mut write, mut read) = ws_stream.split();
@@ -597,6 +648,7 @@ pub mod websocket {
             match msg {
                 Ok(WsMessage::Text(text)) => match serde_json::from_str::<Message>(&text) {
                     Ok(message) => {
+                        logger.debug("Processing WebSocket message", &[]);
                         if let Some(response) = processor.process_message(message) {
                             let response_json = serde_json::to_string(&response)?;
                             if tx.send(response_json).await.is_err() {

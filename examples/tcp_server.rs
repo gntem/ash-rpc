@@ -2,7 +2,8 @@ use ash_rpc_core::transport::tcp::TcpServer;
 use ash_rpc_core::*;
 
 fn main() -> Result<(), std::io::Error> {
-    println!("Starting JSON RPC TCP Server on 127.0.0.1:8080");
+    let logger = StdoutLogger;
+    logger.info("Starting JSON RPC TCP Server", &[("addr", &"127.0.0.1:8080")]);
 
     let registry = MethodRegistry::new()
         .register("ping", |_params, id| rpc_success!("pong", id))
@@ -30,10 +31,11 @@ fn main() -> Result<(), std::io::Error> {
 
     let server = TcpServer::builder("127.0.0.1:8080")
         .processor(registry)
+        .logger(logger)
         .build()?;
 
-    println!("Available methods: ping, echo, add, log");
-    println!("Example requests:");
+    logger.info("Available methods: ping, echo, add, log", &[]);
+    logger.info("Example requests:", &[]);
     println!(r#"  {{"jsonrpc":"2.0","method":"ping","id":1}}"#);
     println!(r#"  {{"jsonrpc":"2.0","method":"echo","params":"hello","id":2}}"#);
     println!(r#"  {{"jsonrpc":"2.0","method":"add","params":[5,3],"id":3}}"#);

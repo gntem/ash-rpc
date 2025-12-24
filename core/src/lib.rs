@@ -43,6 +43,7 @@
 
 // Module declarations
 pub mod builders;
+pub mod logger;
 pub mod macros;
 pub mod registry;
 pub mod traits;
@@ -75,6 +76,9 @@ pub use traits::*;
 
 // Re-export registry
 pub use registry::*;
+
+// Re-export logger
+pub use logger::*;
 
 // Re-export transport functionality
 pub use transport::*;
