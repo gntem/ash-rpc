@@ -2,7 +2,7 @@ use ash_rpc_contrib::observability::ObservableProcessor;
 use ash_rpc_contrib::observability::prometheus::get_metrics_method;
 use ash_rpc_contrib::observable_setup;
 use ash_rpc_core::*;
-use axum::{
+use ::axum::{
     Router,
     extract::State,
     http::StatusCode,
@@ -13,7 +13,7 @@ use std::sync::Arc;
 
 #[tokio::main]
 async fn main() {
-    // 🎯 SIMPLIFIED SETUP - Everything in one macro call!
+    // Everything in one macro call!
     let observability = observable_setup! {
         service_name: "ash-rpc-server",
         metrics_prefix: "ash_rpc",
@@ -91,7 +91,7 @@ async fn main() {
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
     logger.info("Server ready to accept connections", &[]);
 
-    axum::serve(listener, app).await.unwrap();
+    ::axum::serve(listener, app).await.unwrap();
 }
 
 // RPC handler

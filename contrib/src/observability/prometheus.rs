@@ -221,7 +221,7 @@ mod tests {
     #[test]
     fn test_prometheus_metrics_creation() {
         let metrics = PrometheusMetrics::new().unwrap();
-        assert!(metrics.registry().gather().len() > 0);
+        assert!(!metrics.registry().gather().is_empty());
     }
 
     #[test]
