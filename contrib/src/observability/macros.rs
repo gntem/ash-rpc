@@ -97,7 +97,7 @@ macro_rules! observable_setup {
             #[cfg(all(target_os = "linux", feature = "prometheus"))]
             {
                 let process_collector =
-                    ::prometheus::process_collector::ProcessCollector::for_self();
+                    $crate::prometheus::process_collector::ProcessCollector::for_self();
                 m.registry()
                     .register(Box::new(process_collector))
                     .expect("Failed to register process collector");
@@ -144,7 +144,7 @@ macro_rules! observable_setup {
             #[cfg(all(target_os = "linux", feature = "prometheus"))]
             {
                 let process_collector =
-                    ::prometheus::process_collector::ProcessCollector::for_self();
+                    $crate::prometheus::process_collector::ProcessCollector::for_self();
                 m.registry()
                     .register(Box::new(process_collector))
                     .expect("Failed to register process collector");
@@ -195,7 +195,7 @@ macro_rules! observable_setup {
             #[cfg(all(target_os = "linux", feature = "prometheus"))]
             {
                 let process_collector =
-                    ::prometheus::process_collector::ProcessCollector::for_self();
+                    $crate::prometheus::process_collector::ProcessCollector::for_self();
                 m.registry()
                     .register(Box::new(process_collector))
                     .expect("Failed to register process collector");

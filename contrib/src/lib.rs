@@ -9,6 +9,10 @@ pub mod logging;
 ))]
 pub mod observability;
 
+// Re-export prometheus for macro usage
+#[cfg(feature = "prometheus")]
+pub use prometheus;
+
 #[cfg(feature = "healthcheck")]
 use ash_rpc_core::{MethodRegistry, RequestId, Response, ResponseBuilder};
 
