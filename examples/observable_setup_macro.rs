@@ -1,7 +1,3 @@
-use ash_rpc_contrib::observability::ObservableProcessor;
-use ash_rpc_contrib::observability::prometheus::get_metrics_method;
-use ash_rpc_contrib::observable_setup;
-use ash_rpc_core::*;
 use ::axum::{
     Router,
     extract::State,
@@ -9,6 +5,10 @@ use ::axum::{
     response::{IntoResponse, Json},
     routing::{get, post},
 };
+use ash_rpc_contrib::observability::ObservableProcessor;
+use ash_rpc_contrib::observability::prometheus::get_metrics_method;
+use ash_rpc_contrib::observable_setup;
+use ash_rpc_core::*;
 use std::sync::Arc;
 
 #[tokio::main]
