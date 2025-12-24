@@ -1,13 +1,13 @@
-use ash_rpc_contrib::observable_setup;
 use ash_rpc_contrib::observability::ObservableProcessor;
 use ash_rpc_contrib::observability::prometheus::get_metrics_method;
+use ash_rpc_contrib::observable_setup;
 use ash_rpc_core::*;
 use axum::{
+    Router,
     extract::State,
     http::StatusCode,
     response::{IntoResponse, Json},
     routing::{get, post},
-    Router,
 };
 use std::sync::Arc;
 
@@ -29,9 +29,7 @@ async fn main() {
     // Create method registry
     let mut registry = MethodRegistry::new();
 
-    registry = registry.register("ping", |_params, id| {
-        rpc_success!("pong", id)
-    });
+    registry = registry.register("ping", |_params, id| rpc_success!("pong", id));
 
     registry = registry.register("echo", |params, id| {
         rpc_success!(params.unwrap_or(serde_json::json!(null)), id)
@@ -75,9 +73,10 @@ async fn main() {
 
     let processor = Arc::new(observable_processor);
 
-    logger.info("Method registry configured", &[
-        ("methods", &"ping, echo, add, multiply, get_metrics"),
-    ]);
+    logger.info(
+        "Method registry configured",
+        &[("methods", &"ping, echo, add, multiply, get_metrics")],
+    );
 
     // Create Axum router
     let app = Router::new()

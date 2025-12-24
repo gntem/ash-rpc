@@ -11,13 +11,13 @@ pub type LogKv<'a> = (&'a str, &'a dyn Display);
 pub trait Logger: Send + Sync {
     /// Log a debug message
     fn debug(&self, message: &str, kvs: &[LogKv]);
-    
+
     /// Log an info message
     fn info(&self, message: &str, kvs: &[LogKv]);
-    
+
     /// Log a warning message
     fn warn(&self, message: &str, kvs: &[LogKv]);
-    
+
     /// Log an error message
     fn error(&self, message: &str, kvs: &[LogKv]);
 }
@@ -51,7 +51,7 @@ impl Logger for StdoutLogger {
         }
         println!();
     }
-    
+
     fn info(&self, message: &str, kvs: &[LogKv]) {
         print!("[INFO] {}", message);
         for (k, v) in kvs {
@@ -59,7 +59,7 @@ impl Logger for StdoutLogger {
         }
         println!();
     }
-    
+
     fn warn(&self, message: &str, kvs: &[LogKv]) {
         print!("[WARN] {}", message);
         for (k, v) in kvs {
@@ -67,7 +67,7 @@ impl Logger for StdoutLogger {
         }
         println!();
     }
-    
+
     fn error(&self, message: &str, kvs: &[LogKv]) {
         eprint!("[ERROR] {}", message);
         for (k, v) in kvs {

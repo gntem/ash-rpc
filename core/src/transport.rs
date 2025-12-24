@@ -249,8 +249,7 @@ pub mod tcp_stream {
                 let logger = Arc::clone(&self.logger);
                 tokio::spawn(async move {
                     if let Err(e) = handle_stream_client(stream, processor, logger.clone()).await {
-                        logger
-                            .error("Error handling client", &[("addr", &addr), ("error", &e)]);
+                        logger.error("Error handling client", &[("addr", &addr), ("error", &e)]);
                     }
                 });
             }
@@ -531,7 +530,10 @@ pub mod axum {
 
 #[cfg(feature = "websocket")]
 pub mod websocket {
-    use crate::{ErrorBuilder, Logger, Message, MessageProcessor, NoopLogger, Response, ResponseBuilder, error_codes};
+    use crate::{
+        ErrorBuilder, Logger, Message, MessageProcessor, NoopLogger, Response, ResponseBuilder,
+        error_codes,
+    };
     use futures_util::{SinkExt, StreamExt};
     use std::sync::Arc;
     use tokio::net::{TcpListener, TcpStream};
@@ -607,17 +609,24 @@ pub mod websocket {
         /// spawning a new task for each connection.
         pub async fn run(&self) -> Result<(), Box<dyn std::error::Error>> {
             let listener = TcpListener::bind(&self.addr).await?;
-            self.logger.info("WebSocket RPC Server listening", &[("addr", &self.addr)]);
+            self.logger
+                .info("WebSocket RPC Server listening", &[("addr", &self.addr)]);
 
             loop {
                 let (stream, addr) = listener.accept().await?;
-                self.logger.debug("New WebSocket connection", &[("addr", &addr.to_string())]);
+                self.logger
+                    .debug("New WebSocket connection", &[("addr", &addr.to_string())]);
 
                 let processor = Arc::clone(&self.processor);
                 let logger = Arc::clone(&self.logger);
                 tokio::spawn(async move {
-                    if let Err(e) = handle_websocket_connection(stream, processor, logger.clone()).await {
-                        logger.error("Error handling WebSocket client", &[("addr", &addr), ("error", &e)]);
+                    if let Err(e) =
+                        handle_websocket_connection(stream, processor, logger.clone()).await
+                    {
+                        logger.error(
+                            "Error handling WebSocket client",
+                            &[("addr", &addr), ("error", &e)],
+                        );
                     }
                 });
             }

@@ -48,10 +48,10 @@ impl MessageProcessor for ObservableProcessor {
         if let Some(logger) = &self.logger {
             match &message {
                 Message::Request(req) => {
-                    logger.debug("Processing request", &[
-                        ("method", &req.method),
-                        ("has_id", &req.id.is_some()),
-                    ]);
+                    logger.debug(
+                        "Processing request",
+                        &[("method", &req.method), ("has_id", &req.id.is_some())],
+                    );
                 }
                 Message::Notification(notif) => {
                     logger.debug("Processing notification", &[("method", &notif.method)]);
@@ -82,8 +82,12 @@ impl MessageProcessor for ObservableProcessor {
                 Message::Notification(notif) => &notif.method,
                 Message::Response(_) => "response",
             };
-            
-            metrics.record_request(method, duration, response.as_ref().map(|r| r.is_success()).unwrap_or(true));
+
+            metrics.record_request(
+                method,
+                duration,
+                response.as_ref().map(|r| r.is_success()).unwrap_or(true),
+            );
         }
 
         #[cfg(feature = "opentelemetry")]

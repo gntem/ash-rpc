@@ -11,13 +11,13 @@ pub type LogKv<'a> = (&'a str, &'a dyn Display);
 pub trait Logger: Send + Sync {
     /// Log a debug message
     fn debug(&self, message: &str, kvs: &[LogKv]);
-    
+
     /// Log an info message
     fn info(&self, message: &str, kvs: &[LogKv]);
-    
+
     /// Log a warning message
     fn warn(&self, message: &str, kvs: &[LogKv]);
-    
+
     /// Log an error message
     fn error(&self, message: &str, kvs: &[LogKv]);
 }
@@ -56,7 +56,7 @@ mod slog_impl {
             let drain = slog_term::FullFormat::new(decorator).build().fuse();
             let drain = slog_async::Async::new(drain).build().fuse();
             let logger = slog::Logger::root(drain, o!());
-            
+
             Self { logger }
         }
 
@@ -65,7 +65,7 @@ mod slog_impl {
             let drain = slog_json::Json::default(std::io::stdout()).fuse();
             let drain = slog_async::Async::new(drain).build().fuse();
             let logger = slog::Logger::root(drain, o!());
-            
+
             Self { logger }
         }
 

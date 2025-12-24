@@ -2,7 +2,11 @@
 
 pub mod logging;
 
-#[cfg(any(feature = "observability", feature = "prometheus", feature = "opentelemetry"))]
+#[cfg(any(
+    feature = "observability",
+    feature = "prometheus",
+    feature = "opentelemetry"
+))]
 pub mod observability;
 
 #[cfg(feature = "healthcheck")]

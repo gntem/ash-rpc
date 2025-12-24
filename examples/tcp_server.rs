@@ -3,7 +3,10 @@ use ash_rpc_core::*;
 
 fn main() -> Result<(), std::io::Error> {
     let logger = StdoutLogger;
-    logger.info("Starting JSON RPC TCP Server", &[("addr", &"127.0.0.1:8080")]);
+    logger.info(
+        "Starting JSON RPC TCP Server",
+        &[("addr", &"127.0.0.1:8080")],
+    );
 
     let registry = MethodRegistry::new()
         .register("ping", |_params, id| rpc_success!("pong", id))

@@ -2,9 +2,8 @@
 
 use ash_rpc_core::Message;
 use opentelemetry::{
-    global,
+    KeyValue, global,
     trace::{Span, Status, Tracer},
-    KeyValue,
 };
 
 /// Tracing processor for OpenTelemetry integration
@@ -29,9 +28,10 @@ impl TracingProcessor {
     pub fn start_span(&self, message: &Message) -> Option<SpanGuard> {
         let (span_name, method_name) = match message {
             Message::Request(req) => (format!("jsonrpc.{}", req.method), Some(req.method.clone())),
-            Message::Notification(notif) => {
-                (format!("jsonrpc.{}", notif.method), Some(notif.method.clone()))
-            }
+            Message::Notification(notif) => (
+                format!("jsonrpc.{}", notif.method),
+                Some(notif.method.clone()),
+            ),
             Message::Response(_) => ("jsonrpc.response".to_string(), None),
         };
 
@@ -48,10 +48,7 @@ impl TracingProcessor {
         match message {
             Message::Request(req) => {
                 if let Some(id) = &req.id {
-                    span.set_attribute(KeyValue::new(
-                        "rpc.jsonrpc.request_id",
-                        id.to_string(),
-                    ));
+                    span.set_attribute(KeyValue::new("rpc.jsonrpc.request_id", id.to_string()));
                 }
             }
             Message::Notification(_) => {
@@ -59,10 +56,7 @@ impl TracingProcessor {
             }
             Message::Response(resp) => {
                 if let Some(id) = &resp.id {
-                    span.set_attribute(KeyValue::new(
-                        "rpc.jsonrpc.request_id",
-                        id.to_string(),
-                    ));
+                    span.set_attribute(KeyValue::new("rpc.jsonrpc.request_id", id.to_string()));
                 }
                 if resp.is_error() {
                     span.set_attribute(KeyValue::new("rpc.jsonrpc.error", true));
@@ -109,7 +103,11 @@ impl SpanGuard {
     }
 
     /// Add an event to the span
-    pub fn add_event(&mut self, name: impl Into<std::borrow::Cow<'static, str>>, attributes: Vec<KeyValue>) {
+    pub fn add_event(
+        &mut self,
+        name: impl Into<std::borrow::Cow<'static, str>>,
+        attributes: Vec<KeyValue>,
+    ) {
         self.span.add_event(name, attributes);
     }
 

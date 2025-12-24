@@ -43,37 +43,44 @@ macro_rules! observable_setup {
     ) => {{
         #[allow(unused_imports)]
         use $crate::logging::{Logger, SlogLoggerImpl};
-        
+
         // Setup logger
         let logger: ::std::sync::Arc<dyn Logger> = ::std::sync::Arc::new(SlogLoggerImpl::new());
-        logger.info("Initializing observability stack", &[
-            ("service", &$service_name),
-            ("metrics_prefix", &$metrics_prefix),
-        ]);
+        logger.info(
+            "Initializing observability stack",
+            &[
+                ("service", &$service_name),
+                ("metrics_prefix", &$metrics_prefix),
+            ],
+        );
 
         // Initialize OpenTelemetry tracer
         #[cfg(feature = "opentelemetry")]
         {
             use ::opentelemetry::global;
-            use ::opentelemetry_sdk::trace::TracerProvider;
-            use ::opentelemetry_sdk::Resource;
             use ::opentelemetry_otlp::{SpanExporter, WithExportConfig};
-            
-            logger.info("Initializing OpenTelemetry tracer", &[("endpoint", &$otlp_endpoint)]);
-            
+            use ::opentelemetry_sdk::Resource;
+            use ::opentelemetry_sdk::trace::TracerProvider;
+
+            logger.info(
+                "Initializing OpenTelemetry tracer",
+                &[("endpoint", &$otlp_endpoint)],
+            );
+
             let exporter = SpanExporter::builder()
                 .with_tonic()
                 .with_endpoint($otlp_endpoint)
                 .build()
                 .expect("Failed to create OTLP exporter");
-            
+
             let tracer_provider = TracerProvider::builder()
                 .with_batch_exporter(exporter, ::opentelemetry_sdk::runtime::Tokio)
-                .with_resource(Resource::new(vec![
-                    ::opentelemetry::KeyValue::new("service.name", $service_name),
-                ]))
+                .with_resource(Resource::new(vec![::opentelemetry::KeyValue::new(
+                    "service.name",
+                    $service_name,
+                )]))
                 .build();
-            
+
             global::set_tracer_provider(tracer_provider);
             logger.info("OpenTelemetry tracer initialized", &[]);
         }
@@ -89,16 +96,17 @@ macro_rules! observable_setup {
             // Register process metrics on Linux
             #[cfg(all(target_os = "linux", feature = "prometheus"))]
             {
-                let process_collector = ::prometheus::process_collector::ProcessCollector::for_self();
+                let process_collector =
+                    ::prometheus::process_collector::ProcessCollector::for_self();
                 m.registry()
                     .register(Box::new(process_collector))
                     .expect("Failed to register process collector");
                 logger.info("Prometheus metrics initialized with process collector", &[]);
             }
-            
+
             #[cfg(not(target_os = "linux"))]
             logger.info("Prometheus metrics initialized", &[]);
-            
+
             m
         };
 
@@ -119,11 +127,12 @@ macro_rules! observable_setup {
     ) => {{
         #[allow(unused_imports)]
         use $crate::logging::{Logger, SlogLoggerImpl};
-        
+
         let logger: ::std::sync::Arc<dyn Logger> = ::std::sync::Arc::new(SlogLoggerImpl::new());
-        logger.info("Initializing observability stack", &[
-            ("metrics_prefix", &$metrics_prefix),
-        ]);
+        logger.info(
+            "Initializing observability stack",
+            &[("metrics_prefix", &$metrics_prefix)],
+        );
 
         #[cfg(feature = "prometheus")]
         let metrics = {
@@ -134,16 +143,17 @@ macro_rules! observable_setup {
 
             #[cfg(all(target_os = "linux", feature = "prometheus"))]
             {
-                let process_collector = ::prometheus::process_collector::ProcessCollector::for_self();
+                let process_collector =
+                    ::prometheus::process_collector::ProcessCollector::for_self();
                 m.registry()
                     .register(Box::new(process_collector))
                     .expect("Failed to register process collector");
                 logger.info("Prometheus metrics initialized with process collector", &[]);
             }
-            
+
             #[cfg(not(target_os = "linux"))]
             logger.info("Prometheus metrics initialized", &[]);
-            
+
             m
         };
 
@@ -165,12 +175,15 @@ macro_rules! observable_setup {
     ) => {{
         #[allow(unused_imports)]
         use $crate::logging::{Logger, SlogLoggerImpl};
-        
+
         let logger: ::std::sync::Arc<dyn Logger> = ::std::sync::Arc::new(SlogLoggerImpl::new());
-        logger.info("Initializing observability stack", &[
-            ("service", &$service_name),
-            ("metrics_prefix", &$metrics_prefix),
-        ]);
+        logger.info(
+            "Initializing observability stack",
+            &[
+                ("service", &$service_name),
+                ("metrics_prefix", &$metrics_prefix),
+            ],
+        );
 
         #[cfg(feature = "prometheus")]
         let metrics = {
@@ -181,16 +194,17 @@ macro_rules! observable_setup {
 
             #[cfg(all(target_os = "linux", feature = "prometheus"))]
             {
-                let process_collector = ::prometheus::process_collector::ProcessCollector::for_self();
+                let process_collector =
+                    ::prometheus::process_collector::ProcessCollector::for_self();
                 m.registry()
                     .register(Box::new(process_collector))
                     .expect("Failed to register process collector");
                 logger.info("Prometheus metrics initialized with process collector", &[]);
             }
-            
+
             #[cfg(not(target_os = "linux"))]
             logger.info("Prometheus metrics initialized", &[]);
-            
+
             m
         };
 

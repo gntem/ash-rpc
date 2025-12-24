@@ -1,8 +1,6 @@
 //! Prometheus metrics collection for JSON-RPC
 
-use prometheus::{
-    CounterVec, Encoder, HistogramOpts, HistogramVec, IntGauge, Opts, Registry,
-};
+use prometheus::{CounterVec, Encoder, HistogramOpts, HistogramVec, IntGauge, Opts, Registry};
 use std::sync::Arc;
 use std::time::Duration;
 
@@ -38,7 +36,9 @@ impl PrometheusMetrics {
                 format!("{}_request_duration_seconds", prefix),
                 "JSON-RPC request duration in seconds",
             )
-            .buckets(vec![0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0, 10.0]),
+            .buckets(vec![
+                0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0, 10.0,
+            ]),
             &["method"],
         )?;
 
@@ -73,7 +73,7 @@ impl PrometheusMetrics {
     pub fn record_request(&self, method: &str, duration: Duration, success: bool) {
         // Limit cardinality by using a normalized method name
         let normalized_method = self.normalize_method(method);
-        
+
         self.request_counter
             .with_label_values(&[normalized_method])
             .inc();
@@ -190,25 +190,21 @@ impl Default for PrometheusMetricsBuilder {
 /// RPC method handler that exposes metrics in Prometheus format
 pub fn get_metrics_method(
     metrics: Arc<PrometheusMetrics>,
-) -> impl Fn(Option<serde_json::Value>, Option<ash_rpc_core::RequestId>) -> ash_rpc_core::Response
-{
-    move |_params, id| {
-        match metrics.gather_text() {
-            Ok(text) => ash_rpc_core::rpc_success!(text, id),
-            Err(e) => ash_rpc_core::rpc_error!(
-                ash_rpc_core::error_codes::INTERNAL_ERROR,
-                format!("Failed to gather metrics: {}", e),
-                id
-            ),
-        }
+) -> impl Fn(Option<serde_json::Value>, Option<ash_rpc_core::RequestId>) -> ash_rpc_core::Response {
+    move |_params, id| match metrics.gather_text() {
+        Ok(text) => ash_rpc_core::rpc_success!(text, id),
+        Err(e) => ash_rpc_core::rpc_error!(
+            ash_rpc_core::error_codes::INTERNAL_ERROR,
+            format!("Failed to gather metrics: {}", e),
+            id
+        ),
     }
 }
 
 /// Enhanced health check that includes basic metrics
 pub fn get_health_method(
     metrics: Arc<PrometheusMetrics>,
-) -> impl Fn(Option<serde_json::Value>, Option<ash_rpc_core::RequestId>) -> ash_rpc_core::Response
-{
+) -> impl Fn(Option<serde_json::Value>, Option<ash_rpc_core::RequestId>) -> ash_rpc_core::Response {
     move |_params, id| {
         let health = serde_json::json!({
             "status": "ok",
@@ -233,7 +229,7 @@ mod tests {
         let metrics = PrometheusMetrics::new().unwrap();
         metrics.record_request("ping", Duration::from_millis(10), true);
         metrics.record_request("echo", Duration::from_millis(20), false);
-        
+
         let text = metrics.gather_text().unwrap();
         assert!(text.contains("jsonrpc_requests_total"));
         assert!(text.contains("jsonrpc_request_duration_seconds"));
@@ -244,13 +240,13 @@ mod tests {
     fn test_connection_tracking() {
         let metrics = PrometheusMetrics::new().unwrap();
         assert_eq!(metrics.active_connections.get(), 0);
-        
+
         metrics.connection_opened();
         assert_eq!(metrics.active_connections.get(), 1);
-        
+
         metrics.connection_opened();
         assert_eq!(metrics.active_connections.get(), 2);
-        
+
         metrics.connection_closed();
         assert_eq!(metrics.active_connections.get(), 1);
     }
