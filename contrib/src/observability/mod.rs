@@ -91,22 +91,21 @@ impl MessageProcessor for ObservableProcessor {
         }
 
         #[cfg(feature = "opentelemetry")]
-        if let Some(mut guard) = span_guard {
-            if let Some(response) = &response {
-                if !response.is_success() {
-                    guard.record_error();
-                }
-            }
+        if let Some(mut guard) = span_guard
+            && let Some(response) = &response
+            && !response.is_success()
+        {
+            guard.record_error();
         }
 
         #[cfg(feature = "logging")]
-        if let Some(logger) = &self.logger {
-            if let Some(response) = &response {
-                if response.is_success() {
-                    logger.debug("Request succeeded", &[]);
-                } else {
-                    logger.warn("Request failed", &[]);
-                }
+        if let Some(logger) = &self.logger
+            && let Some(response) = &response
+        {
+            if response.is_success() {
+                logger.debug("Request succeeded", &[]);
+            } else {
+                logger.warn("Request failed", &[]);
             }
         }
 

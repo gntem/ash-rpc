@@ -8,15 +8,14 @@ mod example {
     pub async fn run_server() -> Result<(), Box<dyn std::error::Error>> {
         let registry = MethodRegistry::new()
             .register("add", |params, id| {
-                if let Some(params) = params {
-                    if let (Some(a), Some(b)) = (params.get("a"), params.get("b")) {
-                        if let (Some(a), Some(b)) = (a.as_f64(), b.as_f64()) {
-                            return ResponseBuilder::new()
-                                .success(serde_json::json!(a + b))
-                                .id(id)
-                                .build();
-                        }
-                    }
+                if let Some(params) = params
+                    && let (Some(a), Some(b)) = (params.get("a"), params.get("b"))
+                    && let (Some(a), Some(b)) = (a.as_f64(), b.as_f64())
+                {
+                    return ResponseBuilder::new()
+                        .success(serde_json::json!(a + b))
+                        .id(id)
+                        .build();
                 }
                 ResponseBuilder::new()
                     .error(ErrorBuilder::new(-32602, "Invalid parameters").build())
@@ -24,15 +23,14 @@ mod example {
                     .build()
             })
             .register("subtract", |params, id| {
-                if let Some(params) = params {
-                    if let (Some(a), Some(b)) = (params.get("a"), params.get("b")) {
-                        if let (Some(a), Some(b)) = (a.as_f64(), b.as_f64()) {
-                            return ResponseBuilder::new()
-                                .success(serde_json::json!(a - b))
-                                .id(id)
-                                .build();
-                        }
-                    }
+                if let Some(params) = params
+                    && let (Some(a), Some(b)) = (params.get("a"), params.get("b"))
+                    && let (Some(a), Some(b)) = (a.as_f64(), b.as_f64())
+                {
+                    return ResponseBuilder::new()
+                        .success(serde_json::json!(a - b))
+                        .id(id)
+                        .build();
                 }
                 ResponseBuilder::new()
                     .error(ErrorBuilder::new(-32602, "Invalid parameters").build())

@@ -173,43 +173,29 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     println!("=== Generated API Documentation ===");
     let docs = engine.render_docs();
 
-    if let Some(paths) = docs.get("paths") {
-        if let Some(root_path) = paths.get("/") {
-            if let Some(post) = root_path.get("post") {
-                if let Some(request_body) = post.get("requestBody") {
-                    if let Some(content) = request_body.get("content") {
-                        if let Some(json_content) = content.get("application/json") {
-                            if let Some(schema) = json_content.get("schema") {
-                                if let Some(serde_json::Value::Array(methods)) = schema.get("oneOf")
-                                {
-                                    for method in methods {
-                                        if let Some(props) = method.get("properties") {
-                                            if let Some(method_name) = props.get("method") {
-                                                if let Some(serde_json::Value::Array(names)) =
-                                                    method_name.get("enum")
-                                                {
-                                                    if let Some(name) = names.first() {
-                                                        println!("Method: {}", name);
-                                                        if let Some(params) = props.get("params") {
-                                                            println!(
-                                                                "  Parameters: {}",
-                                                                serde_json::to_string_pretty(
-                                                                    params
-                                                                )
-                                                                .unwrap_or_default()
-                                                            );
-                                                        }
-                                                        println!();
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
+    if let Some(paths) = docs.get("paths")
+        && let Some(root_path) = paths.get("/")
+        && let Some(post) = root_path.get("post")
+        && let Some(request_body) = post.get("requestBody")
+        && let Some(content) = request_body.get("content")
+        && let Some(json_content) = content.get("application/json")
+        && let Some(schema) = json_content.get("schema")
+        && let Some(serde_json::Value::Array(methods)) = schema.get("oneOf")
+    {
+        for method in methods {
+            if let Some(props) = method.get("properties")
+                && let Some(method_name) = props.get("method")
+                && let Some(serde_json::Value::Array(names)) = method_name.get("enum")
+                && let Some(name) = names.first()
+            {
+                println!("Method: {}", name);
+                if let Some(params) = props.get("params") {
+                    println!(
+                        "  Parameters: {}",
+                        serde_json::to_string_pretty(params).unwrap_or_default()
+                    );
                 }
+                println!();
             }
         }
     }

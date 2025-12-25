@@ -70,14 +70,14 @@ impl TracingProcessor {
     /// Extract trace context from request parameters
     /// Looks for a "_trace_context" field in params
     pub fn extract_context(params: &Option<serde_json::Value>) -> Option<opentelemetry::Context> {
-        if let Some(serde_json::Value::Object(map)) = params {
-            if let Some(trace_ctx) = map.get("_trace_context") {
-                // Try to extract traceparent header format
-                if let Some(traceparent) = trace_ctx.get("traceparent").and_then(|v| v.as_str()) {
-                    // Parse W3C traceparent format
-                    // Format: 00-{trace_id}-{span_id}-{flags}
-                    return Self::parse_traceparent(traceparent);
-                }
+        if let Some(serde_json::Value::Object(map)) = params
+            && let Some(trace_ctx) = map.get("_trace_context")
+        {
+            // Try to extract traceparent header format
+            if let Some(traceparent) = trace_ctx.get("traceparent").and_then(|v| v.as_str()) {
+                // Parse W3C traceparent format
+                // Format: 00-{trace_id}-{span_id}-{flags}
+                return Self::parse_traceparent(traceparent);
             }
         }
         None

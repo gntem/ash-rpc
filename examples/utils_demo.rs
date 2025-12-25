@@ -64,10 +64,10 @@ fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         );
     }
 
-    if let Some(paths) = docs.get("paths") {
-        if let Some(_root) = paths.get("/") {
-            println!("Endpoint: / (POST)");
-        }
+    if let Some(paths) = docs.get("paths")
+        && let Some(_root) = paths.get("/")
+    {
+        println!("Endpoint: / (POST)");
     }
 
     println!("\n=== Full Documentation ===");

@@ -237,14 +237,12 @@ pub fn render_docs(method_info: &HashMap<String, MethodInfo>) -> serde_json::Val
                             "application/json": {
                                 "schema": {
                                     "oneOf": methods.values().map(|method| {
-                                        if let serde_json::Value::Object(method_obj) = method {
-                                            if let Some(serde_json::Value::Object(request_body)) = method_obj.get("requestBody") {
-                                                if let Some(serde_json::Value::Object(content)) = request_body.get("content") {
-                                                    if let Some(serde_json::Value::Object(json_content)) = content.get("application/json") {
-                                                        return json_content.get("schema").cloned().unwrap_or(serde_json::Value::Null);
-                                                    }
-                                                }
-                                            }
+                                        if let serde_json::Value::Object(method_obj) = method
+                                            && let Some(serde_json::Value::Object(request_body)) = method_obj.get("requestBody")
+                                            && let Some(serde_json::Value::Object(content)) = request_body.get("content")
+                                            && let Some(serde_json::Value::Object(json_content)) = content.get("application/json")
+                                        {
+                                            return json_content.get("schema").cloned().unwrap_or(serde_json::Value::Null);
                                         }
                                         serde_json::Value::Null
                                     }).collect::<Vec<_>>()
