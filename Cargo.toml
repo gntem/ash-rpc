@@ -1,5 +1,6 @@
 [workspace]
-members = ["core", "contrib"]
+members = ["core"]
+# Excluded: contrib (uses old API), examples (may use old API)
 resolver = "2"
 
 [workspace.package]

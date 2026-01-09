@@ -1,87 +1,95 @@
 //! Method registry for organizing and dispatching JSON-RPC methods.
+//! 
+//! ## Usage
+//! 
+//! Create method implementations using the `JsonRPCMethod` trait:
+//! 
+//! ```rust
+//! use ash_rpc_core::*;
+//! 
+//! struct PingMethod;
+//! 
+//! #[async_trait::async_trait]
+//! impl JsonRPCMethod for PingMethod {
+//!     const METHOD_NAME: &'static str = "ping";
+//!     
+//!     async fn call(&self, _params: Option<serde_json::Value>, id: Option<RequestId>) -> Response {
+//!         rpc_success!("pong", id)
+//!     }
+//! }
+//! 
+//! // Register methods
+//! let registry = MethodRegistry::new(register_methods![PingMethod]);
+//! ```
 
 use crate::builders::*;
 use crate::traits::*;
 use crate::types::*;
-use crate::utils;
-use std::collections::HashMap;
 
-/// Function signature for method handlers
-pub type MethodHandler =
-    Box<dyn Fn(Option<serde_json::Value>, Option<RequestId>) -> Response + Send + Sync>;
+/// Macro to generate method dispatch arms for registered JsonRPCMethod implementations
+#[macro_export]
+macro_rules! register_methods {
+    ($($method:expr),* $(,)?) => {
+        vec![
+            $(
+                Box::new($method) as Box<dyn JsonRPCMethod>
+            ),*
+        ]
+    };
+}
 
-/// Registry for organizing and dispatching JSON-RPC methods
+/// Registry for organizing and dispatching async JSON-RPC methods
 pub struct MethodRegistry {
-    methods: HashMap<String, MethodHandler>,
-    method_info: HashMap<String, MethodInfo>,
-    cached_docs: Option<String>,
+    methods: Vec<Box<dyn JsonRPCMethod>>,
 }
 
 impl MethodRegistry {
-    /// Create a new empty method registry
-    pub fn new() -> Self {
+    /// Create a new method registry with the given method implementations
+    pub fn new(methods: Vec<Box<dyn JsonRPCMethod>>) -> Self {
+        Self { methods }
+    }
+
+    /// Create an empty registry
+    pub fn empty() -> Self {
         Self {
-            methods: HashMap::new(),
-            method_info: HashMap::new(),
-            cached_docs: None,
+            methods: Vec::new(),
         }
     }
 
-    /// Register a method with a handler function
-    pub fn register<F>(mut self, method: impl Into<String>, handler: F) -> Self
-    where
-        F: Fn(Option<serde_json::Value>, Option<RequestId>) -> Response + Send + Sync + 'static,
-    {
-        let method_name = method.into();
-        self.method_info
-            .insert(method_name.clone(), MethodInfo::new(method_name.clone()));
-        self.methods.insert(method_name, Box::new(handler));
-        self.cached_docs = None;
+    /// Add a method implementation to the registry
+    pub fn add_method(mut self, method: Box<dyn JsonRPCMethod>) -> Self {
+        self.methods.push(method);
         self
     }
 
-    /// Register a method with detailed information and handler
-    pub fn register_with_info<F>(
-        mut self,
-        method: impl Into<String>,
-        info: MethodInfo,
-        handler: F,
-    ) -> Self
-    where
-        F: Fn(Option<serde_json::Value>, Option<RequestId>) -> Response + Send + Sync + 'static,
-    {
-        let method_name = method.into();
-        self.method_info.insert(method_name.clone(), info);
-        self.methods.insert(method_name, Box::new(handler));
-        self.cached_docs = None;
-        self
-    }
-
-    /// Call a registered method
-    pub fn call(
+    /// Call a registered method asynchronously using trait-based dispatch
+    pub async fn call(
         &self,
-        method: &str,
+        method_name: &str,
         params: Option<serde_json::Value>,
         id: Option<RequestId>,
     ) -> Response {
-        if let Some(handler) = self.methods.get(method) {
-            handler(params, id)
-        } else {
-            ResponseBuilder::new()
-                .error(ErrorBuilder::new(error_codes::METHOD_NOT_FOUND, "Method not found").build())
-                .id(id)
-                .build()
+        // Use trait-based dispatch
+        for method in &self.methods {
+            if method.method_name() == method_name {
+                return method.call(params, id).await;
+            }
         }
+        
+        ResponseBuilder::new()
+            .error(ErrorBuilder::new(error_codes::METHOD_NOT_FOUND, "Method not found").build())
+            .id(id)
+            .build()
     }
 
     /// Check if a method is registered
-    pub fn has_method(&self, method: &str) -> bool {
-        self.methods.contains_key(method)
+    pub fn has_method(&self, method_name: &str) -> bool {
+        self.methods.iter().any(|m| m.method_name() == method_name)
     }
 
     /// Get list of all registered methods
     pub fn get_methods(&self) -> Vec<String> {
-        self.methods.keys().cloned().collect()
+        self.methods.iter().map(|m| m.method_name().to_string()).collect()
     }
 
     /// Get the number of registered methods
@@ -89,51 +97,43 @@ impl MethodRegistry {
         self.methods.len()
     }
 
-    /// Remove a method from the registry
-    pub fn remove_method(&mut self, method: &str) -> bool {
-        self.method_info.remove(method);
-        self.cached_docs = None;
-        self.methods.remove(method).is_some()
-    }
-
-    /// Clear all methods from the registry
-    pub fn clear(&mut self) {
-        self.methods.clear();
-        self.method_info.clear();
-        self.cached_docs = None;
-    }
-
-    /// Generate a Swagger/OpenAPI JSON object describing all registered methods
-    /// Results are cached until the registry is modified
-    pub fn render_docs(&mut self) -> serde_json::Value {
-        if self.cached_docs.is_none() {
-            let docs_json = utils::render_docs(&self.method_info);
-            self.cached_docs = Some(serde_json::to_string(&docs_json).unwrap_or_default());
+    /// Generate documentation for all registered methods
+    pub fn render_docs(&self) -> serde_json::Value {
+        let mut docs = serde_json::Map::new();
+        
+        for method in &self.methods {
+            let method_name = method.method_name();
+            let documentation = method.documentation();
+            
+            docs.insert(
+                method_name.to_string(),
+                serde_json::json!({
+                    "name": method_name,
+                    "description": documentation
+                })
+            );
         }
-
-        // Parse the cached string back to Value
-        self.cached_docs
-            .as_ref()
-            .and_then(|s| serde_json::from_str(s).ok())
-            .unwrap_or_else(|| serde_json::json!({}))
+        
+        serde_json::Value::Object(docs)
     }
 }
 
 impl Default for MethodRegistry {
     fn default() -> Self {
-        Self::new()
+        Self::empty()
     }
 }
 
+#[async_trait::async_trait]
 impl MessageProcessor for MethodRegistry {
-    fn process_message(&self, message: Message) -> Option<Response> {
+    async fn process_message(&self, message: Message) -> Option<Response> {
         match message {
             Message::Request(request) => {
-                let response = self.call(&request.method, request.params, request.id);
+                let response = self.call(&request.method, request.params, request.id).await;
                 Some(response)
             }
             Message::Notification(notification) => {
-                let _ = self.call(&notification.method, notification.params, None);
+                let _ = self.call(&notification.method, notification.params, None).await;
                 None
             }
             Message::Response(_) => None,
@@ -150,13 +150,14 @@ impl MessageProcessor for MethodRegistry {
     }
 }
 
+#[async_trait::async_trait]
 impl Handler for MethodRegistry {
-    fn handle_request(&self, request: Request) -> Response {
-        self.call(&request.method, request.params, request.id)
+    async fn handle_request(&self, request: Request) -> Response {
+        self.call(&request.method, request.params, request.id).await
     }
 
-    fn handle_notification(&self, notification: Notification) {
-        let _ = self.call(&notification.method, notification.params, None);
+    async fn handle_notification(&self, notification: Notification) {
+        let _ = self.call(&notification.method, notification.params, None).await;
     }
 
     fn supports_method(&self, method: &str) -> bool {

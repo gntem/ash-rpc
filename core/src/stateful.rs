@@ -22,13 +22,34 @@ pub trait ServiceContext: Send + Sync + 'static {
     type Error: std::error::Error + Send + Sync + 'static;
 }
 
+/// Async trait for stateful JSON-RPC method implementations with context
+#[async_trait::async_trait]
+pub trait StatefulJsonRPCMethod<C: ServiceContext>: Send + Sync {
+    /// Get the method name for runtime dispatch
+    fn method_name(&self) -> &'static str;
+    
+    /// Execute the JSON-RPC method asynchronously with context
+    async fn call(
+        &self,
+        context: &C,
+        params: Option<serde_json::Value>,
+        id: Option<crate::RequestId>,
+    ) -> Result<Response, C::Error>;
+    
+    /// Get method documentation (return empty string for now)
+    fn documentation(&self) -> String {
+        String::new()
+    }
+}
+
 /// Trait for stateful JSON-RPC handlers
+#[async_trait::async_trait]
 pub trait StatefulHandler<C: ServiceContext>: Send + Sync {
     /// Handle a JSON-RPC request with access to shared context
-    fn handle_request(&self, context: &C, request: Request) -> Result<Response, C::Error>;
+    async fn handle_request(&self, context: &C, request: Request) -> Result<Response, C::Error>;
 
     /// Handle a JSON-RPC notification with access to shared context
-    fn handle_notification(
+    async fn handle_notification(
         &self,
         context: &C,
         notification: crate::Notification,
@@ -39,88 +60,53 @@ pub trait StatefulHandler<C: ServiceContext>: Send + Sync {
     }
 }
 
-/// Trait for stateful method handlers
-pub trait StatefulMethodHandler<C: ServiceContext>: Send + Sync {
-    /// Call the method handler with context and parameters
-    fn call(
-        &self,
-        context: &C,
-        params: Option<serde_json::Value>,
-        id: Option<crate::RequestId>,
-    ) -> Result<Response, C::Error>;
-}
-
-impl<C, F> StatefulMethodHandler<C> for F
-where
-    C: ServiceContext,
-    F: Fn(&C, Option<serde_json::Value>, Option<crate::RequestId>) -> Result<Response, C::Error>
-        + Send
-        + Sync,
-{
-    fn call(
-        &self,
-        context: &C,
-        params: Option<serde_json::Value>,
-        id: Option<crate::RequestId>,
-    ) -> Result<Response, C::Error> {
-        self(context, params, id)
-    }
-}
-
 /// Registry for organizing stateful JSON-RPC methods
 pub struct StatefulMethodRegistry<C: ServiceContext> {
-    methods: std::collections::HashMap<String, Box<dyn StatefulMethodHandler<C>>>,
+    methods: Vec<Box<dyn StatefulJsonRPCMethod<C>>>,
 }
 
 impl<C: ServiceContext> StatefulMethodRegistry<C> {
     /// Create a new empty registry
     pub fn new() -> Self {
         Self {
-            methods: std::collections::HashMap::new(),
+            methods: Vec::new(),
         }
     }
 
     /// Register a method handler
-    pub fn register<H>(mut self, method: impl Into<String>, handler: H) -> Self
+    pub fn register<M>(mut self, method: M) -> Self
     where
-        H: StatefulMethodHandler<C> + 'static,
+        M: StatefulJsonRPCMethod<C> + 'static,
     {
-        self.methods.insert(method.into(), Box::new(handler));
-        self
-    }
-
-    /// Register a method using a closure
-    pub fn register_fn<F>(mut self, method: impl Into<String>, handler: F) -> Self
-    where
-        F: Fn(
-                &C,
-                Option<serde_json::Value>,
-                Option<crate::RequestId>,
-            ) -> Result<Response, C::Error>
-            + Send
-            + Sync
-            + 'static,
-    {
-        self.methods.insert(method.into(), Box::new(handler));
+        self.methods.push(Box::new(method));
         self
     }
 
     /// Call a registered method with context
-    pub fn call(
+    pub async fn call(
         &self,
         context: &C,
         method: &str,
         params: Option<serde_json::Value>,
         id: Option<crate::RequestId>,
     ) -> Result<Response, C::Error> {
-        if let Some(handler) = self.methods.get(method) {
-            handler.call(context, params, id)
-        } else {
-            Ok(ResponseBuilder::new()
-                .error(ErrorBuilder::new(error_codes::METHOD_NOT_FOUND, "Method not found").build())
-                .id(id)
-                .build())
+        // Generate match statement for all registered methods
+        for handler in &self.methods {
+            if handler.method_name() == method {
+                return handler.call(context, params, id).await;
+            }
         }
+        
+        // Method not found
+        Ok(ResponseBuilder::new()
+            .error(ErrorBuilder::new(error_codes::METHOD_NOT_FOUND, "Method not found").build())
+            .id(id)
+            .build())
+    }
+    
+    /// Get the method name from a trait implementation
+    fn get_method_name<M: StatefulJsonRPCMethod<C>>() -> &'static str {
+        M::METHOD_NAME
     }
 }
 
@@ -130,17 +116,18 @@ impl<C: ServiceContext> Default for StatefulMethodRegistry<C> {
     }
 }
 
+#[async_trait::async_trait]
 impl<C: ServiceContext> StatefulHandler<C> for StatefulMethodRegistry<C> {
-    fn handle_request(&self, context: &C, request: Request) -> Result<Response, C::Error> {
-        self.call(context, &request.method, request.params, request.id)
+    async fn handle_request(&self, context: &C, request: Request) -> Result<Response, C::Error> {
+        self.call(context, &request.method, request.params, request.id).await
     }
 
-    fn handle_notification(
+    async fn handle_notification(
         &self,
         context: &C,
         notification: crate::Notification,
     ) -> Result<(), C::Error> {
-        let _ = self.call(context, &notification.method, notification.params, None)?;
+        let _ = self.call(context, &notification.method, notification.params, None).await?;
         Ok(())
     }
 }
@@ -169,11 +156,12 @@ impl<C: ServiceContext> StatefulProcessor<C> {
     }
 }
 
+#[async_trait::async_trait]
 impl<C: ServiceContext> MessageProcessor for StatefulProcessor<C> {
-    fn process_message(&self, message: Message) -> Option<Response> {
+    async fn process_message(&self, message: Message) -> Option<Response> {
         match message {
             Message::Request(request) => {
-                match self.handler.handle_request(&self.context, request) {
+                match self.handler.handle_request(&self.context, request).await {
                     Ok(response) => Some(response),
                     Err(_) => Some(
                         ResponseBuilder::new()
@@ -192,7 +180,7 @@ impl<C: ServiceContext> MessageProcessor for StatefulProcessor<C> {
             Message::Notification(notification) => {
                 let _ = self
                     .handler
-                    .handle_notification(&self.context, notification);
+                    .handle_notification(&self.context, notification).await;
                 None
             }
             Message::Response(_) => None,

@@ -1,14 +1,35 @@
 //! Core traits for JSON-RPC handlers and processors.
 
 use crate::types::*;
+use std::future::Future;
+use std::pin::Pin;
+
+/// Async trait for individual JSON-RPC method implementations
+pub trait JsonRPCMethod: Send + Sync {
+    /// Get the method name that this implementation handles
+    fn method_name(&self) -> &'static str;
+    
+    /// Execute the JSON-RPC method asynchronously
+    fn call<'a>(
+        &'a self,
+        params: Option<serde_json::Value>,
+        id: Option<RequestId>,
+    ) -> Pin<Box<dyn Future<Output = Response> + Send + 'a>>;
+    
+    /// Get method documentation (return empty string for now)
+    fn documentation(&self) -> String {
+        String::new()
+    }
+}
 
 /// Trait for handling JSON-RPC requests and notifications
-pub trait Handler {
+#[async_trait::async_trait]
+pub trait Handler: Send + Sync {
     /// Handle a JSON-RPC request and return a response
-    fn handle_request(&self, request: Request) -> Response;
+    async fn handle_request(&self, request: Request) -> Response;
 
     /// Handle a JSON-RPC notification (no response expected)
-    fn handle_notification(&self, notification: Notification);
+    async fn handle_notification(&self, notification: Notification);
 
     /// Check if a method is supported
     fn supports_method(&self, method: &str) -> bool {
@@ -29,16 +50,20 @@ pub trait Handler {
 }
 
 /// Trait for processing JSON-RPC messages
-pub trait MessageProcessor {
+#[async_trait::async_trait]
+pub trait MessageProcessor: Send + Sync {
     /// Process a single JSON-RPC message
-    fn process_message(&self, message: Message) -> Option<Response>;
+    async fn process_message(&self, message: Message) -> Option<Response>;
 
     /// Process a batch of JSON-RPC messages
-    fn process_batch(&self, messages: Vec<Message>) -> Vec<Response> {
-        messages
-            .into_iter()
-            .filter_map(|msg| self.process_message(msg))
-            .collect()
+    async fn process_batch(&self, messages: Vec<Message>) -> Vec<Response> {
+        let mut results = Vec::new();
+        for msg in messages {
+            if let Some(response) = self.process_message(msg).await {
+                results.push(response);
+            }
+        }
+        results
     }
 
     /// Check if batch processing is supported

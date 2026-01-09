@@ -76,8 +76,8 @@ pub use traits::*;
 // Re-export registry
 pub use registry::*;
 
-// Re-export transport functionality
-pub use transport::*;
+// Re-export transport functionality when needed
+// pub use transport::*;
 
 // Re-export middleware when tower feature is enabled
 #[cfg(feature = "tower")]
