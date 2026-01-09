@@ -20,11 +20,9 @@ required-features = ["cli"]
 
 [features]
 default = []
-tcp = []
+tcp = ["tokio"]
 tcp-stream = ["tokio"]
-axum = ["dep:axum", "tokio"]
 tower = ["dep:tower"]
-websocket = ["tokio", "tokio-tungstenite", "futures-util"]
 stateful = []
 cli = ["dep:clap"]
 
@@ -33,10 +31,7 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 async-trait = "0.1"
 tokio = { version = "1.47", features = ["net", "io-util", "rt", "rt-multi-thread", "sync", "macros"], optional = true }
-axum = { version = "0.8", optional = true }
 tower = { version = "0.5", optional = true }
-tokio-tungstenite = { version = "0.28", optional = true }
-futures-util = { version = "0.3", optional = true }
 clap = { version = "4.5", features = ["derive"], optional = true }
 
 [dev-dependencies]

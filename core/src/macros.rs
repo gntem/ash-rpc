@@ -291,113 +291,12 @@ macro_rules! rpc_tcp_stream_client {
     }};
 }
 
-/// Create an Axum router with JSON-RPC endpoint
+/// Create an Axum router with JSON-RPC endpoint - MOVED TO ash-rpc-contrib
 ///
 /// # Usage:
 /// ```ignore
 /// // Basic router with default /rpc path
 /// let app = rpc_axum_router!(registry);
-///
-/// // Router with custom path
-/// let app = rpc_axum_router!(registry, "/api/rpc");
-///
-/// // Router with additional routes
-/// let app = rpc_axum_router!(registry, "/rpc")
-///     .route("/health", get(health_check));
-/// ```
-#[cfg(feature = "axum")]
-#[macro_export]
-macro_rules! rpc_axum_router {
-    ($processor:expr_2021, $path:expr_2021) => {
-        $crate::transport::axum::create_rpc_router($processor, $path)
-    };
-    ($processor:expr_2021) => {
-        $crate::transport::axum::create_rpc_router($processor, "/rpc")
-    };
-}
-
-/// Create and run an Axum server with JSON-RPC
-///
-/// # Usage:
-/// ```ignore
-/// // Basic server on default port
-/// rpc_axum_server!("127.0.0.1:3000", registry).await?;
-///
-/// // Server with custom RPC path
-/// rpc_axum_server!("127.0.0.1:3000", registry, "/api/rpc").await?;
-/// ```
-#[cfg(feature = "axum")]
-#[macro_export]
-macro_rules! rpc_axum_server {
-    ($addr:expr_2021, $processor:expr_2021, $path:expr_2021) => {{
-        let app = rpc_axum_router!($processor, $path);
-        async move {
-            let listener = tokio::net::TcpListener::bind($addr).await?;
-            axum::serve(listener, app).await
-        }
-    }};
-    ($addr:expr_2021, $processor:expr_2021) => {{
-        let app = rpc_axum_router!($processor);
-        async move {
-            let listener = tokio::net::TcpListener::bind($addr).await?;
-            axum::serve(listener, app).await
-        }
-    }};
-}
-
-/// Create an Axum RPC layer for middleware use
-///
-/// # Usage:
-/// ```ignore
-/// // Create RPC layer
-/// let rpc_layer = rpc_axum_layer!(registry);
-///
-/// // Use in router
-/// let app = Router::new()
-///     .route("/health", get(health_check))
-///     .layer(rpc_layer);
-/// ```
-#[cfg(feature = "axum")]
-#[macro_export]
-macro_rules! rpc_axum_layer {
-    ($processor:expr_2021, $path:expr_2021) => {
-        $crate::transport::axum::AxumRpcLayer::builder()
-            .processor($processor)
-            .path($path)
-            .build()
-            .expect("Failed to build Axum RPC layer")
-    };
-    ($processor:expr_2021) => {
-        $crate::transport::axum::AxumRpcLayer::builder()
-            .processor($processor)
-            .build()
-            .expect("Failed to build Axum RPC layer")
-    };
-}
-
-/// Create and run a WebSocket JSON-RPC server
-///
-/// # Usage:
-/// ```ignore
-/// // Basic WebSocket server
-/// rpc_websocket_server!("127.0.0.1:9001", registry).await?;
-///
-/// // With error handling
-/// rpc_websocket_server!("127.0.0.1:9001", registry).await.expect("Server failed");
-/// ```
-#[cfg(feature = "websocket")]
-#[macro_export]
-macro_rules! rpc_websocket_server {
-    ($addr:expr_2021, $processor:expr_2021) => {
-        async move {
-            let server = $crate::transport::websocket::WebSocketServer::builder($addr)
-                .processor($processor)
-                .build()?;
-            server.run().await
-        }
-    };
-}
-
 //
 // Stateful Macros - Easy stateful processor creation
 //

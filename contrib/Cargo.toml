@@ -11,7 +11,13 @@ authors = ["Giorgos Ntemiris <ntemirisgiorgos3@gmail.com>"]
 [features]
 default = []
 healthcheck = []
+axum = ["dep:axum", "tokio"]
+websocket = ["tokio", "tokio-tungstenite", "futures-util"]
 
 [dependencies]
 ash-rpc-core = { version = "2.1.0", path = "../core" }
 serde_json = "1.0"
+tokio = { version = "1.47", features = ["net", "io-util", "rt", "rt-multi-thread", "sync", "macros"], optional = true }
+axum = { version = "0.8", optional = true }
+tokio-tungstenite = { version = "0.28", optional = true }
+futures-util = { version = "0.3", optional = true }
