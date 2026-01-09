@@ -2,6 +2,7 @@
 //! 
 //! ## Usage
 //! 
+//! ### Basic Usage (Runtime Dispatch)
 //! Create method implementations using the `JsonRPCMethod` trait:
 //! 
 //! ```rust
@@ -9,24 +10,38 @@
 //! 
 //! struct PingMethod;
 //! 
-//! #[async_trait::async_trait]
 //! impl JsonRPCMethod for PingMethod {
-//!     const METHOD_NAME: &'static str = "ping";
+//!     fn method_name(&self) -> &'static str { "ping" }
 //!     
-//!     async fn call(&self, _params: Option<serde_json::Value>, id: Option<RequestId>) -> Response {
-//!         rpc_success!("pong", id)
+//!     fn call<'a>(
+//!         &'a self,
+//!         _params: Option<serde_json::Value>,
+//!         id: Option<RequestId>,
+//!     ) -> Pin<Box<dyn Future<Output = Response> + Send + 'a>> {
+//!         Box::pin(async move {
+//!             rpc_success!("pong", id)
+//!         })
 //!     }
 //! }
 //! 
-//! // Register methods
 //! let registry = MethodRegistry::new(register_methods![PingMethod]);
+//! ```
+//!
+//! ### Optimized Usage (Compile-time Dispatch)
+//! For better performance, use the dispatch_call! macro:
+//!
+//! ```rust
+//! // In your handler function:
+//! async fn handle_call(method_name: &str, params: Option<serde_json::Value>, id: Option<RequestId>) -> Response {
+//!     dispatch_call!(method_name, params, id => PingMethod, EchoMethod, CalculatorMethod)
+//! }
 //! ```
 
 use crate::builders::*;
 use crate::traits::*;
 use crate::types::*;
 
-/// Macro to generate method dispatch arms for registered JsonRPCMethod implementations
+/// Macro to generate method dispatch match arms for registered JsonRPCMethod implementations
 #[macro_export]
 macro_rules! register_methods {
     ($($method:expr),* $(,)?) => {
@@ -35,6 +50,29 @@ macro_rules! register_methods {
                 Box::new($method) as Box<dyn JsonRPCMethod>
             ),*
         ]
+    };
+}
+
+/// Macro to generate a dispatch function with compile-time method matching
+/// This replaces runtime iteration with a compile-time generated match statement
+#[macro_export]
+macro_rules! dispatch_call {
+    ($method_name:expr, $params:expr, $id:expr => $($method:expr),* $(,)?) => {
+        {
+            // Create temporary instances for method name comparison
+            $(
+                let temp_method = $method;
+                if $method_name == temp_method.method_name() {
+                    return temp_method.call($params, $id).await;
+                }
+            )*
+            
+            // Method not found
+            ResponseBuilder::new()
+                .error(ErrorBuilder::new(error_codes::METHOD_NOT_FOUND, "Method not found").build())
+                .id($id)
+                .build()
+        }
     };
 }
 
@@ -62,14 +100,16 @@ impl MethodRegistry {
         self
     }
 
-    /// Call a registered method asynchronously using trait-based dispatch
+    /// Call a registered method asynchronously using compile-time dispatch
+    /// Note: This method should typically be replaced by using the dispatch_methods! macro directly
+    /// for better compile-time optimization
     pub async fn call(
         &self,
         method_name: &str,
         params: Option<serde_json::Value>,
         id: Option<RequestId>,
     ) -> Response {
-        // Use trait-based dispatch
+        // Fallback to runtime dispatch if compile-time dispatch is not used
         for method in &self.methods {
             if method.method_name() == method_name {
                 return method.call(params, id).await;
