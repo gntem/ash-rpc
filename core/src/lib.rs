@@ -48,7 +48,6 @@ pub mod registry;
 pub mod traits;
 pub mod transport;
 pub mod types;
-pub mod utils;
 
 #[cfg(feature = "tower")]
 pub mod middleware;

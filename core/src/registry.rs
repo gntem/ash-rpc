@@ -137,24 +137,43 @@ impl MethodRegistry {
         self.methods.len()
     }
 
-    /// Generate documentation for all registered methods
-    pub fn render_docs(&self) -> serde_json::Value {
-        let mut docs = serde_json::Map::new();
+    /// Generate OpenAPI specification for all registered methods
+    pub fn generate_openapi_spec(&self, title: &str, version: &str) -> OpenApiSpec {
+        let mut spec = OpenApiSpec::new(title, version);
         
         for method in &self.methods {
-            let method_name = method.method_name();
-            let documentation = method.documentation();
-            
-            docs.insert(
-                method_name.to_string(),
-                serde_json::json!({
-                    "name": method_name,
-                    "description": documentation
-                })
-            );
+            let method_spec = method.openapi_components();
+            spec.add_method(method_spec);
         }
         
-        serde_json::Value::Object(docs)
+        spec
+    }
+
+    /// Generate OpenAPI specification with custom info and servers
+    pub fn generate_openapi_spec_with_info(
+        &self,
+        title: &str,
+        version: &str,
+        description: Option<&str>,
+        servers: Vec<OpenApiServer>,
+    ) -> OpenApiSpec {
+        let mut spec = self.generate_openapi_spec(title, version);
+        
+        if let Some(desc) = description {
+            spec.info.description = Some(desc.to_string());
+        }
+        
+        for server in servers {
+            spec.add_server(server);
+        }
+        
+        spec
+    }
+
+    /// Export OpenAPI spec as JSON string
+    pub fn export_openapi_json(&self, title: &str, version: &str) -> Result<String, serde_json::Error> {
+        let spec = self.generate_openapi_spec(title, version);
+        serde_json::to_string_pretty(&spec)
     }
 }
 

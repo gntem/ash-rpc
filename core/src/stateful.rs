@@ -36,9 +36,9 @@ pub trait StatefulJsonRPCMethod<C: ServiceContext>: Send + Sync {
         id: Option<crate::RequestId>,
     ) -> Result<Response, C::Error>;
     
-    /// Get method documentation (return empty string for now)
-    fn documentation(&self) -> String {
-        String::new()
+    /// Get OpenAPI components for this method
+    fn openapi_components(&self) -> crate::traits::OpenApiMethodSpec {
+        crate::traits::OpenApiMethodSpec::new(self.method_name())
     }
 }
 
@@ -102,11 +102,6 @@ impl<C: ServiceContext> StatefulMethodRegistry<C> {
             .error(ErrorBuilder::new(error_codes::METHOD_NOT_FOUND, "Method not found").build())
             .id(id)
             .build())
-    }
-    
-    /// Get the method name from a trait implementation
-    fn get_method_name<M: StatefulJsonRPCMethod<C>>() -> &'static str {
-        M::METHOD_NAME
     }
 }
 
