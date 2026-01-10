@@ -42,26 +42,24 @@
 //! ```
 
 // Module declarations
+pub mod auth;
 pub mod builders;
 pub mod macros;
 pub mod registry;
+pub mod sanitization;
 pub mod traits;
 pub mod transport;
 pub mod types;
 
-#[cfg(feature = "tower")]
-pub mod middleware;
-
 #[cfg(feature = "stateful")]
 pub mod stateful;
+
+// Re-export async_trait for users implementing traits
+pub use async_trait::async_trait;
 
 // Re-export tokio for tcp-stream feature
 #[cfg(feature = "tcp-stream")]
 pub use tokio;
-
-// Re-export tower for tower feature
-#[cfg(feature = "tower")]
-pub use tower;
 
 // Re-export all core types
 pub use types::*;
@@ -77,10 +75,6 @@ pub use registry::*;
 
 // Re-export transport functionality when needed
 // pub use transport::*;
-
-// Re-export middleware when tower feature is enabled
-#[cfg(feature = "tower")]
-pub use middleware::*;
 
 // Re-export stateful module when stateful feature is enabled
 #[cfg(feature = "stateful")]

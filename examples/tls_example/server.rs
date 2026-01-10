@@ -2,42 +2,41 @@ use ash_rpc_core::{
     transport::tcp_stream_tls::{TcpStreamTlsClient, TcpStreamTlsServer, TlsConfig},
     JsonRPCMethod, MethodRegistry, RequestId, Response,
 };
-use std::pin::Pin;
 
 // Simple ping method
 struct PingMethod;
 
+#[async_trait::async_trait]
 impl JsonRPCMethod for PingMethod {
     fn method_name(&self) -> &'static str {
         "ping"
     }
 
-    fn call<'a>(
-        &'a self,
+    async fn call(
+        &self,
         _params: Option<serde_json::Value>,
         id: Option<RequestId>,
-    ) -> Pin<Box<dyn std::future::Future<Output = Response> + Send + 'a>> {
-        Box::pin(async move { ash_rpc_core::rpc_success!("pong", id) })
+    ) -> Response {
+        ash_rpc_core::rpc_success!("pong", id)
     }
 }
 
 // Echo method that returns whatever is sent
 struct EchoMethod;
 
+#[async_trait::async_trait]
 impl JsonRPCMethod for EchoMethod {
     fn method_name(&self) -> &'static str {
         "echo"
     }
 
-    fn call<'a>(
-        &'a self,
+    async fn call(
+        &self,
         params: Option<serde_json::Value>,
         id: Option<RequestId>,
-    ) -> Pin<Box<dyn std::future::Future<Output = Response> + Send + 'a>> {
-        Box::pin(async move {
-            let message = params.unwrap_or_else(|| serde_json::json!(""));
-            ash_rpc_core::rpc_success!(message, id)
-        })
+    ) -> Response {
+        let message = params.unwrap_or_else(|| serde_json::json!(""));
+        ash_rpc_core::rpc_success!(message, id)
     }
 }
 

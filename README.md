@@ -1,14 +1,6 @@
 # ash-rpc
 
-A modular JSON-RPC 2.0 implementation for Rust with TCP transport support.
-
-## Features
-
-- Full JSON-RPC 2.0 implementation with requests, responses, notifications, and batch operations
-- TCP and TCP streaming transport layers
-- Method registry with automatic routing
-- Fluent API for constructing requests and responses
-- Feature flags for minimal dependencies
+A modular JSON-RPC 2.0 implementation for Rust.
 
 ## Packages
 

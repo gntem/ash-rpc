@@ -300,7 +300,6 @@ macro_rules! rpc_tcp_stream_client {
 //
 // Stateful Macros - Easy stateful processor creation
 //
-
 /// Create a stateful JSON-RPC processor
 ///
 /// # Usage:
@@ -432,7 +431,10 @@ macro_rules! rpc_params {
     };
 }
 
-/// Convert Result types to JSON-RPC responses
+/// Convert Result types to JSON-RPC responses with error logging
+///
+/// This macro logs detailed errors server-side and returns a generic error.
+/// For custom error messages, provide them explicitly.
 ///
 /// # Usage:
 /// ```ignore
@@ -447,13 +449,50 @@ macro_rules! rpc_try {
     ($result:expr, $id:expr) => {
         match $result {
             Ok(value) => $crate::rpc_success!(value, $id),
-            Err(error) => $crate::rpc_error!($crate::error_codes::INTERNAL_ERROR, format!("{}", error), $id),
+            Err(error) => {
+                tracing::error!(
+                    error = %error,
+                    request_id = ?$id,
+                    "method execution failed"
+                );
+                $crate::rpc_error!(
+                    $crate::error_codes::INTERNAL_ERROR,
+                    "Internal server error",
+                    $id
+                )
+            },
         }
     };
     ($result:expr, $id:expr, $error_code:expr) => {
         match $result {
             Ok(value) => $crate::rpc_success!(value, $id),
-            Err(error) => $crate::rpc_error!($error_code, format!("{}", error), $id),
+            Err(error) => {
+                tracing::error!(
+                    error = %error,
+                    request_id = ?$id,
+                    error_code = $error_code,
+                    "method execution failed"
+                );
+                $crate::rpc_error!(
+                    $error_code,
+                    "Server error",
+                    $id
+                )
+            },
+        }
+    };
+    ($result:expr, $id:expr, $error_code:expr, $message:expr) => {
+        match $result {
+            Ok(value) => $crate::rpc_success!(value, $id),
+            Err(error) => {
+                tracing::error!(
+                    error = %error,
+                    request_id = ?$id,
+                    error_code = $error_code,
+                    "method execution failed"
+                );
+                $crate::rpc_error!($error_code, $message, $id)
+            },
         }
     };
 }

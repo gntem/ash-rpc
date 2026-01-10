@@ -1,53 +1,49 @@
 use ash_rpc_core::*;
-use std::pin::Pin;
-use std::future::Future;
 
 struct PingMethod;
 
+#[async_trait::async_trait]
 impl JsonRPCMethod for PingMethod {
     fn method_name(&self) -> &'static str {
         "ping"
     }
     
-    fn call<'a>(
-        &'a self,
+    async fn call(
+        &self,
         _params: Option<serde_json::Value>,
         id: Option<RequestId>,
-    ) -> Pin<Box<dyn Future<Output = Response> + Send + 'a>> {
-        Box::pin(async move {
-            ResponseBuilder::new()
-                .success(serde_json::json!("pong"))
-                .id(id)
-                .build()
-        })
+    ) -> Response {
+        ResponseBuilder::new()
+            .success(serde_json::json!("pong"))
+            .id(id)
+            .build()
     }
 }
 
 struct EchoMethod;
 
+#[async_trait::async_trait]
 impl JsonRPCMethod for EchoMethod {
     fn method_name(&self) -> &'static str {
         "echo"
     }
     
-    fn call<'a>(
-        &'a self,
+    async fn call(
+        &self,
         params: Option<serde_json::Value>,
         id: Option<RequestId>,
-    ) -> Pin<Box<dyn Future<Output = Response> + Send + 'a>> {
-        Box::pin(async move {
-            if let Some(params) = params {
-                ResponseBuilder::new().success(params).id(id).build()
-            } else {
-                ResponseBuilder::new()
-                    .error(
-                        ErrorBuilder::new(error_codes::INVALID_PARAMS, "Missing parameters")
-                            .build(),
-                    )
-                    .id(id)
-                    .build()
-            }
-        })
+    ) -> Response {
+        if let Some(params) = params {
+            ResponseBuilder::new().success(params).id(id).build()
+        } else {
+            ResponseBuilder::new()
+                .error(
+                    ErrorBuilder::new(error_codes::INVALID_PARAMS, "Missing parameters")
+                        .build(),
+                )
+                .id(id)
+                .build()
+        }
     }
 }
 

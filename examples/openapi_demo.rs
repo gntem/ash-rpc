@@ -1,31 +1,28 @@
 use ash_rpc_core::*;
-use std::pin::Pin;
-use std::future::Future;
 
 // Example method implementations with OpenAPI documentation
 struct HelloMethod;
 
+#[async_trait::async_trait]
 impl JsonRPCMethod for HelloMethod {
     fn method_name(&self) -> &'static str {
         "hello"
     }
 
-    fn call<'a>(
-        &'a self,
+    async fn call(
+        &self,
         params: Option<serde_json::Value>,
         id: Option<RequestId>,
-    ) -> Pin<Box<dyn Future<Output = Response> + Send + 'a>> {
-        Box::pin(async move {
-            if let Some(params) = params {
-                if let Ok(name) = serde_json::from_value::<String>(params["name"].clone()) {
-                    rpc_success!(format!("Hello, {}!", name), id)
-                } else {
-                    rpc_invalid_params!("Expected 'name' parameter", id)
-                }
+    ) -> Response {
+        if let Some(params) = params {
+            if let Ok(name) = serde_json::from_value::<String>(params["name"].clone()) {
+                rpc_success!(format!("Hello, {}!", name), id)
             } else {
-                rpc_success!("Hello, World!", id)
+                rpc_invalid_params!("Expected 'name' parameter", id)
             }
-        })
+        } else {
+            rpc_success!("Hello, World!", id)
+        }
     }
 
     fn openapi_components(&self) -> OpenApiMethodSpec {
@@ -63,27 +60,26 @@ impl JsonRPCMethod for HelloMethod {
 
 struct GoodbyeMethod;
 
+#[async_trait::async_trait]
 impl JsonRPCMethod for GoodbyeMethod {
     fn method_name(&self) -> &'static str {
         "goodbye"
     }
 
-    fn call<'a>(
-        &'a self,
+    async fn call(
+        &self,
         params: Option<serde_json::Value>,
         id: Option<RequestId>,
-    ) -> Pin<Box<dyn Future<Output = Response> + Send + 'a>> {
-        Box::pin(async move {
-            if let Some(params) = params {
-                if let Ok(name) = serde_json::from_value::<String>(params["name"].clone()) {
-                    rpc_success!(format!("Goodbye, {}!", name), id)
-                } else {
-                    rpc_invalid_params!("Expected 'name' parameter", id)
-                }
+    ) -> Response {
+        if let Some(params) = params {
+            if let Ok(name) = serde_json::from_value::<String>(params["name"].clone()) {
+                rpc_success!(format!("Goodbye, {}!", name), id)
             } else {
-                rpc_success!("Goodbye, World!", id)
+                rpc_invalid_params!("Expected 'name' parameter", id)
             }
-        })
+        } else {
+            rpc_success!("Goodbye, World!", id)
+        }
     }
 
     fn openapi_components(&self) -> OpenApiMethodSpec {

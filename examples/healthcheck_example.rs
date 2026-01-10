@@ -1,32 +1,29 @@
 //! Example demonstrating a simple healthcheck functionality
 
 use ash_rpc_core::*;
-use std::pin::Pin;
-use std::future::Future;
 
 struct HealthcheckMethod;
 
+#[async_trait::async_trait]
 impl JsonRPCMethod for HealthcheckMethod {
     fn method_name(&self) -> &'static str {
         "healthcheck"
     }
     
-    fn call<'a>(
-        &'a self,
+    async fn call(
+        &self,
         _params: Option<serde_json::Value>,
         id: Option<RequestId>,
-    ) -> Pin<Box<dyn Future<Output = Response> + Send + 'a>> {
-        Box::pin(async move {
-            let health_status = serde_json::json!({
-                "status": "healthy",
-                "timestamp": std::time::SystemTime::now()
-                    .duration_since(std::time::UNIX_EPOCH)
-                    .unwrap()
-                    .as_secs(),
-                "service": "ash-rpc-example"
-            });
-            rpc_success!(health_status, id)
-        })
+    ) -> Response {
+        let health_status = serde_json::json!({
+            "status": "healthy",
+            "timestamp": std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_secs(),
+            "service": "ash-rpc-example"
+        });
+        rpc_success!(health_status, id)
     }
 }
 

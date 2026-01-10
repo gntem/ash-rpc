@@ -1,88 +1,84 @@
 use ash_rpc_core::*;
-use std::pin::Pin;
-use std::future::Future;
 
 struct AddMethod;
 
+#[async_trait::async_trait]
 impl JsonRPCMethod for AddMethod {
     fn method_name(&self) -> &'static str {
         "add"
     }
     
-    fn call<'a>(
-        &'a self,
+    async fn call(
+        &self,
         params: Option<serde_json::Value>,
         id: Option<RequestId>,
-    ) -> Pin<Box<dyn Future<Output = Response> + Send + 'a>> {
-        Box::pin(async move {
-            if let Some(params) = params {
-                if let Ok(numbers) = serde_json::from_value::<[i32; 2]>(params) {
-                    let result = numbers[0] + numbers[1];
-                    ResponseBuilder::new()
-                        .success(serde_json::json!(result))
-                        .id(id)
-                        .build()
-                } else {
-                    ResponseBuilder::new()
-                        .error(
-                            ErrorBuilder::new(error_codes::INVALID_PARAMS, "Invalid parameters")
-                                .build(),
-                        )
-                        .id(id)
-                        .build()
-                }
+    ) -> Response {
+        if let Some(params) = params {
+            if let Ok(numbers) = serde_json::from_value::<[i32; 2]>(params) {
+                let result = numbers[0] + numbers[1];
+                ResponseBuilder::new()
+                    .success(serde_json::json!(result))
+                    .id(id)
+                    .build()
             } else {
                 ResponseBuilder::new()
                     .error(
-                        ErrorBuilder::new(error_codes::INVALID_PARAMS, "Missing parameters")
+                        ErrorBuilder::new(error_codes::INVALID_PARAMS, "Invalid parameters")
                             .build(),
                     )
                     .id(id)
                     .build()
             }
-        })
+        } else {
+            ResponseBuilder::new()
+                .error(
+                    ErrorBuilder::new(error_codes::INVALID_PARAMS, "Missing parameters")
+                        .build(),
+                )
+                .id(id)
+                .build()
+        }
     }
 }
 
 struct SubtractMethod;
 
+#[async_trait::async_trait]
 impl JsonRPCMethod for SubtractMethod {
     fn method_name(&self) -> &'static str {
         "subtract"
     }
     
-    fn call<'a>(
-        &'a self,
+    async fn call(
+        &self,
         params: Option<serde_json::Value>,
         id: Option<RequestId>,
-    ) -> Pin<Box<dyn Future<Output = Response> + Send + 'a>> {
-        Box::pin(async move {
-            if let Some(params) = params {
-                if let Ok(numbers) = serde_json::from_value::<[i32; 2]>(params) {
-                    let result = numbers[0] - numbers[1];
-                    ResponseBuilder::new()
-                        .success(serde_json::json!(result))
-                        .id(id)
-                        .build()
-                } else {
-                    ResponseBuilder::new()
-                        .error(
-                            ErrorBuilder::new(error_codes::INVALID_PARAMS, "Invalid parameters")
-                                .build(),
-                        )
-                        .id(id)
-                        .build()
-                }
+    ) -> Response {
+        if let Some(params) = params {
+            if let Ok(numbers) = serde_json::from_value::<[i32; 2]>(params) {
+                let result = numbers[0] - numbers[1];
+                ResponseBuilder::new()
+                    .success(serde_json::json!(result))
+                    .id(id)
+                    .build()
             } else {
                 ResponseBuilder::new()
                     .error(
-                        ErrorBuilder::new(error_codes::INVALID_PARAMS, "Missing parameters")
+                        ErrorBuilder::new(error_codes::INVALID_PARAMS, "Invalid parameters")
                             .build(),
                     )
                     .id(id)
                     .build()
             }
-        })
+        } else {
+            ResponseBuilder::new()
+                .error(
+                    ErrorBuilder::new(error_codes::INVALID_PARAMS, "Missing parameters")
+                        .build(),
+                )
+                .id(id)
+                .build()
+        }
     }
 }
 

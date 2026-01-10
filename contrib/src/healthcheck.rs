@@ -5,8 +5,6 @@
 
 use ash_rpc_core::*;
 use serde::{Deserialize, Serialize};
-use std::pin::Pin;
-use std::future::Future;
 
 /// Health check response structure
 #[derive(Debug, Serialize, Deserialize)]
@@ -62,36 +60,35 @@ impl Default for HealthcheckMethod {
     }
 }
 
+#[ash_rpc_core::async_trait]
 impl JsonRPCMethod for HealthcheckMethod {
     fn method_name(&self) -> &'static str {
         "healthcheck"
     }
     
-    fn call<'a>(
-        &'a self,
+    async fn call(
+        &self,
         _params: Option<serde_json::Value>,
         id: Option<RequestId>,
-    ) -> Pin<Box<dyn Future<Output = Response> + Send + 'a>> {
-        Box::pin(async move {
-            let health_status = HealthStatus {
-                status: "healthy".to_string(),
-                timestamp: std::time::SystemTime::now()
-                    .duration_since(std::time::UNIX_EPOCH)
-                    .unwrap_or_default()
-                    .as_secs(),
-                service: self.service_name.clone(),
-                version: self.version.clone(),
-            };
-            
-            match serde_json::to_value(health_status) {
-                Ok(status_json) => rpc_success!(status_json, id),
-                Err(_) => rpc_error!(
-                    error_codes::INTERNAL_ERROR, 
-                    "Failed to serialize health status", 
-                    id
-                ),
-            }
-        })
+    ) -> Response {
+        let health_status = HealthStatus {
+            status: "healthy".to_string(),
+            timestamp: std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap_or_default()
+                .as_secs(),
+            service: self.service_name.clone(),
+            version: self.version.clone(),
+        };
+        
+        match serde_json::to_value(health_status) {
+            Ok(status_json) => rpc_success!(status_json, id),
+            Err(_) => rpc_error!(
+                error_codes::INTERNAL_ERROR, 
+                "Failed to serialize health status", 
+                id
+            ),
+        }
     }
 }
 

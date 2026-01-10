@@ -1,16 +1,16 @@
 [package]
 name = "ash-rpc-core"
-version = "2.1.0"
+version = "3.0.0"
 edition = "2024"
 description = "A comprehensive JSON-RPC 2.0 implementation with multiple transport layers and advanced features"
 license = "Apache-2.0"
 repository = "https://github.com/gntem/ash-rpc"
 documentation = "https://docs.rs/ash-rpc-core"
 homepage = "https://github.com/gntem/ash-rpc"
-keywords = ["json-rpc", "rpc", "json", "tcp", "tower"]
+keywords = ["json-rpc", "rpc", "json", "tcp", "async"]
 categories = ["network-programming", "web-programming", "asynchronous"]
 authors = ["Giorgos Ntemiris <ntemirisgiorgos3@gmail.com>"]
-readme = "../README.md"
+readme = "README.md"
 exclude = ["examples/"]
 
 [features]
@@ -18,17 +18,17 @@ default = []
 tcp = ["tokio"]
 tcp-stream = ["tokio"]
 tcp-stream-tls = ["tokio", "tokio-rustls", "rustls-pemfile"]
-tower = ["dep:tower"]
 stateful = []
 
 [dependencies]
+tracing = "0.1"
+uuid = { version = "1.0", features = ["v4", "serde"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 async-trait = "0.1"
-tokio = { version = "1.47", features = ["net", "io-util", "rt", "rt-multi-thread", "sync", "macros"], optional = true }
+tokio = { version = "1.47", features = ["net", "io-util", "rt", "rt-multi-thread", "sync", "macros", "time"], optional = true }
 tokio-rustls = { version = "0.26", optional = true }
 rustls-pemfile = { version = "2.0", optional = true }
-tower = { version = "0.5", optional = true }
 
 [dev-dependencies]
 ash-rpc-contrib = { path = "../contrib", features = ["healthcheck"] }
@@ -37,8 +37,8 @@ uuid = { version = "1.18", features = ["v4"] }
 hyper = { version = "1.8", features = ["full"] }
 hyper-util = { version = "0.1", features = ["full"] }
 http-body-util = "0.1"
-tower = "0.5"
 dashmap = "6.1"
+tracing-subscriber = { version = "0.3", features = ["fmt", "env-filter"] }
 
 [[example]]
 name = "basic"
@@ -107,32 +107,11 @@ path = "../examples/tcp_stateful_server.rs"
 required-features = ["tcp", "stateful"]
 
 [[example]]
-name = "tower_http_simple"
-path = "../examples/tower_http_simple.rs"
-required-features = ["tower"]
-
-[[example]]
-name = "tower_tcp_simple"
-path = "../examples/tower_tcp_simple.rs"
-required-features = ["tower", "tcp-stream"]
-
-[[example]]
 name = "calculator_engine"
 path = "../examples/calculator_engine.rs"
 
 [[example]]
-name = "docs_demo"
-path = "../examples/docs_demo.rs"
 
-[[example]]
-name = "caching_demo"
-path = "../examples/caching_demo.rs"
-
-[[example]]
-name = "utils_demo"
-path = "../examples/utils_demo.rs"
-
-[[example]]
 name = "healthcheck_example"
 path = "../examples/healthcheck_example.rs"
 
@@ -176,3 +155,30 @@ required-features = ["tcp", "stateful"]
 name = "stateful_websocket_macro"
 path = "../examples/stateful_websocket_macro.rs"
 required-features = ["websocket", "stateful"]
+
+[[example]]
+name = "tracing_example"
+path = "../examples/tracing_example.rs"
+
+[[example]]
+name = "rate_limiting_example"
+path = "../examples/rate_limiting_example.rs"
+required-features = ["tcp"]
+
+[[example]]
+name = "error_sanitization_example"
+path = "../examples/error_sanitization_example.rs"
+
+[[example]]
+name = "security_config_example"
+path = "../examples/security_config_example.rs"
+required-features = ["tcp"]
+
+[[example]]
+name = "auth_example"
+path = "../examples/auth_example.rs"
+
+[[example]]
+name = "auth_with_transport"
+path = "../examples/auth_with_transport.rs"
+
