@@ -360,3 +360,172 @@ macro_rules! rpc_stateful_builder {
         $crate::stateful::StatefulProcessor::builder($context)
     };
 }
+
+//
+// Method Definition Macros - Easy method creation
+//
+
+/// Define a simple JSON-RPC method with automatic trait implementation
+///
+/// # Usage:
+/// ```ignore
+/// rpc_method!(PingMethod, "ping", |_params, id| {
+///     rpc_success!("pong", id)
+/// });
+/// 
+/// rpc_method!(AddMethod, "add", |params, id| {
+///     let nums: Vec<i32> = serde_json::from_value(params.unwrap_or_default()).unwrap();
+///     rpc_success!(nums.iter().sum::<i32>(), id)
+/// });
+/// ```
+#[macro_export]
+macro_rules! rpc_method {
+    ($name:ident, $method_name:expr, $handler:expr) => {
+        pub struct $name;
+        
+        impl $crate::JsonRPCMethod for $name {
+            fn method_name(&self) -> &'static str {
+                $method_name
+            }
+            
+            fn call<'a>(
+                &'a self,
+                params: Option<serde_json::Value>,
+                id: Option<$crate::RequestId>,
+            ) -> std::pin::Pin<Box<dyn std::future::Future<Output = $crate::Response> + Send + 'a>> {
+                std::pin::Pin::from(Box::new(async move {
+                    ($handler)(params, id)
+                }))
+            }
+        }
+    };
+}
+
+/// Validate and extract parameters with automatic error responses
+///
+/// # Usage:
+/// ```ignore
+/// rpc_method!(AddMethod, "add", |params, id| {
+///     let numbers = rpc_params!(params, id => Vec<i32>);
+///     rpc_success!(numbers.iter().sum::<i32>(), id)
+/// });
+/// ```
+#[macro_export]
+macro_rules! rpc_params {
+    ($params:expr, $id:expr => $type:ty) => {
+        match $params {
+            Some(p) => match serde_json::from_value::<$type>(p) {
+                Ok(params) => params,
+                Err(_) => return $crate::rpc_invalid_params!("Invalid parameter format", $id),
+            },
+            None => return $crate::rpc_invalid_params!("Missing required parameters", $id),
+        }
+    };
+    ($params:expr, $id:expr => Option<$type:ty>) => {
+        match $params {
+            Some(p) => match serde_json::from_value::<$type>(p) {
+                Ok(params) => Some(params),
+                Err(_) => return $crate::rpc_invalid_params!("Invalid parameter format", $id),
+            },
+            None => None,
+        }
+    };
+}
+
+/// Convert Result types to JSON-RPC responses
+///
+/// # Usage:
+/// ```ignore
+/// rpc_method!(DivideMethod, "divide", |params, id| {
+///     let [a, b]: [f64; 2] = rpc_params!(params, id => [f64; 2]);
+///     let result = if b != 0.0 { Ok(a / b) } else { Err("Division by zero") };
+///     rpc_try!(result, id)
+/// });
+/// ```
+#[macro_export]
+macro_rules! rpc_try {
+    ($result:expr, $id:expr) => {
+        match $result {
+            Ok(value) => $crate::rpc_success!(value, $id),
+            Err(error) => $crate::rpc_error!($crate::error_codes::INTERNAL_ERROR, format!("{}", error), $id),
+        }
+    };
+    ($result:expr, $id:expr, $error_code:expr) => {
+        match $result {
+            Ok(value) => $crate::rpc_success!(value, $id),
+            Err(error) => $crate::rpc_error!($error_code, format!("{}", error), $id),
+        }
+    };
+}
+
+/// Extract result from JSON-RPC response
+///
+/// # Usage:
+/// ```ignore
+/// let value = rpc_extract!(response);
+/// let typed_value: i32 = rpc_extract!(response => i32);
+/// ```
+#[macro_export]
+macro_rules! rpc_extract {
+    ($response:expr) => {
+        $response
+            .result()
+            .cloned()
+            .unwrap_or_else(|| serde_json::Value::Null)
+    };
+    ($response:expr => $type:ty) => {
+        serde_json::from_value::<$type>($crate::rpc_extract!($response))
+            .unwrap_or_default()
+    };
+}
+
+/// Build a registry with multiple method instances
+///
+/// # Usage:
+/// ```ignore
+/// let registry = rpc_registry_with_methods![PingMethod, EchoMethod, AddMethod];
+/// ```
+#[macro_export]
+macro_rules! rpc_registry_with_methods {
+    ($($method:expr),* $(,)?) => {
+        $crate::MethodRegistry::new($crate::register_methods![$($method),*])
+    };
+}
+
+/// Create a simple JSON-RPC client call
+///
+/// # Usage:
+/// ```ignore
+/// let request = rpc_call_request!("method_name", [1, 2, 3], 42);
+/// let request = rpc_call_request!("ping", 1); // no params
+/// ```
+#[macro_export]
+macro_rules! rpc_call_request {
+    ($method:expr, $params:expr, $id:expr) => {
+        $crate::RequestBuilder::new($method)
+            .params(serde_json::json!($params))
+            .id(serde_json::json!($id))
+            .build()
+    };
+    ($method:expr, $id:expr) => {
+        $crate::RequestBuilder::new($method)
+            .id(serde_json::json!($id))
+            .build()
+    };
+}
+
+/// Handle common validation patterns
+///
+/// # Usage:
+/// ```ignore
+/// rpc_validate!(value > 0, "Value must be positive", id);
+/// rpc_validate!(!name.is_empty(), "Name cannot be empty", id);
+/// ```
+#[macro_export]
+macro_rules! rpc_validate {
+    ($condition:expr, $message:expr, $id:expr) => {
+        if !($condition) {
+            return $crate::rpc_invalid_params!($message, $id);
+        }
+    };
+}

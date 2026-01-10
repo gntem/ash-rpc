@@ -145,6 +145,18 @@ name = "healthcheck_contrib_example"
 path = "../examples/healthcheck_contrib_example.rs"
 
 [[example]]
+name = "new_macros_demo"
+path = "../examples/new_macros_demo.rs"
+
+[[example]]
+name = "params_validation_demo"
+path = "../examples/params_validation_demo.rs"
+
+[[example]]
+name = "advanced_macros_demo"
+path = "../examples/advanced_macros_demo.rs"
+
+[[example]]
 name = "websocket_server"
 path = "../examples/websocket_server.rs"
 required-features = ["websocket"]
