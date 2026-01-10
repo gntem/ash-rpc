@@ -4,9 +4,6 @@
 
 use super::security::SecurityConfig;
 use crate::{Message, MessageProcessor};
-use rustls_pemfile::{certs, pkcs8_private_keys};
-use std::fs::File;
-use std::io::BufReader;
 use std::path::Path;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicUsize, Ordering};
@@ -15,7 +12,7 @@ use tokio::net::{TcpListener, TcpStream};
 use tokio::time::timeout;
 use tokio_rustls::TlsAcceptor;
 use tokio_rustls::rustls::ServerConfig;
-use tokio_rustls::rustls::pki_types::{CertificateDer, PrivateKeyDer};
+use tokio_rustls::rustls::pki_types::{CertificateDer, PrivateKeyDer, pem::PemObject};
 
 /// TLS configuration for secure connections
 #[derive(Clone)]
@@ -29,19 +26,14 @@ impl TlsConfig {
         cert_path: impl AsRef<Path>,
         key_path: impl AsRef<Path>,
     ) -> Result<Self, Box<dyn std::error::Error>> {
-        let cert_file = File::open(cert_path)?;
-        let key_file = File::open(key_path)?;
+        let cert_bytes = std::fs::read(cert_path)?;
+        let key_bytes = std::fs::read(key_path)?;
 
-        let cert_reader = &mut BufReader::new(cert_file);
-        let key_reader = &mut BufReader::new(key_file);
+        let certs = CertificateDer::pem_slice_iter(&cert_bytes)
+            .collect::<Result<Vec<_>, _>>()?;
 
-        let certs: Vec<CertificateDer> = certs(cert_reader).collect::<Result<Vec<_>, _>>()?;
-
-        let mut keys: Vec<PrivateKeyDer> = pkcs8_private_keys(key_reader)
-            .collect::<Result<Vec<_>, _>>()?
-            .into_iter()
-            .map(PrivateKeyDer::from)
-            .collect();
+        let mut keys = PrivateKeyDer::pem_slice_iter(&key_bytes)
+            .collect::<Result<Vec<_>, _>>()?;
 
         if keys.is_empty() {
             return Err("No private keys found in key file".into());
@@ -61,16 +53,11 @@ impl TlsConfig {
         cert_pem: &[u8],
         key_pem: &[u8],
     ) -> Result<Self, Box<dyn std::error::Error>> {
-        let cert_reader = &mut BufReader::new(cert_pem);
-        let key_reader = &mut BufReader::new(key_pem);
+        let certs = CertificateDer::pem_slice_iter(cert_pem)
+            .collect::<Result<Vec<_>, _>>()?;
 
-        let certs: Vec<CertificateDer> = certs(cert_reader).collect::<Result<Vec<_>, _>>()?;
-
-        let mut keys: Vec<PrivateKeyDer> = pkcs8_private_keys(key_reader)
-            .collect::<Result<Vec<_>, _>>()?
-            .into_iter()
-            .map(PrivateKeyDer::from)
-            .collect();
+        let mut keys = PrivateKeyDer::pem_slice_iter(key_pem)
+            .collect::<Result<Vec<_>, _>>()?;
 
         if keys.is_empty() {
             return Err("No private keys found in key data".into());
