@@ -1,29 +1,44 @@
-use ash_rpc_core::{
-    ErrorBuilder, Handler, Message, MessageProcessor, MethodRegistry, Request, ResponseBuilder,
-    error_codes,
-};
+use ash_rpc_core::*;
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let registry = MethodRegistry::new()
-        .register("ping", |_params, id| {
+struct PingMethod;
+
+#[async_trait::async_trait]
+impl JsonRPCMethod for PingMethod {
+    fn method_name(&self) -> &'static str {
+        "ping"
+    }
+
+    async fn call(&self, _params: Option<serde_json::Value>, id: Option<RequestId>) -> Response {
+        ResponseBuilder::new()
+            .success(serde_json::json!("pong"))
+            .id(id)
+            .build()
+    }
+}
+
+struct EchoMethod;
+
+#[async_trait::async_trait]
+impl JsonRPCMethod for EchoMethod {
+    fn method_name(&self) -> &'static str {
+        "echo"
+    }
+
+    async fn call(&self, params: Option<serde_json::Value>, id: Option<RequestId>) -> Response {
+        if let Some(params) = params {
+            ResponseBuilder::new().success(params).id(id).build()
+        } else {
             ResponseBuilder::new()
-                .success(serde_json::json!("pong"))
+                .error(ErrorBuilder::new(error_codes::INVALID_PARAMS, "Missing parameters").build())
                 .id(id)
                 .build()
-        })
-        .register("echo", |params, id| {
-            if let Some(params) = params {
-                ResponseBuilder::new().success(params).id(id).build()
-            } else {
-                ResponseBuilder::new()
-                    .error(
-                        ErrorBuilder::new(error_codes::INVALID_PARAMS, "Missing parameters")
-                            .build(),
-                    )
-                    .id(id)
-                    .build()
-            }
-        });
+        }
+    }
+}
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let registry = MethodRegistry::new(register_methods![PingMethod, EchoMethod]);
 
     println!("Registry has {} methods", registry.method_count());
     println!("Supported methods: {:?}", registry.get_supported_methods());
@@ -38,29 +53,30 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     );
     println!("Max batch size: {:?}", capabilities.max_batch_size);
 
-    let request = Request::new("ping").with_id(serde_json::json!(1));
+    let request = RequestBuilder::new("ping").id(serde_json::json!(1)).build();
     let message = Message::Request(request);
 
     println!("Message is request: {}", message.is_request());
     println!("Message method: {:?}", message.method());
     println!("Message ID: {:?}", message.id());
 
-    if let Some(response) = registry.process_message(message) {
+    if let Some(response) = registry.process_message(message).await {
         println!("Response is success: {}", response.is_success());
         println!("Response result: {:?}", response.result());
         println!("Response: {}", serde_json::to_string_pretty(&response)?);
     }
 
     let batch = vec![
-        Message::Request(Request::new("ping").with_id(serde_json::json!(1))),
+        Message::Request(RequestBuilder::new("ping").id(serde_json::json!(1)).build()),
         Message::Request(
-            Request::new("echo")
-                .with_params(serde_json::json!({"message": "hello"}))
-                .with_id(serde_json::json!(2)),
+            RequestBuilder::new("echo")
+                .params(serde_json::json!({"message": "hello"}))
+                .id(serde_json::json!(2))
+                .build(),
         ),
     ];
 
-    let batch_responses = registry.process_batch(batch);
+    let batch_responses = registry.process_batch(batch).await;
     println!("Batch responses count: {}", batch_responses.len());
 
     Ok(())

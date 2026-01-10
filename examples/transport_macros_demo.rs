@@ -1,23 +1,46 @@
 use ash_rpc_core::*;
 
-fn main() {
+struct PingMethod;
+
+#[async_trait::async_trait]
+impl JsonRPCMethod for PingMethod {
+    fn method_name(&self) -> &'static str {
+        "ping"
+    }
+
+    async fn call(&self, _params: Option<serde_json::Value>, id: Option<RequestId>) -> Response {
+        rpc_success!("pong", id)
+    }
+}
+
+struct EchoMethod;
+
+#[async_trait::async_trait]
+impl JsonRPCMethod for EchoMethod {
+    fn method_name(&self) -> &'static str {
+        "echo"
+    }
+
+    async fn call(&self, params: Option<serde_json::Value>, id: Option<RequestId>) -> Response {
+        rpc_success!(params.unwrap_or(serde_json::json!(null)), id)
+    }
+}
+
+#[tokio::main]
+async fn main() {
     println!("Transport Macros Demo");
     println!("===================");
 
-    let registry = MethodRegistry::new()
-        .register("ping", |_params, id| rpc_success!("pong", id))
-        .register("echo", |params, id| {
-            rpc_success!(params.unwrap_or(serde_json::json!(null)), id)
-        });
+    let registry = MethodRegistry::new(register_methods![PingMethod, EchoMethod]);
 
-    println!("✅ Created JSON-RPC registry with methods: ping, echo");
+    println!(" Created JSON-RPC registry with methods: ping, echo");
 
-    let test_request = rpc_request!("ping", 1);
+    let test_request = RequestBuilder::new("ping").id(serde_json::json!(1)).build();
     let test_message = Message::Request(test_request);
 
-    if let Some(response) = registry.process_message(test_message) {
+    if let Some(response) = registry.process_message(test_message).await {
         println!(
-            "✅ Registry test successful: {}",
+            " Registry test successful: {}",
             serde_json::to_string(&response).unwrap()
         );
     }

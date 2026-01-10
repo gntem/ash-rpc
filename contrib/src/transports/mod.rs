@@ -1,0 +1,11 @@
+//! Transport implementations for ash-rpc-contrib
+//!
+//! This module contains transport layer implementations that extend
+//! the core ash-rpc functionality with additional protocols.
+
+#[cfg(feature = "axum")]
+pub mod axum;
+
+// Re-exports for convenience
+#[cfg(feature = "axum")]
+pub use self::axum::*;

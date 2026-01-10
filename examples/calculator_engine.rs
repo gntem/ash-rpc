@@ -1,7 +1,4 @@
-use ash_rpc_core::{
-    MethodRegistry, Request, Response, rpc_error, rpc_internal_error, rpc_invalid_params,
-    rpc_success,
-};
+use ash_rpc_core::*;
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 
@@ -14,6 +11,200 @@ struct MathParams {
 #[derive(Debug, Serialize)]
 struct CalculationResult {
     result: f64,
+}
+
+struct AddMethod;
+
+#[async_trait::async_trait]
+impl JsonRPCMethod for AddMethod {
+    fn method_name(&self) -> &'static str {
+        "add"
+    }
+
+    async fn call(&self, params: Option<serde_json::Value>, id: Option<RequestId>) -> Response {
+        let params: MathParams = match params {
+            Some(p) => match serde_json::from_value(p) {
+                Ok(params) => params,
+                Err(_) => {
+                    return rpc_error!(
+                        error_codes::INVALID_PARAMS,
+                        "Invalid parameters for add method",
+                        id
+                    );
+                }
+            },
+            None => {
+                return rpc_error!(
+                    error_codes::INVALID_PARAMS,
+                    "Missing parameters for add method",
+                    id
+                );
+            }
+        };
+
+        let result = CalculationResult {
+            result: params.a + params.b,
+        };
+
+        match serde_json::to_value(result) {
+            Ok(result_json) => rpc_success!(result_json, id),
+            Err(_) => rpc_error!(
+                error_codes::INTERNAL_ERROR,
+                "Failed to serialize result",
+                id
+            ),
+        }
+    }
+}
+
+struct SubtractMethod;
+
+#[async_trait::async_trait]
+impl JsonRPCMethod for SubtractMethod {
+    fn method_name(&self) -> &'static str {
+        "subtract"
+    }
+
+    async fn call(&self, params: Option<serde_json::Value>, id: Option<RequestId>) -> Response {
+        let params: MathParams = match params {
+            Some(p) => match serde_json::from_value(p) {
+                Ok(params) => params,
+                Err(_) => {
+                    return rpc_error!(
+                        error_codes::INVALID_PARAMS,
+                        "Invalid parameters for subtract method",
+                        id
+                    );
+                }
+            },
+            None => {
+                return rpc_error!(
+                    error_codes::INVALID_PARAMS,
+                    "Missing parameters for subtract method",
+                    id
+                );
+            }
+        };
+
+        let result = CalculationResult {
+            result: params.a - params.b,
+        };
+
+        match serde_json::to_value(result) {
+            Ok(result_json) => rpc_success!(result_json, id),
+            Err(_) => rpc_error!(
+                error_codes::INTERNAL_ERROR,
+                "Failed to serialize result",
+                id
+            ),
+        }
+    }
+}
+
+struct MultiplyMethod;
+
+#[async_trait::async_trait]
+impl JsonRPCMethod for MultiplyMethod {
+    fn method_name(&self) -> &'static str {
+        "multiply"
+    }
+
+    async fn call(&self, params: Option<serde_json::Value>, id: Option<RequestId>) -> Response {
+        let params: MathParams = match params {
+            Some(p) => match serde_json::from_value(p) {
+                Ok(params) => params,
+                Err(_) => {
+                    return rpc_error!(
+                        error_codes::INVALID_PARAMS,
+                        "Invalid parameters for multiply method",
+                        id
+                    );
+                }
+            },
+            None => {
+                return rpc_error!(
+                    error_codes::INVALID_PARAMS,
+                    "Missing parameters for multiply method",
+                    id
+                );
+            }
+        };
+
+        let result = CalculationResult {
+            result: params.a * params.b,
+        };
+
+        match serde_json::to_value(result) {
+            Ok(result_json) => rpc_success!(result_json, id),
+            Err(_) => rpc_error!(
+                error_codes::INTERNAL_ERROR,
+                "Failed to serialize result",
+                id
+            ),
+        }
+    }
+}
+
+struct DivideMethod;
+
+#[async_trait::async_trait]
+impl JsonRPCMethod for DivideMethod {
+    fn method_name(&self) -> &'static str {
+        "divide"
+    }
+
+    async fn call(&self, params: Option<serde_json::Value>, id: Option<RequestId>) -> Response {
+        let params: MathParams = match params {
+            Some(p) => match serde_json::from_value(p) {
+                Ok(params) => params,
+                Err(_) => {
+                    return rpc_error!(
+                        error_codes::INVALID_PARAMS,
+                        "Invalid parameters for divide method",
+                        id
+                    );
+                }
+            },
+            None => {
+                return rpc_error!(
+                    error_codes::INVALID_PARAMS,
+                    "Missing parameters for divide method",
+                    id
+                );
+            }
+        };
+
+        if params.b == 0.0 {
+            return rpc_error!(error_codes::INVALID_PARAMS, "Division by zero", id);
+        }
+
+        let result = CalculationResult {
+            result: params.a / params.b,
+        };
+
+        match serde_json::to_value(result) {
+            Ok(result_json) => rpc_success!(result_json, id),
+            Err(_) => rpc_error!(
+                error_codes::INTERNAL_ERROR,
+                "Failed to serialize result",
+                id
+            ),
+        }
+    }
+}
+
+struct ListMethodsMethod;
+
+#[async_trait::async_trait]
+impl JsonRPCMethod for ListMethodsMethod {
+    fn method_name(&self) -> &'static str {
+        "list_methods"
+    }
+
+    async fn call(&self, _params: Option<serde_json::Value>, id: Option<RequestId>) -> Response {
+        let methods = vec!["add", "subtract", "multiply", "divide", "list_methods"];
+        rpc_success!(methods, id)
+    }
 }
 
 #[derive(Clone)]
@@ -29,105 +220,13 @@ impl Default for CalculatorEngine {
 
 impl CalculatorEngine {
     pub fn new() -> Self {
-        let registry = MethodRegistry::new()
-            .register("add", |params, id| {
-                let params: MathParams = match params {
-                    Some(p) => match serde_json::from_value(p) {
-                        Ok(params) => params,
-                        Err(_) => {
-                            return rpc_invalid_params!("Invalid parameters for add method", id);
-                        }
-                    },
-                    None => return rpc_invalid_params!("Missing parameters for add method", id),
-                };
-
-                let result = CalculationResult {
-                    result: params.a + params.b,
-                };
-
-                match serde_json::to_value(result) {
-                    Ok(result_json) => rpc_success!(result_json, id),
-                    Err(_) => rpc_internal_error!("Failed to serialize result", id),
-                }
-            })
-            .register("subtract", |params, id| {
-                let params: MathParams = match params {
-                    Some(p) => match serde_json::from_value(p) {
-                        Ok(params) => params,
-                        Err(_) => {
-                            return rpc_invalid_params!(
-                                "Invalid parameters for subtract method",
-                                id
-                            );
-                        }
-                    },
-                    None => {
-                        return rpc_invalid_params!("Missing parameters for subtract method", id);
-                    }
-                };
-
-                let result = CalculationResult {
-                    result: params.a - params.b,
-                };
-
-                match serde_json::to_value(result) {
-                    Ok(result_json) => rpc_success!(result_json, id),
-                    Err(_) => rpc_internal_error!("Failed to serialize result", id),
-                }
-            })
-            .register("multiply", |params, id| {
-                let params: MathParams = match params {
-                    Some(p) => match serde_json::from_value(p) {
-                        Ok(params) => params,
-                        Err(_) => {
-                            return rpc_invalid_params!(
-                                "Invalid parameters for multiply method",
-                                id
-                            );
-                        }
-                    },
-                    None => {
-                        return rpc_invalid_params!("Missing parameters for multiply method", id);
-                    }
-                };
-
-                let result = CalculationResult {
-                    result: params.a * params.b,
-                };
-
-                match serde_json::to_value(result) {
-                    Ok(result_json) => rpc_success!(result_json, id),
-                    Err(_) => rpc_internal_error!("Failed to serialize result", id),
-                }
-            })
-            .register("divide", |params, id| {
-                let params: MathParams = match params {
-                    Some(p) => match serde_json::from_value(p) {
-                        Ok(params) => params,
-                        Err(_) => {
-                            return rpc_invalid_params!("Invalid parameters for divide method", id);
-                        }
-                    },
-                    None => return rpc_invalid_params!("Missing parameters for divide method", id),
-                };
-
-                if params.b == 0.0 {
-                    return rpc_invalid_params!("Division by zero", id);
-                }
-
-                let result = CalculationResult {
-                    result: params.a / params.b,
-                };
-
-                match serde_json::to_value(result) {
-                    Ok(result_json) => rpc_success!(result_json, id),
-                    Err(_) => rpc_internal_error!("Failed to serialize result", id),
-                }
-            })
-            .register("list_methods", |_params, id| {
-                let methods = vec!["add", "subtract", "multiply", "divide", "list_methods"];
-                rpc_success!(methods, id)
-            });
+        let registry = MethodRegistry::new(register_methods![
+            AddMethod,
+            SubtractMethod,
+            MultiplyMethod,
+            DivideMethod,
+            ListMethodsMethod
+        ]);
 
         Self {
             registry: Arc::new(registry),
@@ -137,6 +236,7 @@ impl CalculatorEngine {
     pub async fn execute(&self, request: Request) -> Response {
         self.registry
             .call(&request.method, request.params, request.id)
+            .await
     }
 
     pub fn list_methods(&self) -> Vec<String> {
@@ -146,73 +246,19 @@ impl CalculatorEngine {
     pub fn has_method(&self, method: &str) -> bool {
         self.registry.has_method(method)
     }
-
-    pub fn render_docs(&mut self) -> serde_json::Value {
-        Arc::get_mut(&mut self.registry)
-            .map(|registry| registry.render_docs())
-            .unwrap_or_else(|| {
-                serde_json::json!({
-                    "error": "Cannot generate documentation while registry is in use"
-                })
-            })
-    }
 }
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     println!("=== Calculator Engine Demo ===");
 
-    let mut engine = CalculatorEngine::new();
+    let engine = CalculatorEngine::new();
 
     println!(
         "Engine initialized with methods: {:?}",
         engine.list_methods()
     );
     println!();
-
-    println!("=== Generated API Documentation ===");
-    let docs = engine.render_docs();
-
-    if let Some(paths) = docs.get("paths") {
-        if let Some(root_path) = paths.get("/") {
-            if let Some(post) = root_path.get("post") {
-                if let Some(request_body) = post.get("requestBody") {
-                    if let Some(content) = request_body.get("content") {
-                        if let Some(json_content) = content.get("application/json") {
-                            if let Some(schema) = json_content.get("schema") {
-                                if let Some(serde_json::Value::Array(methods)) = schema.get("oneOf")
-                                {
-                                    for method in methods {
-                                        if let Some(props) = method.get("properties") {
-                                            if let Some(method_name) = props.get("method") {
-                                                if let Some(serde_json::Value::Array(names)) =
-                                                    method_name.get("enum")
-                                                {
-                                                    if let Some(name) = names.first() {
-                                                        println!("Method: {}", name);
-                                                        if let Some(params) = props.get("params") {
-                                                            println!(
-                                                                "  Parameters: {}",
-                                                                serde_json::to_string_pretty(
-                                                                    params
-                                                                )
-                                                                .unwrap_or_default()
-                                                            );
-                                                        }
-                                                        println!();
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
 
     println!("=== Testing Calculator Engine ===");
 
