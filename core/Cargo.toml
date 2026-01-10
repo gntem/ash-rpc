@@ -13,11 +13,6 @@ authors = ["Giorgos Ntemiris <ntemirisgiorgos3@gmail.com>"]
 readme = "../README.md"
 exclude = ["examples/"]
 
-[[bin]]
-name = "ash-rpc-gen"
-path = "src/bin/ash-rpc-gen.rs"
-required-features = ["cli"]
-
 [features]
 default = []
 tcp = ["tokio"]
@@ -25,7 +20,6 @@ tcp-stream = ["tokio"]
 tcp-stream-tls = ["tokio", "tokio-rustls", "rustls-pemfile"]
 tower = ["dep:tower"]
 stateful = []
-cli = ["dep:clap"]
 
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }
@@ -35,7 +29,6 @@ tokio = { version = "1.47", features = ["net", "io-util", "rt", "rt-multi-thread
 tokio-rustls = { version = "0.26", optional = true }
 rustls-pemfile = { version = "2.0", optional = true }
 tower = { version = "0.5", optional = true }
-clap = { version = "4.5", features = ["derive"], optional = true }
 
 [dev-dependencies]
 ash-rpc-contrib = { path = "../contrib", features = ["healthcheck"] }
