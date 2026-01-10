@@ -101,13 +101,6 @@ cargo run --example tcp_server
 cargo run --example tcp_stream_server
 ```
 
-## Feature Flags
-
-```toml
-[dependencies]
-ash-rpc-core = { version = "0.1.0", features = ["tcp", "tcp-stream"] }
-```
-
 Available TCP-related features:
 
 - `tcp` - TCP transport support
