@@ -10,17 +10,16 @@
 //!
 //! struct PingMethod;
 //!
+//! #[async_trait::async_trait]
 //! impl JsonRPCMethod for PingMethod {
 //!     fn method_name(&self) -> &'static str { "ping" }
 //!     
-//!     fn call<'a>(
-//!         &'a self,
+//!     async fn call(
+//!         &self,
 //!         _params: Option<serde_json::Value>,
 //!         id: Option<RequestId>,
-//!     ) -> Pin<Box<dyn Future<Output = Response> + Send + 'a>> {
-//!         Box::pin(async move {
-//!             rpc_success!("pong", id)
-//!         })
+//!     ) -> Response {
+//!         rpc_success!("pong", id)
 //!     }
 //! }
 //!
@@ -30,7 +29,7 @@
 //! ### Optimized Usage (Compile-time Dispatch)
 //! For better performance, use the dispatch_call! macro:
 //!
-//! ```rust
+//! ```rust,ignore
 //! // In your handler function:
 //! async fn handle_call(method_name: &str, params: Option<serde_json::Value>, id: Option<RequestId>) -> Response {
 //!     dispatch_call!(method_name, params, id => PingMethod, EchoMethod, CalculatorMethod)

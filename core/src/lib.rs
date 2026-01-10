@@ -15,30 +15,26 @@
 //!
 //! ## Quick Start
 //!
-//! ```rust,no_run
+//! ```rust
 //! use ash_rpc_core::*;
-//! use serde_json::Value;
+//!
+//! struct PingMethod;
+//!
+//! #[async_trait::async_trait]
+//! impl JsonRPCMethod for PingMethod {
+//!     fn method_name(&self) -> &'static str { "ping" }
+//!     
+//!     async fn call(
+//!         &self,
+//!         _params: Option<serde_json::Value>,
+//!         id: Option<RequestId>,
+//!     ) -> Response {
+//!         rpc_success!("pong", id)
+//!     }
+//! }
 //!
 //! // Create a method registry
-//! let registry = MethodRegistry::new()
-//!     .register("ping", |_params, id| {
-//!         rpc_success!("pong", id)
-//!     })
-//!     .register("add", |params, id| {
-//!         if let Some(params) = params {
-//!             let nums: Vec<i32> = serde_json::from_value(params).unwrap();
-//!             if nums.len() == 2 {
-//!                 rpc_success!(nums[0] + nums[1], id)
-//!             } else {
-//!                 rpc_error!(error_codes::INVALID_PARAMS, "Expected 2 numbers", id)
-//!             }
-//!         } else {
-//!             rpc_error!(error_codes::INVALID_PARAMS, "Parameters required", id)
-//!         }
-//!     });
-//!
-//! // Call a method
-//! let response = registry.call("ping", None, Some(Value::Number(serde_json::Number::from(1))));
+//! let registry = MethodRegistry::new(register_methods![PingMethod]);
 //! ```
 
 // Module declarations
