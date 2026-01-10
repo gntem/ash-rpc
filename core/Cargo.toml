@@ -135,25 +135,12 @@ name = "tls_server"
 path = "../examples/tls_example/server.rs"
 required-features = ["tcp-stream-tls"]
 
-[[example]]
-name = "websocket_server"
-path = "../examples/websocket_server.rs"
-required-features = ["websocket"]
 
-[[example]]
-name = "websocket_client"
-path = "../examples/websocket_client.rs"
-required-features = ["websocket"]
 
 [[example]]
 name = "dashmap_stateful_server"
 path = "../examples/dashmap_stateful_server.rs"
 required-features = ["tcp", "stateful"]
-
-[[example]]
-name = "stateful_websocket_macro"
-path = "../examples/stateful_websocket_macro.rs"
-required-features = ["websocket", "stateful"]
 
 [[example]]
 name = "tracing_example"

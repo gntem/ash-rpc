@@ -215,7 +215,10 @@ impl Error {
     /// logic based on their security requirements.
     ///
     /// # Example
-    /// ```ignore
+    /// ```
+    /// # use ash_rpc_core::Error;
+    /// # const INTERNAL_ERROR: i32 = -32603;
+    /// # let error = Error::new(INTERNAL_ERROR, "Something went wrong");
     /// let sanitized = error.sanitized_with(|err| {
     ///     if err.code() == INTERNAL_ERROR {
     ///         Error::new(err.code(), "Internal server error")

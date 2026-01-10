@@ -5,7 +5,7 @@
 //! ## Features
 //!
 //! - **Complete JSON-RPC 2.0 support** - Request, response, notification, and batch handling
-//! - **Multiple transports** - TCP, TCP streaming, WebSocket, HTTP via Axum, and Tower middleware
+//! - **Multiple transports** - TCP, TCP streaming, HTTP via Axum, and Tower middleware
 //! - **Stateful handlers** - Context-aware method handlers with shared application state
 //! - **Type-safe builders** - Fluent API for constructing requests and responses
 //! - **Method registry** - Organize and dispatch JSON-RPC methods

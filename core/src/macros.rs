@@ -3,7 +3,7 @@
 /// Create a success response with a result value and optional ID
 ///
 /// # Examples:
-/// ```ignore
+/// ```text
 /// // Success with ID
 /// rpc_success!(42, Some(1))
 ///
@@ -32,7 +32,7 @@ macro_rules! rpc_success {
 /// Create an error response with code, message, and optional ID
 ///
 /// # Usage:
-/// ```ignore
+/// ```text
 /// // Error with explicit code, message and ID
 /// rpc_error!(-32602, "Invalid parameters", Some(1))
 ///
@@ -64,7 +64,7 @@ macro_rules! rpc_error {
 /// Create an error response with code, message, additional data and optional ID
 ///
 /// # Usage:
-/// ```ignore
+/// ```text
 /// // Error with data
 /// rpc_error_with_data!(-32602, "Invalid parameters", {"expected": "array"}, Some(1))
 ///
@@ -98,7 +98,7 @@ macro_rules! rpc_error_with_data {
 /// Common error response shortcuts using predefined error codes
 ///
 /// # Usage:
-/// ```ignore
+/// ```text
 /// rpc_invalid_params!("Expected array of two numbers", id)
 /// rpc_method_not_found!(id)
 /// rpc_parse_error!("Invalid JSON", id)
@@ -151,7 +151,7 @@ macro_rules! rpc_internal_error {
 /// Create a JSON-RPC request
 ///
 /// # Usage:
-/// ```ignore
+/// ```text
 /// // Request with method, params and ID
 /// rpc_request!("add", [5, 3], 1)
 ///
@@ -182,7 +182,7 @@ macro_rules! rpc_request {
 /// Create a JSON-RPC notification
 ///
 /// # Usage:
-/// ```ignore
+/// ```text
 /// // Notification with method and params
 /// rpc_notification!("log", {"level": "info", "message": "Hello"})
 ///
@@ -204,7 +204,7 @@ macro_rules! rpc_notification {
 /// Create a JSON-RPC error object (not a response)
 ///
 /// # Usage:
-/// ```ignore
+/// ```text
 /// // Error with code and message
 /// rpc_error_obj!(-32602, "Invalid parameters")
 ///
@@ -230,7 +230,7 @@ macro_rules! rpc_error_obj {
 /// Create and run a TCP JSON-RPC server
 ///
 /// # Usage:
-/// ```ignore
+/// ```text
 /// // Basic TCP server with registry
 /// rpc_tcp_server!("127.0.0.1:8080", registry);
 ///
@@ -251,7 +251,7 @@ macro_rules! rpc_tcp_server {
 /// Create and run a TCP streaming JSON-RPC server
 ///
 /// # Usage:
-/// ```ignore
+/// ```text
 /// // Basic TCP streaming server
 /// rpc_tcp_stream_server!("127.0.0.1:8080", registry).await?;
 ///
@@ -274,7 +274,7 @@ macro_rules! rpc_tcp_stream_server {
 /// Create a TCP streaming JSON-RPC client
 ///
 /// # Usage:
-/// ```ignore
+/// ```text
 /// // Create and connect client
 /// let mut client = rpc_tcp_stream_client!("127.0.0.1:8080").await?;
 ///
@@ -296,7 +296,7 @@ macro_rules! rpc_tcp_stream_client {
 /// Create a stateful JSON-RPC processor
 ///
 /// # Usage:
-/// ```rust,ignore
+/// ```text
 /// // Create processor with context and handler
 /// let processor = rpc_stateful_processor!(service_context, handler);
 ///
@@ -314,7 +314,7 @@ macro_rules! rpc_stateful_processor {
 /// Create a stateful method registry
 ///
 /// # Usage:
-/// ```ignore
+/// ```text
 /// // Create empty registry
 /// let registry: StatefulMethodRegistry<MyContext> = rpc_stateful_registry!();
 ///
@@ -334,7 +334,7 @@ macro_rules! rpc_stateful_registry {
 /// Create a stateful processor with builder pattern
 ///
 /// # Usage:
-/// ```ignore
+/// ```text
 /// // Create processor with builder
 /// let processor = rpc_stateful_builder!(context)
 ///     .handler(handler)
@@ -360,7 +360,7 @@ macro_rules! rpc_stateful_builder {
 /// Define a simple JSON-RPC method with automatic trait implementation
 ///
 /// # Usage:
-/// ```ignore
+/// ```text
 /// rpc_method!(PingMethod, "ping", |_params, id| {
 ///     rpc_success!("pong", id)
 /// });
@@ -395,7 +395,7 @@ macro_rules! rpc_method {
 /// Validate and extract parameters with automatic error responses
 ///
 /// # Usage:
-/// ```ignore
+/// ```text
 /// rpc_method!(AddMethod, "add", |params, id| {
 ///     let numbers = rpc_params!(params, id => Vec<i32>);
 ///     rpc_success!(numbers.iter().sum::<i32>(), id)
@@ -429,7 +429,7 @@ macro_rules! rpc_params {
 /// For custom error messages, provide them explicitly.
 ///
 /// # Usage:
-/// ```ignore
+/// ```text
 /// rpc_method!(DivideMethod, "divide", |params, id| {
 ///     let [a, b]: [f64; 2] = rpc_params!(params, id => [f64; 2]);
 ///     let result = if b != 0.0 { Ok(a / b) } else { Err("Division by zero") };
@@ -492,7 +492,7 @@ macro_rules! rpc_try {
 /// Extract result from JSON-RPC response
 ///
 /// # Usage:
-/// ```ignore
+/// ```text
 /// let value = rpc_extract!(response);
 /// let typed_value: i32 = rpc_extract!(response => i32);
 /// ```
@@ -512,7 +512,7 @@ macro_rules! rpc_extract {
 /// Build a registry with multiple method instances
 ///
 /// # Usage:
-/// ```ignore
+/// ```text
 /// let registry = rpc_registry_with_methods![PingMethod, EchoMethod, AddMethod];
 /// ```
 #[macro_export]
@@ -525,7 +525,7 @@ macro_rules! rpc_registry_with_methods {
 /// Create a simple JSON-RPC client call
 ///
 /// # Usage:
-/// ```ignore
+/// ```text
 /// let request = rpc_call_request!("method_name", [1, 2, 3], 42);
 /// let request = rpc_call_request!("ping", 1); // no params
 /// ```
@@ -547,7 +547,7 @@ macro_rules! rpc_call_request {
 /// Handle common validation patterns
 ///
 /// # Usage:
-/// ```ignore
+/// ```text
 /// rpc_validate!(value > 0, "Value must be positive", id);
 /// rpc_validate!(!name.is_empty(), "Name cannot be empty", id);
 /// ```

@@ -11,8 +11,8 @@ env:
   RUST_BACKTRACE: 1
 
 jobs:
-  format:
-    name: Format Check
+  format-and-lint:
+    name: Format & Clippy
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -20,39 +20,13 @@ jobs:
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
         with:
-          components: rustfmt
+          components: rustfmt, clippy
+      
+      - name: Setup Rust cache
+        uses: Swatinem/rust-cache@v2
       
       - name: Check formatting
         run: cargo fmt --all -- --check
-
-  clippy:
-    name: Clippy Lints
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          components: clippy
-      
-      - name: Cache cargo registry
-        uses: actions/cache@v4
-        with:
-          path: ~/.cargo/registry
-          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
-      
-      - name: Cache cargo index
-        uses: actions/cache@v4
-        with:
-          path: ~/.cargo/git
-          key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.lock') }}
-      
-      - name: Cache build artifacts
-        uses: actions/cache@v4
-        with:
-          path: target
-          key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
       
       - name: Run clippy
         run: cargo clippy --workspace --lib --bins --all-features -- -D warnings
@@ -60,7 +34,7 @@ jobs:
   test:
     name: Test Suite
     runs-on: ubuntu-latest
-    needs: [format, clippy]
+    needs: [format-and-lint]
     
     steps:
       - uses: actions/checkout@v4
@@ -68,23 +42,8 @@ jobs:
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
       
-      - name: Cache cargo registry
-        uses: actions/cache@v4
-        with:
-          path: ~/.cargo/registry
-          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
-      
-      - name: Cache cargo index
-        uses: actions/cache@v4
-        with:
-          path: ~/.cargo/git
-          key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.lock') }}
-      
-      - name: Cache build artifacts
-        uses: actions/cache@v4
-        with:
-          path: target
-          key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
+      - name: Setup Rust cache
+        uses: Swatinem/rust-cache@v2
       
       - name: Build workspace
         run: cargo build --workspace --all-features --verbose --lib --bins
@@ -98,7 +57,8 @@ jobs:
   coverage:
     name: Code Coverage
     runs-on: ubuntu-latest
-    needs: [format, clippy]
+    needs: [format-and-lint]
+    if: github.event_name == 'push'
     steps:
       - uses: actions/checkout@v4
       
@@ -107,23 +67,8 @@ jobs:
         with:
           components: llvm-tools-preview
       
-      - name: Cache cargo registry
-        uses: actions/cache@v4
-        with:
-          path: ~/.cargo/registry
-          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
-      
-      - name: Cache cargo index
-        uses: actions/cache@v4
-        with:
-          path: ~/.cargo/git
-          key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.lock') }}
-      
-      - name: Cache build artifacts
-        uses: actions/cache@v4
-        with:
-          path: target
-          key: ${{ runner.os }}-cargo-coverage-target-${{ hashFiles('**/Cargo.lock') }}
+      - name: Setup Rust cache
+        uses: Swatinem/rust-cache@v2
       
       - name: Install cargo-llvm-cov
         uses: taiki-e/install-action@cargo-llvm-cov
@@ -141,12 +86,12 @@ jobs:
   check-features:
     name: Feature Combinations
     runs-on: ubuntu-latest
-    needs: [format, clippy]
+    needs: [format-and-lint]
     strategy:
+      fail-fast: false
       matrix:
         features:
           - no-default
-          - tcp
           - all-features
     
     steps:
@@ -155,17 +100,10 @@ jobs:
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
       
-      - name: Cache cargo registry
-        uses: actions/cache@v4
+      - name: Setup Rust cache
+        uses: Swatinem/rust-cache@v2
         with:
-          path: ~/.cargo/registry
-          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
-      
-      - name: Cache cargo index
-        uses: actions/cache@v4
-        with:
-          path: ~/.cargo/git
-          key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ matrix.features }}
       
       - name: Check feature - no-default
         if: matrix.features == 'no-default'
@@ -178,24 +116,15 @@ jobs:
   documentation:
     name: Documentation
     runs-on: ubuntu-latest
-    needs: [test, coverage, check-features]
+    needs: [test, check-features]
     steps:
       - uses: actions/checkout@v4
       
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
       
-      - name: Cache cargo registry
-        uses: actions/cache@v4
-        with:
-          path: ~/.cargo/registry
-          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
-      
-      - name: Cache cargo index
-        uses: actions/cache@v4
-        with:
-          path: ~/.cargo/git
-          key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.lock') }}
+      - name: Setup Rust cache
+        uses: Swatinem/rust-cache@v2
       
       - name: Check documentation
         run: cargo doc --workspace --all-features --no-deps
@@ -205,12 +134,15 @@ jobs:
   security-audit:
     name: Security Audit
     runs-on: ubuntu-latest
-    needs: [test, coverage, check-features]
+    needs: [test, check-features]
     steps:
       - uses: actions/checkout@v4
       
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
+      
+      - name: Setup Rust cache
+        uses: Swatinem/rust-cache@v2
       
       - name: Install cargo-audit
         run: cargo install cargo-audit --locked

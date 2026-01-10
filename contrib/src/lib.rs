@@ -12,9 +12,6 @@ pub mod middleware;
 #[cfg(feature = "axum")]
 pub use transports::axum;
 
-#[cfg(feature = "websocket")]
-pub use transports::websocket;
-
 // Re-export healthcheck for convenience
 #[cfg(feature = "healthcheck")]
 pub use healthcheck::*;

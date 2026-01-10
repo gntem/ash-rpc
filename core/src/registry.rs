@@ -29,7 +29,7 @@
 //! ### Optimized Usage (Compile-time Dispatch)
 //! For better performance, use the dispatch_call! macro:
 //!
-//! ```rust,ignore
+//! ```text
 //! // In your handler function:
 //! async fn handle_call(method_name: &str, params: Option<serde_json::Value>, id: Option<RequestId>) -> Response {
 //!     dispatch_call!(method_name, params, id => PingMethod, EchoMethod, CalculatorMethod)
@@ -106,7 +106,7 @@ impl MethodRegistry {
     /// The user implements ALL auth logic in the trait.
     ///
     /// # Example
-    /// ```ignore
+    /// ```text
     /// let registry = MethodRegistry::new(methods)
     ///     .with_auth(MyAuthPolicy::new());
     /// ```

@@ -9,14 +9,15 @@
 //! You implement the trait, we call your `can_access` method.
 //!
 //! # Example
-//! ```ignore
-//! use ash_rpc_core::auth::AuthPolicy;
+//! ```
+//! use ash_rpc_core::auth::{AuthPolicy, ConnectionContext};
 //!
 //! struct MyAuth;
 //!
 //! impl AuthPolicy for MyAuth {
-//!     fn can_access(&self, method: &str, params: Option<&serde_json::Value>) -> bool {
+//!     fn can_access(&self, method: &str, params: Option<&serde_json::Value>, _ctx: &ConnectionContext) -> bool {
 //!         // Your logic here - check API keys, JWT tokens, whatever you need
+//!         let _ = (method, params);
 //!         true
 //!     }
 //! }
@@ -94,7 +95,7 @@ impl ConnectionContext {
 /// - Any connection metadata you need for auth decisions
 ///
 /// # Example: TLS Certificate Extraction
-/// ```ignore
+/// ```text
 /// use ash_rpc_core::auth::{ContextExtractor, ConnectionContext};
 ///
 /// struct TlsContextExtractor;
@@ -180,7 +181,7 @@ pub trait AuthPolicy: Send + Sync {
     /// `true` if the request should proceed, `false` to deny
     ///
     /// # Example: Using Connection Context
-    /// ```ignore
+    /// ```text
     /// fn can_access(
     ///     &self,
     ///     method: &str,

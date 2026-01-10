@@ -63,7 +63,5 @@ fn main() {
     #[cfg(feature = "stateful")]
     println!("✓ rpc_stateful_builder! - Create a stateful processor with builder");
 
-    println!(
-        "\n✨ See transport_macros_demo.rs and stateful_websocket_macro.rs for usage examples!"
-    );
+    println!("\n✨ See transport_macros_demo.rs for usage examples!");
 }

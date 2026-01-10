@@ -9,7 +9,7 @@ This package extends ash-rpc-core with additional transport layers and utilities
 ### Transport Implementations
 
 - **HTTP with Axum** - JSON-RPC server integration with the Axum web framework
-- **WebSocket** - Full-duplex WebSocket transport with server and client implementations
+
 
 ### Utility Methods
 
@@ -25,7 +25,7 @@ This package extends ash-rpc-core with additional transport layers and utilities
 Add the contrib package with desired features:
 
 ```sh
-cargo add ash-rpc-contrib --features axum,websocket,healthcheck
+cargo add ash-rpc-contrib --features axum,healthcheck
 ```
 
 ## Feature Flags
@@ -33,7 +33,7 @@ cargo add ash-rpc-contrib --features axum,websocket,healthcheck
 Available features:
 
 - `axum` - HTTP transport using Axum web framework
-- `websocket` - WebSocket transport for servers and clients
+
 - `healthcheck` - Health check method for service monitoring
 
 ## Integration

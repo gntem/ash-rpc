@@ -5,8 +5,9 @@
 //! to define their own sanitization logic.
 //!
 //! # Example
-//! ```ignore
+//! ```
 //! use ash_rpc_core::sanitization::Sanitizer;
+//! use ash_rpc_core::Error;
 //!
 //! struct MyCustomSanitizer;
 //!
@@ -17,6 +18,7 @@
 //!     }
 //! }
 //!
+//! # let error = Error::new(-32000, "Test");
 //! let sanitized = error.sanitized_with(|e| MyCustomSanitizer.sanitize(e));
 //! ```
 
