@@ -3,7 +3,7 @@ name = "ash-rpc-core"
 version = "2.1.0"
 edition = "2024"
 description = "A comprehensive JSON-RPC 2.0 implementation with multiple transport layers and advanced features"
-license = "MIT"
+license = "Apache-2.0"
 repository = "https://github.com/gntem/ash-rpc"
 documentation = "https://docs.rs/ash-rpc-core"
 homepage = "https://github.com/gntem/ash-rpc"
@@ -139,6 +139,10 @@ path = "../examples/utils_demo.rs"
 [[example]]
 name = "healthcheck_example"
 path = "../examples/healthcheck_example.rs"
+
+[[example]]
+name = "healthcheck_contrib_example"
+path = "../examples/healthcheck_contrib_example.rs"
 
 [[example]]
 name = "websocket_server"

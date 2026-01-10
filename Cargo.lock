@@ -59,6 +59,7 @@ dependencies = [
  "ash-rpc-core",
  "axum",
  "futures-util",
+ "serde",
  "serde_json",
  "tokio",
  "tokio-tungstenite",

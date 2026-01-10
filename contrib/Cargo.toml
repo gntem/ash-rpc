@@ -3,7 +3,7 @@ name = "ash-rpc-contrib"
 version = "2.1.0"
 edition = "2024"
 description = "Contributed JSON-RPC methods and utilities for ash-rpc"
-license = "MIT OR Apache-2.0"
+license = "Apache-2.0"
 repository = "https://github.com/gntem/ash-rpc"
 homepage = "https://github.com/gntem/ash-rpc"
 authors = ["Giorgos Ntemiris <ntemirisgiorgos3@gmail.com>"]
@@ -16,6 +16,7 @@ websocket = ["tokio", "tokio-tungstenite", "futures-util"]
 
 [dependencies]
 ash-rpc-core = { version = "2.1.0", path = "../core" }
+serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 tokio = { version = "1.47", features = ["net", "io-util", "rt", "rt-multi-thread", "sync", "macros"], optional = true }
 axum = { version = "0.8", optional = true }

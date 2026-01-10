@@ -2,6 +2,9 @@
 
 pub mod transports;
 
+#[cfg(feature = "healthcheck")]
+pub mod healthcheck;
+
 // Re-export transport modules for convenience
 #[cfg(feature = "axum")]
 pub use transports::axum;
@@ -9,5 +12,6 @@ pub use transports::axum;
 #[cfg(feature = "websocket")]
 pub use transports::websocket;
 
-// Note: healthcheck module temporarily disabled due to API changes
-// Will be updated to use new JsonRPCMethod trait in future refactor
+// Re-export healthcheck for convenience
+#[cfg(feature = "healthcheck")]
+pub use healthcheck::*;
