@@ -60,6 +60,7 @@ jobs:
   test:
     name: Test Suite
     runs-on: ubuntu-latest
+    needs: [format, clippy]
     
     steps:
       - uses: actions/checkout@v4
@@ -97,6 +98,7 @@ jobs:
   coverage:
     name: Code Coverage
     runs-on: ubuntu-latest
+    needs: [format, clippy]
     steps:
       - uses: actions/checkout@v4
       
@@ -139,6 +141,7 @@ jobs:
   check-features:
     name: Feature Combinations
     runs-on: ubuntu-latest
+    needs: [format, clippy]
     strategy:
       matrix:
         features:
@@ -175,6 +178,7 @@ jobs:
   documentation:
     name: Documentation
     runs-on: ubuntu-latest
+    needs: [test, coverage, check-features]
     steps:
       - uses: actions/checkout@v4
       
@@ -201,6 +205,7 @@ jobs:
   security-audit:
     name: Security Audit
     runs-on: ubuntu-latest
+    needs: [test, coverage, check-features]
     steps:
       - uses: actions/checkout@v4
       
