@@ -1,8 +1,20 @@
 use ash_rpc_core::*;
+use std::pin::Pin;
+use std::future::Future;
 
-fn main() {
-    let registry = MethodRegistry::new()
-        .register("add", |params, id| {
+struct AddMethod;
+
+impl JsonRPCMethod for AddMethod {
+    fn method_name(&self) -> &'static str {
+        "add"
+    }
+    
+    fn call<'a>(
+        &'a self,
+        params: Option<serde_json::Value>,
+        id: Option<RequestId>,
+    ) -> Pin<Box<dyn Future<Output = Response> + Send + 'a>> {
+        Box::pin(async move {
             if let Some(params) = params {
                 if let Ok(numbers) = serde_json::from_value::<[i32; 2]>(params) {
                     let result = numbers[0] + numbers[1];
@@ -29,7 +41,22 @@ fn main() {
                     .build()
             }
         })
-        .register("subtract", |params, id| {
+    }
+}
+
+struct SubtractMethod;
+
+impl JsonRPCMethod for SubtractMethod {
+    fn method_name(&self) -> &'static str {
+        "subtract"
+    }
+    
+    fn call<'a>(
+        &'a self,
+        params: Option<serde_json::Value>,
+        id: Option<RequestId>,
+    ) -> Pin<Box<dyn Future<Output = Response> + Send + 'a>> {
+        Box::pin(async move {
             if let Some(params) = params {
                 if let Ok(numbers) = serde_json::from_value::<[i32; 2]>(params) {
                     let result = numbers[0] - numbers[1];
@@ -55,7 +82,13 @@ fn main() {
                     .id(id)
                     .build()
             }
-        });
+        })
+    }
+}
+
+#[tokio::main]
+async fn main() {
+    let registry = MethodRegistry::new(register_methods![AddMethod, SubtractMethod]);
 
     let request = RequestBuilder::new("add")
         .params(serde_json::json!([5, 3]))
@@ -64,7 +97,7 @@ fn main() {
 
     let message = Message::Request(request);
 
-    if let Some(response) = registry.process_message(message) {
+    if let Some(response) = registry.process_message(message).await {
         println!(
             "Response: {}",
             serde_json::to_string_pretty(&response).unwrap()
@@ -76,5 +109,5 @@ fn main() {
         .build();
 
     let message = Message::Notification(notification);
-    registry.process_message(message);
+    registry.process_message(message).await;
 }
