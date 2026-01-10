@@ -375,18 +375,18 @@ macro_rules! rpc_method {
     ($name:ident, $method_name:expr, $handler:expr) => {
         pub struct $name;
 
+        #[async_trait::async_trait]
         impl $crate::JsonRPCMethod for $name {
             fn method_name(&self) -> &'static str {
                 $method_name
             }
 
-            fn call<'a>(
-                &'a self,
+            async fn call(
+                &self,
                 params: Option<serde_json::Value>,
                 id: Option<$crate::RequestId>,
-            ) -> std::pin::Pin<Box<dyn std::future::Future<Output = $crate::Response> + Send + 'a>>
-            {
-                std::pin::Pin::from(Box::new(async move { ($handler)(params, id) }))
+            ) -> $crate::Response {
+                ($handler)(params, id)
             }
         }
     };

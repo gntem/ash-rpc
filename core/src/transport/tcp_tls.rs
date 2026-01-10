@@ -29,11 +29,9 @@ impl TlsConfig {
         let cert_bytes = std::fs::read(cert_path)?;
         let key_bytes = std::fs::read(key_path)?;
 
-        let certs = CertificateDer::pem_slice_iter(&cert_bytes)
-            .collect::<Result<Vec<_>, _>>()?;
+        let certs = CertificateDer::pem_slice_iter(&cert_bytes).collect::<Result<Vec<_>, _>>()?;
 
-        let mut keys = PrivateKeyDer::pem_slice_iter(&key_bytes)
-            .collect::<Result<Vec<_>, _>>()?;
+        let mut keys = PrivateKeyDer::pem_slice_iter(&key_bytes).collect::<Result<Vec<_>, _>>()?;
 
         if keys.is_empty() {
             return Err("No private keys found in key file".into());
@@ -53,11 +51,9 @@ impl TlsConfig {
         cert_pem: &[u8],
         key_pem: &[u8],
     ) -> Result<Self, Box<dyn std::error::Error>> {
-        let certs = CertificateDer::pem_slice_iter(cert_pem)
-            .collect::<Result<Vec<_>, _>>()?;
+        let certs = CertificateDer::pem_slice_iter(cert_pem).collect::<Result<Vec<_>, _>>()?;
 
-        let mut keys = PrivateKeyDer::pem_slice_iter(key_pem)
-            .collect::<Result<Vec<_>, _>>()?;
+        let mut keys = PrivateKeyDer::pem_slice_iter(key_pem).collect::<Result<Vec<_>, _>>()?;
 
         if keys.is_empty() {
             return Err("No private keys found in key data".into());
