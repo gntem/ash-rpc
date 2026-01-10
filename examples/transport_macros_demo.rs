@@ -45,7 +45,7 @@ async fn main() {
 
     let registry = MethodRegistry::new(register_methods![PingMethod, EchoMethod]);
 
-    println!("✅ Created JSON-RPC registry with methods: ping, echo");
+    println!(" Created JSON-RPC registry with methods: ping, echo");
 
     let test_request = RequestBuilder::new("ping")
         .id(serde_json::json!(1))
@@ -54,7 +54,7 @@ async fn main() {
 
     if let Some(response) = registry.process_message(test_message).await {
         println!(
-            "✅ Registry test successful: {}",
+            " Registry test successful: {}",
             serde_json::to_string(&response).unwrap()
         );
     }
