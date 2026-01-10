@@ -45,7 +45,7 @@ type AuthMetadata = std::collections::HashMap<String, Arc<dyn Any + Send + Sync>
 pub struct ConnectionContext {
     /// Remote address of the connection
     pub remote_addr: Option<SocketAddr>,
-    
+
     /// User-defined metadata
     ///
     /// Store any auth-related data here:
@@ -78,9 +78,7 @@ impl ConnectionContext {
 
     /// Get typed metadata
     pub fn get<T: Any + Send + Sync>(&self, key: &str) -> Option<&T> {
-        self.metadata
-            .get(key)
-            .and_then(|v| v.downcast_ref::<T>())
+        self.metadata.get(key).and_then(|v| v.downcast_ref::<T>())
     }
 }
 
@@ -270,7 +268,11 @@ mod tests {
         let policy = AllowAll;
         let ctx = ConnectionContext::new();
         assert!(policy.can_access("any_method", None, &ctx));
-        assert!(policy.can_access("another_method", Some(&serde_json::json!({"key": "value"})), &ctx));
+        assert!(policy.can_access(
+            "another_method",
+            Some(&serde_json::json!({"key": "value"})),
+            &ctx
+        ));
     }
 
     #[test]
@@ -278,20 +280,24 @@ mod tests {
         let policy = DenyAll;
         let ctx = ConnectionContext::new();
         assert!(!policy.can_access("any_method", None, &ctx));
-        assert!(!policy.can_access("another_method", Some(&serde_json::json!({"key": "value"})), &ctx));
+        assert!(!policy.can_access(
+            "another_method",
+            Some(&serde_json::json!({"key": "value"})),
+            &ctx
+        ));
     }
 
     #[test]
     fn test_connection_context() {
         let mut ctx = ConnectionContext::new();
-        
+
         // Insert and retrieve typed metadata
         ctx.insert("user_id".to_string(), 42u64);
         assert_eq!(ctx.get::<u64>("user_id"), Some(&42));
-        
+
         // Wrong type returns None
         assert_eq!(ctx.get::<String>("user_id"), None);
-        
+
         // Non-existent key returns None
         assert_eq!(ctx.get::<u64>("other"), None);
     }
@@ -301,7 +307,7 @@ mod tests {
         use std::net::{IpAddr, Ipv4Addr};
         let addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 8080);
         let ctx = ConnectionContext::with_addr(addr);
-        
+
         assert_eq!(ctx.remote_addr, Some(addr));
         assert_eq!(ctx.metadata.len(), 0);
     }
@@ -316,11 +322,11 @@ mod tests {
     #[test]
     fn test_connection_context_multiple_metadata() {
         let mut ctx = ConnectionContext::new();
-        
+
         ctx.insert("user_id".to_string(), 123u64);
         ctx.insert("username".to_string(), String::from("alice"));
         ctx.insert("is_admin".to_string(), true);
-        
+
         assert_eq!(ctx.get::<u64>("user_id"), Some(&123));
         assert_eq!(ctx.get::<String>("username"), Some(&String::from("alice")));
         assert_eq!(ctx.get::<bool>("is_admin"), Some(&true));
@@ -348,7 +354,7 @@ mod tests {
         use std::net::{IpAddr, Ipv4Addr};
         let extractor = DefaultContextExtractor;
         let addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(192, 168, 1, 1)), 9000);
-        
+
         let ctx = extractor.extract(Some(addr), None).await;
         assert_eq!(ctx.remote_addr, Some(addr));
         assert_eq!(ctx.metadata.len(), 0);
@@ -367,7 +373,7 @@ mod tests {
         let extractor = DefaultContextExtractor;
         let addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(10, 0, 0, 1)), 3000);
         let metadata: Arc<dyn Any + Send + Sync> = Arc::new(String::from("test"));
-        
+
         let ctx = extractor.extract(Some(addr), Some(metadata)).await;
         assert_eq!(ctx.remote_addr, Some(addr));
     }
@@ -376,7 +382,7 @@ mod tests {
     fn test_connection_context_clone() {
         let mut ctx1 = ConnectionContext::new();
         ctx1.insert("key".to_string(), 100u32);
-        
+
         let ctx2 = ctx1.clone();
         assert_eq!(ctx2.get::<u32>("key"), Some(&100));
     }

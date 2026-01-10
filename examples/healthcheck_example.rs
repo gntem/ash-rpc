@@ -9,12 +9,8 @@ impl JsonRPCMethod for HealthcheckMethod {
     fn method_name(&self) -> &'static str {
         "healthcheck"
     }
-    
-    async fn call(
-        &self,
-        _params: Option<serde_json::Value>,
-        id: Option<RequestId>,
-    ) -> Response {
+
+    async fn call(&self, _params: Option<serde_json::Value>, id: Option<RequestId>) -> Response {
         let health_status = serde_json::json!({
             "status": "healthy",
             "timestamp": std::time::SystemTime::now()

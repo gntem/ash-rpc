@@ -291,19 +291,12 @@ macro_rules! rpc_tcp_stream_client {
     }};
 }
 
-/// Create an Axum router with JSON-RPC endpoint - MOVED TO ash-rpc-contrib
-///
-/// # Usage:
-/// ```ignore
-/// // Basic router with default /rpc path
-/// let app = rpc_axum_router!(registry);
-//
 // Stateful Macros - Easy stateful processor creation
-//
+
 /// Create a stateful JSON-RPC processor
 ///
 /// # Usage:
-/// ```ignore
+/// ```rust,ignore
 /// // Create processor with context and handler
 /// let processor = rpc_stateful_processor!(service_context, handler);
 ///
@@ -371,7 +364,7 @@ macro_rules! rpc_stateful_builder {
 /// rpc_method!(PingMethod, "ping", |_params, id| {
 ///     rpc_success!("pong", id)
 /// });
-/// 
+///
 /// rpc_method!(AddMethod, "add", |params, id| {
 ///     let nums: Vec<i32> = serde_json::from_value(params.unwrap_or_default()).unwrap();
 ///     rpc_success!(nums.iter().sum::<i32>(), id)
@@ -381,20 +374,19 @@ macro_rules! rpc_stateful_builder {
 macro_rules! rpc_method {
     ($name:ident, $method_name:expr, $handler:expr) => {
         pub struct $name;
-        
+
         impl $crate::JsonRPCMethod for $name {
             fn method_name(&self) -> &'static str {
                 $method_name
             }
-            
+
             fn call<'a>(
                 &'a self,
                 params: Option<serde_json::Value>,
                 id: Option<$crate::RequestId>,
-            ) -> std::pin::Pin<Box<dyn std::future::Future<Output = $crate::Response> + Send + 'a>> {
-                std::pin::Pin::from(Box::new(async move {
-                    ($handler)(params, id)
-                }))
+            ) -> std::pin::Pin<Box<dyn std::future::Future<Output = $crate::Response> + Send + 'a>>
+            {
+                std::pin::Pin::from(Box::new(async move { ($handler)(params, id) }))
             }
         }
     };
@@ -513,8 +505,7 @@ macro_rules! rpc_extract {
             .unwrap_or_else(|| serde_json::Value::Null)
     };
     ($response:expr => $type:ty) => {
-        serde_json::from_value::<$type>($crate::rpc_extract!($response))
-            .unwrap_or_default()
+        serde_json::from_value::<$type>($crate::rpc_extract!($response)).unwrap_or_default()
     };
 }
 

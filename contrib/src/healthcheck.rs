@@ -32,7 +32,7 @@ impl HealthcheckMethod {
             version: None,
         }
     }
-    
+
     /// Create a healthcheck method with custom service name
     pub fn with_service_name(service_name: impl Into<String>) -> Self {
         Self {
@@ -40,13 +40,13 @@ impl HealthcheckMethod {
             version: None,
         }
     }
-    
+
     /// Set the service name (builder pattern)
     pub fn service_name(mut self, service_name: impl Into<String>) -> Self {
         self.service_name = service_name.into();
         self
     }
-    
+
     /// Set the service version
     pub fn with_version(mut self, version: impl Into<String>) -> Self {
         self.version = Some(version.into());
@@ -65,12 +65,8 @@ impl JsonRPCMethod for HealthcheckMethod {
     fn method_name(&self) -> &'static str {
         "healthcheck"
     }
-    
-    async fn call(
-        &self,
-        _params: Option<serde_json::Value>,
-        id: Option<RequestId>,
-    ) -> Response {
+
+    async fn call(&self, _params: Option<serde_json::Value>, id: Option<RequestId>) -> Response {
         let health_status = HealthStatus {
             status: "healthy".to_string(),
             timestamp: std::time::SystemTime::now()
@@ -80,12 +76,12 @@ impl JsonRPCMethod for HealthcheckMethod {
             service: self.service_name.clone(),
             version: self.version.clone(),
         };
-        
+
         match serde_json::to_value(health_status) {
             Ok(status_json) => rpc_success!(status_json, id),
             Err(_) => rpc_error!(
-                error_codes::INTERNAL_ERROR, 
-                "Failed to serialize health status", 
+                error_codes::INTERNAL_ERROR,
+                "Failed to serialize health status",
                 id
             ),
         }

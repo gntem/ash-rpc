@@ -1,15 +1,15 @@
 //! Method registry for organizing and dispatching JSON-RPC methods.
-//! 
+//!
 //! ## Usage
-//! 
+//!
 //! ### Basic Usage (Runtime Dispatch)
 //! Create method implementations using the `JsonRPCMethod` trait:
-//! 
+//!
 //! ```rust
 //! use ash_rpc_core::*;
-//! 
+//!
 //! struct PingMethod;
-//! 
+//!
 //! impl JsonRPCMethod for PingMethod {
 //!     fn method_name(&self) -> &'static str { "ping" }
 //!     
@@ -23,7 +23,7 @@
 //!         })
 //!     }
 //! }
-//! 
+//!
 //! let registry = MethodRegistry::new(register_methods![PingMethod]);
 //! ```
 //!
@@ -73,7 +73,7 @@ macro_rules! dispatch_call {
                     return temp_method.call($params, $id).await;
                 }
             )*
-            
+
             // Method not found
             ResponseBuilder::new()
                 .error(ErrorBuilder::new(error_codes::METHOD_NOT_FOUND, "Method not found").build())
@@ -87,7 +87,7 @@ impl MethodRegistry {
     /// Create a new method registry with the given method implementations
     pub fn new(methods: Vec<Box<dyn JsonRPCMethod>>) -> Self {
         tracing::debug!(method_count = methods.len(), "registry created");
-        Self { 
+        Self {
             methods,
             auth_policy: None,
         }
@@ -132,7 +132,13 @@ impl MethodRegistry {
         params: Option<serde_json::Value>,
         id: Option<RequestId>,
     ) -> Response {
-        self.call_with_context(method_name, params, id, &crate::auth::ConnectionContext::default()).await
+        self.call_with_context(
+            method_name,
+            params,
+            id,
+            &crate::auth::ConnectionContext::default(),
+        )
+        .await
     }
 
     /// Call a registered method with authentication context
@@ -147,7 +153,8 @@ impl MethodRegistry {
     ) -> Response {
         // Check authentication if policy is set
         if let Some(auth) = &self.auth_policy
-            && !auth.can_access(method_name, params.as_ref(), ctx) {
+            && !auth.can_access(method_name, params.as_ref(), ctx)
+        {
             tracing::warn!(
                 method = %method_name,
                 remote_addr = ?ctx.remote_addr,
@@ -163,7 +170,7 @@ impl MethodRegistry {
                 return method.call(params, id).await;
             }
         }
-        
+
         tracing::warn!(method = %method_name, "method not found");
         ResponseBuilder::new()
             .error(ErrorBuilder::new(error_codes::METHOD_NOT_FOUND, "Method not found").build())
@@ -178,7 +185,10 @@ impl MethodRegistry {
 
     /// Get list of all registered methods
     pub fn get_methods(&self) -> Vec<String> {
-        self.methods.iter().map(|m| m.method_name().to_string()).collect()
+        self.methods
+            .iter()
+            .map(|m| m.method_name().to_string())
+            .collect()
     }
 
     /// Get the number of registered methods
@@ -190,12 +200,12 @@ impl MethodRegistry {
     pub fn generate_openapi_spec(&self, title: &str, version: &str) -> OpenApiSpec {
         tracing::debug!(method_count = self.methods.len(), "generating openapi spec");
         let mut spec = OpenApiSpec::new(title, version);
-        
+
         for method in &self.methods {
             let method_spec = method.openapi_components();
             spec.add_method(method_spec);
         }
-        
+
         spec
     }
 
@@ -208,20 +218,24 @@ impl MethodRegistry {
         servers: Vec<OpenApiServer>,
     ) -> OpenApiSpec {
         let mut spec = self.generate_openapi_spec(title, version);
-        
+
         if let Some(desc) = description {
             spec.info.description = Some(desc.to_string());
         }
-        
+
         for server in servers {
             spec.add_server(server);
         }
-        
+
         spec
     }
 
     /// Export OpenAPI spec as JSON string
-    pub fn export_openapi_json(&self, title: &str, version: &str) -> Result<String, serde_json::Error> {
+    pub fn export_openapi_json(
+        &self,
+        title: &str,
+        version: &str,
+    ) -> Result<String, serde_json::Error> {
         let spec = self.generate_openapi_spec(title, version);
         serde_json::to_string_pretty(&spec)
     }
@@ -244,7 +258,9 @@ impl MessageProcessor for MethodRegistry {
             }
             Message::Notification(notification) => {
                 tracing::trace!(method = %notification.method, "processing notification");
-                let _ = self.call(&notification.method, notification.params, None).await;
+                let _ = self
+                    .call(&notification.method, notification.params, None)
+                    .await;
                 None
             }
             Message::Response(_) => None,
@@ -253,10 +269,11 @@ impl MessageProcessor for MethodRegistry {
 
     async fn process_batch(&self, messages: Vec<Message>) -> Vec<Response> {
         let capabilities = self.get_capabilities();
-        
+
         // Validate batch size
         if let Some(max_size) = capabilities.max_batch_size
-            && messages.len() > max_size {
+            && messages.len() > max_size
+        {
             tracing::warn!(
                 batch_size = messages.len(),
                 max_batch_size = max_size,
@@ -266,11 +283,12 @@ impl MessageProcessor for MethodRegistry {
                 crate::ErrorBuilder::new(
                     crate::error_codes::INVALID_REQUEST,
                     format!("Batch size {} exceeds maximum {}", messages.len(), max_size),
-                ).build(),
+                )
+                .build(),
                 None,
             )];
         }
-        
+
         tracing::debug!(batch_size = messages.len(), "processing batch");
         let mut results = Vec::new();
         for msg in messages {
@@ -300,7 +318,9 @@ impl Handler for MethodRegistry {
     }
 
     async fn handle_notification(&self, notification: Notification) {
-        let _ = self.call(&notification.method, notification.params, None).await;
+        let _ = self
+            .call(&notification.method, notification.params, None)
+            .await;
     }
 
     fn supports_method(&self, method: &str) -> bool {
@@ -357,19 +377,19 @@ mod tests {
 
         fn unauthorized_error(&self, method: &str) -> Response {
             ResponseBuilder::new()
-                .error(ErrorBuilder::new(
-                    -32001,
-                    format!("Access denied for method '{}'", method),
-                ).build())
+                .error(
+                    ErrorBuilder::new(-32001, format!("Access denied for method '{}'", method))
+                        .build(),
+                )
                 .build()
         }
     }
 
     #[tokio::test]
     async fn test_registry_without_auth() {
-        let registry = MethodRegistry::new(vec![
-            Box::new(TestMethod { name: "test_method" }),
-        ]);
+        let registry = MethodRegistry::new(vec![Box::new(TestMethod {
+            name: "test_method",
+        })]);
 
         let response = registry.call("test_method", None, Some(json!(1))).await;
         assert!(response.result.is_some());
@@ -382,9 +402,9 @@ mod tests {
             allowed_methods: vec!["allowed_method".to_string()],
         };
 
-        let registry = MethodRegistry::new(vec![
-            Box::new(TestMethod { name: "allowed_method" }),
-        ])
+        let registry = MethodRegistry::new(vec![Box::new(TestMethod {
+            name: "allowed_method",
+        })])
         .with_auth(auth);
 
         let response = registry.call("allowed_method", None, Some(json!(1))).await;
@@ -398,15 +418,15 @@ mod tests {
             allowed_methods: vec!["allowed_method".to_string()],
         };
 
-        let registry = MethodRegistry::new(vec![
-            Box::new(TestMethod { name: "blocked_method" }),
-        ])
+        let registry = MethodRegistry::new(vec![Box::new(TestMethod {
+            name: "blocked_method",
+        })])
         .with_auth(auth);
 
         let response = registry.call("blocked_method", None, Some(json!(1))).await;
         assert!(response.result.is_none());
         assert!(response.error.is_some());
-        
+
         let error = response.error.unwrap();
         assert_eq!(error.code, -32001);
         assert!(error.message.contains("Access denied"));
@@ -414,10 +434,8 @@ mod tests {
 
     #[tokio::test]
     async fn test_registry_allow_all() {
-        let registry = MethodRegistry::new(vec![
-            Box::new(TestMethod { name: "any_method" }),
-        ])
-        .with_auth(crate::auth::AllowAll);
+        let registry = MethodRegistry::new(vec![Box::new(TestMethod { name: "any_method" })])
+            .with_auth(crate::auth::AllowAll);
 
         let response = registry.call("any_method", None, Some(json!(1))).await;
         assert!(response.result.is_some());
@@ -426,10 +444,8 @@ mod tests {
 
     #[tokio::test]
     async fn test_registry_deny_all() {
-        let registry = MethodRegistry::new(vec![
-            Box::new(TestMethod { name: "any_method" }),
-        ])
-        .with_auth(crate::auth::DenyAll);
+        let registry = MethodRegistry::new(vec![Box::new(TestMethod { name: "any_method" })])
+            .with_auth(crate::auth::DenyAll);
 
         let response = registry.call("any_method", None, Some(json!(1))).await;
         assert!(response.result.is_none());
@@ -453,7 +469,7 @@ mod tests {
         let registry = MethodRegistry::empty()
             .add_method(Box::new(TestMethod { name: "method1" }))
             .add_method(Box::new(TestMethod { name: "method2" }));
-        
+
         assert_eq!(registry.method_count(), 2);
         assert!(registry.has_method("method1"));
         assert!(registry.has_method("method2"));
@@ -461,9 +477,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_registry_has_method() {
-        let registry = MethodRegistry::new(vec![
-            Box::new(TestMethod { name: "exists" }),
-        ]);
+        let registry = MethodRegistry::new(vec![Box::new(TestMethod { name: "exists" })]);
 
         assert!(registry.has_method("exists"));
         assert!(!registry.has_method("not_exists"));
@@ -496,9 +510,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_registry_call_method_not_found() {
-        let registry = MethodRegistry::new(vec![
-            Box::new(TestMethod { name: "exists" }),
-        ]);
+        let registry = MethodRegistry::new(vec![Box::new(TestMethod { name: "exists" })]);
 
         let response = registry.call("not_exists", None, Some(json!(1))).await;
         assert!(response.error.is_some());
@@ -508,9 +520,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_registry_call_with_params() {
-        let registry = MethodRegistry::new(vec![
-            Box::new(TestMethod { name: "test" }),
-        ]);
+        let registry = MethodRegistry::new(vec![Box::new(TestMethod { name: "test" })]);
 
         let params = json!({"key": "value"});
         let response = registry.call("test", Some(params), Some(json!(1))).await;
@@ -519,12 +529,12 @@ mod tests {
 
     #[tokio::test]
     async fn test_registry_call_with_context() {
-        let registry = MethodRegistry::new(vec![
-            Box::new(TestMethod { name: "test" }),
-        ]);
+        let registry = MethodRegistry::new(vec![Box::new(TestMethod { name: "test" })]);
 
         let ctx = crate::auth::ConnectionContext::default();
-        let response = registry.call_with_context("test", None, Some(json!(1)), &ctx).await;
+        let response = registry
+            .call_with_context("test", None, Some(json!(1)), &ctx)
+            .await;
         assert!(response.result.is_some());
     }
 
@@ -534,13 +544,13 @@ mod tests {
             allowed_methods: vec!["allowed".to_string()],
         };
 
-        let registry = MethodRegistry::new(vec![
-            Box::new(TestMethod { name: "blocked" }),
-        ])
-        .with_auth(auth);
+        let registry =
+            MethodRegistry::new(vec![Box::new(TestMethod { name: "blocked" })]).with_auth(auth);
 
         let ctx = crate::auth::ConnectionContext::default();
-        let response = registry.call_with_context("blocked", None, Some(json!(1)), &ctx).await;
+        let response = registry
+            .call_with_context("blocked", None, Some(json!(1)), &ctx)
+            .await;
         assert!(response.error.is_some());
     }
 
@@ -561,13 +571,9 @@ mod tests {
 
     #[tokio::test]
     async fn test_registry_generate_openapi_spec_with_info() {
-        let registry = MethodRegistry::new(vec![
-            Box::new(TestMethod { name: "test" }),
-        ]);
+        let registry = MethodRegistry::new(vec![Box::new(TestMethod { name: "test" })]);
 
-        let servers = vec![
-            OpenApiServer::new("http://localhost:8080"),
-        ];
+        let servers = vec![OpenApiServer::new("http://localhost:8080")];
 
         let spec = registry.generate_openapi_spec_with_info(
             "API",
@@ -585,9 +591,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_registry_export_openapi_json() {
-        let registry = MethodRegistry::new(vec![
-            Box::new(TestMethod { name: "test" }),
-        ]);
+        let registry = MethodRegistry::new(vec![Box::new(TestMethod { name: "test" })]);
 
         let json_str = registry.export_openapi_json("API", "1.0").unwrap();
         assert!(json_str.contains("\"title\": \"API\""));
@@ -597,9 +601,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_registry_message_processor_request() {
-        let registry = MethodRegistry::new(vec![
-            Box::new(TestMethod { name: "test" }),
-        ]);
+        let registry = MethodRegistry::new(vec![Box::new(TestMethod { name: "test" })]);
 
         let request = Request {
             jsonrpc: "2.0".to_string(),
@@ -616,9 +618,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_registry_message_processor_notification() {
-        let registry = MethodRegistry::new(vec![
-            Box::new(TestMethod { name: "test" }),
-        ]);
+        let registry = MethodRegistry::new(vec![Box::new(TestMethod { name: "test" })]);
 
         let notification = Notification {
             jsonrpc: "2.0".to_string(),
@@ -626,7 +626,9 @@ mod tests {
             params: None,
         };
 
-        let response = registry.process_message(Message::Notification(notification)).await;
+        let response = registry
+            .process_message(Message::Notification(notification))
+            .await;
         assert!(response.is_none());
     }
 
@@ -642,15 +644,15 @@ mod tests {
             correlation_id: None,
         };
 
-        let response = registry.process_message(Message::Response(response_msg)).await;
+        let response = registry
+            .process_message(Message::Response(response_msg))
+            .await;
         assert!(response.is_none());
     }
 
     #[tokio::test]
     async fn test_registry_process_batch() {
-        let registry = MethodRegistry::new(vec![
-            Box::new(TestMethod { name: "test" }),
-        ]);
+        let registry = MethodRegistry::new(vec![Box::new(TestMethod { name: "test" })]);
 
         let messages = vec![
             Message::Request(Request {
@@ -675,10 +677,7 @@ mod tests {
 
     #[test]
     fn test_register_methods_macro() {
-        let methods = register_methods![
-            TestMethod { name: "m1" },
-            TestMethod { name: "m2" },
-        ];
+        let methods = register_methods![TestMethod { name: "m1" }, TestMethod { name: "m2" },];
         assert_eq!(methods.len(), 2);
     }
 }

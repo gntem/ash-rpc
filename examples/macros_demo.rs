@@ -15,9 +15,7 @@ fn main() {
 
     // Notification macro
     let log_data = serde_json::json!({"level": "info", "message": "Hello World"});
-    let notification = NotificationBuilder::new("log")
-        .params(log_data)
-        .build();
+    let notification = NotificationBuilder::new("log").params(log_data).build();
     println!(
         "Notification: {}",
         serde_json::to_string_pretty(&notification).unwrap()
@@ -31,7 +29,11 @@ fn main() {
     );
 
     // Error response macro
-    let error_response = rpc_error!(error_codes::INVALID_PARAMS, "Expected array of two numbers", Some(serde_json::json!(1)));
+    let error_response = rpc_error!(
+        error_codes::INVALID_PARAMS,
+        "Expected array of two numbers",
+        Some(serde_json::json!(1))
+    );
     println!(
         "Error Response: {}",
         serde_json::to_string_pretty(&error_response).unwrap()

@@ -9,7 +9,9 @@
 //! - Automatic ping/pong handling
 //! - Concurrent connection handling
 
-use ash_rpc_core::{ErrorBuilder, Message, MessageProcessor, Response, ResponseBuilder, error_codes};
+use ash_rpc_core::{
+    ErrorBuilder, Message, MessageProcessor, Response, ResponseBuilder, error_codes,
+};
 use futures_util::{SinkExt, StreamExt};
 use std::sync::Arc;
 use tokio::net::{TcpListener, TcpStream};
@@ -218,9 +220,7 @@ pub struct WebSocketClient {
 
 impl WebSocketClient {
     fn new(
-        ws_stream: tokio_tungstenite::WebSocketStream<
-            tokio_tungstenite::MaybeTlsStream<TcpStream>,
-        >,
+        ws_stream: tokio_tungstenite::WebSocketStream<tokio_tungstenite::MaybeTlsStream<TcpStream>>,
     ) -> Self {
         let (mut write, mut read) = ws_stream.split();
         let (write_tx, mut write_rx) = mpsc::channel::<String>(100);
@@ -262,18 +262,13 @@ impl WebSocketClient {
     }
 
     /// Send a JSON-RPC message to the server.
-    pub async fn send_message(
-        &self,
-        message: &Message,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    pub async fn send_message(&self, message: &Message) -> Result<(), Box<dyn std::error::Error>> {
         let json = serde_json::to_string(message)?;
         self.tx.send(json).await.map_err(|e| e.into())
     }
 
     /// Receive a response from the server.
-    pub async fn recv_response(
-        &mut self,
-    ) -> Result<Option<Response>, Box<dyn std::error::Error>> {
+    pub async fn recv_response(&mut self) -> Result<Option<Response>, Box<dyn std::error::Error>> {
         if let Some(response) = self.rx.recv().await {
             let parsed: Response = serde_json::from_str(&response)?;
             Ok(Some(parsed))
@@ -283,9 +278,7 @@ impl WebSocketClient {
     }
 
     /// Receive any message from the server.
-    pub async fn recv_message(
-        &mut self,
-    ) -> Result<Option<Message>, Box<dyn std::error::Error>> {
+    pub async fn recv_message(&mut self) -> Result<Option<Message>, Box<dyn std::error::Error>> {
         if let Some(response) = self.rx.recv().await {
             let message: Message = serde_json::from_str(&response)?;
             Ok(Some(message))

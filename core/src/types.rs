@@ -104,7 +104,9 @@ impl Response {
             jsonrpc: "2.0".to_string(),
             result: None,
             error: Some(error),
-            id,            correlation_id: None,        }
+            id,
+            correlation_id: None,
+        }
     }
 
     /// Check if this is a successful response
@@ -208,10 +210,10 @@ impl Error {
     }
 
     /// Transform this error using a custom callback function
-    /// 
+    ///
     /// This allows library users to implement their own error sanitization
     /// logic based on their security requirements.
-    /// 
+    ///
     /// # Example
     /// ```ignore
     /// let sanitized = error.sanitized_with(|err| {
@@ -230,7 +232,7 @@ impl Error {
     }
 
     /// Create a generic internal error from any std::error::Error
-    /// 
+    ///
     /// This logs the full error details server-side and returns a generic error.
     /// Use this with sanitized_with() for custom error transformation.
     pub fn from_error_logged(error: &dyn std::error::Error) -> Self {
@@ -239,7 +241,7 @@ impl Error {
             error_debug = ?error,
             "internal error occurred"
         );
-        
+
         Self {
             code: crate::error_codes::INTERNAL_ERROR,
             message: "Internal server error".to_string(),
@@ -438,10 +440,10 @@ mod tests {
         let request = Request::new("test")
             .with_params(json!([1, 2, 3]))
             .with_id(json!(1));
-        
+
         let serialized = serde_json::to_string(&request).unwrap();
         let deserialized: Request = serde_json::from_str(&serialized).unwrap();
-        
+
         assert_eq!(request.method, deserialized.method);
         assert_eq!(request.params, deserialized.params);
         assert_eq!(request.id, deserialized.id);
@@ -460,7 +462,7 @@ mod tests {
     fn test_response_success() {
         let result = json!({"status": "ok"});
         let response = Response::success(result.clone(), Some(json!(1)));
-        
+
         assert!(response.is_success());
         assert!(!response.is_error());
         assert_eq!(response.result(), Some(&result));
@@ -471,7 +473,7 @@ mod tests {
     fn test_response_error() {
         let error = Error::new(-32600, "Invalid request");
         let response = Response::error(error.clone(), Some(json!(1)));
-        
+
         assert!(!response.is_success());
         assert!(response.is_error());
         assert!(response.result.is_none());
@@ -483,7 +485,7 @@ mod tests {
         let response = Response::success(json!("result"), Some(json!(1)));
         let serialized = serde_json::to_string(&response).unwrap();
         let deserialized: Response = serde_json::from_str(&serialized).unwrap();
-        
+
         assert_eq!(response.result, deserialized.result);
         assert_eq!(response.id, deserialized.id);
     }
@@ -534,11 +536,12 @@ mod tests {
 
     #[test]
     fn test_error_sanitization() {
-        let error = Error::new(-32603, "Internal database connection failed: postgres://user:pass@host");
-        let sanitized = error.sanitized_with(|e| {
-            Error::new(e.code, "Internal server error")
-        });
-        
+        let error = Error::new(
+            -32603,
+            "Internal database connection failed: postgres://user:pass@host",
+        );
+        let sanitized = error.sanitized_with(|e| Error::new(e.code, "Internal server error"));
+
         assert_eq!(sanitized.code(), error.code());
         assert_eq!(sanitized.message(), "Internal server error");
         assert!(!sanitized.message().contains("postgres"));
@@ -548,7 +551,7 @@ mod tests {
     fn test_error_from_std_error() {
         let io_error = std::io::Error::new(std::io::ErrorKind::NotFound, "file not found");
         let error = Error::from_error_logged(&io_error);
-        
+
         assert_eq!(error.code(), error_codes::INTERNAL_ERROR);
         assert_eq!(error.message(), "Internal server error");
     }
@@ -574,7 +577,7 @@ mod tests {
         let notification = Notification::new("event").with_params(json!([1, 2]));
         let serialized = serde_json::to_string(&notification).unwrap();
         let deserialized: Notification = serde_json::from_str(&serialized).unwrap();
-        
+
         assert_eq!(notification.method, deserialized.method);
         assert_eq!(notification.params, deserialized.params);
     }
@@ -592,7 +595,7 @@ mod tests {
     fn test_message_request_variant() {
         let request = Request::new("test");
         let message = Message::Request(request);
-        
+
         assert!(message.is_request());
         assert!(!message.is_response());
         assert!(!message.is_notification());
@@ -602,7 +605,7 @@ mod tests {
     fn test_message_response_variant() {
         let response = Response::success(json!("ok"), Some(json!(1)));
         let message = Message::Response(response);
-        
+
         assert!(!message.is_request());
         assert!(message.is_response());
         assert!(!message.is_notification());
@@ -612,7 +615,7 @@ mod tests {
     fn test_message_notification_variant() {
         let notification = Notification::new("event");
         let message = Message::Notification(notification);
-        
+
         assert!(!message.is_request());
         assert!(!message.is_response());
         assert!(message.is_notification());
@@ -622,10 +625,10 @@ mod tests {
     fn test_message_serialization_request() {
         let request = Request::new("test").with_id(json!(1));
         let message = Message::Request(request);
-        
+
         let serialized = serde_json::to_string(&message).unwrap();
         let deserialized: Message = serde_json::from_str(&serialized).unwrap();
-        
+
         assert!(deserialized.is_request());
     }
 
@@ -634,7 +637,7 @@ mod tests {
     fn test_message_as_request() {
         let request = Request::new("test");
         let message = Message::Request(request.clone());
-        
+
         assert!(message.as_request().is_some());
         assert_eq!(message.as_request().unwrap().method, "test");
         assert!(message.as_response().is_none());
@@ -645,7 +648,7 @@ mod tests {
     fn test_message_as_response() {
         let response = Response::success(json!(42), Some(json!(1)));
         let message = Message::Response(response);
-        
+
         assert!(message.as_response().is_some());
         assert!(message.as_request().is_none());
         assert!(message.as_notification().is_none());
@@ -655,7 +658,7 @@ mod tests {
     fn test_message_as_notification() {
         let notification = Notification::new("event");
         let message = Message::Notification(notification);
-        
+
         assert!(message.as_notification().is_some());
         assert_eq!(message.as_notification().unwrap().method, "event");
         assert!(message.as_request().is_none());
@@ -666,7 +669,7 @@ mod tests {
     fn test_message_into_request() {
         let request = Request::new("test");
         let message = Message::Request(request);
-        
+
         let extracted = message.into_request();
         assert!(extracted.is_some());
         assert_eq!(extracted.unwrap().method, "test");
@@ -676,7 +679,7 @@ mod tests {
     fn test_message_into_response() {
         let response = Response::success(json!(true), Some(json!(1)));
         let message = Message::Response(response);
-        
+
         let extracted = message.into_response();
         assert!(extracted.is_some());
         assert!(extracted.unwrap().is_success());
@@ -686,7 +689,7 @@ mod tests {
     fn test_message_into_notification() {
         let notification = Notification::new("notify");
         let message = Message::Notification(notification);
-        
+
         let extracted = message.into_notification();
         assert!(extracted.is_some());
         assert_eq!(extracted.unwrap().method, "notify");
@@ -743,7 +746,7 @@ mod tests {
 
     #[test]
     fn test_message_id_none() {
-        let request = Request::new("test");  // No ID
+        let request = Request::new("test"); // No ID
         let message = Message::Request(request);
         assert_eq!(message.id(), None);
     }
@@ -841,14 +844,14 @@ mod tests {
         let error = Error::new(-32050, "Server error");
         assert!(error.is_server_error());
         assert!(!error.is_internal_error());
-        
+
         // Boundary tests
         let error_min = Error::new(-32099, "Min");
         assert!(error_min.is_server_error());
-        
+
         let error_max = Error::new(-32000, "Max");
         assert!(error_max.is_server_error());
-        
+
         let error_out = Error::new(-31999, "Out of range");
         assert!(!error_out.is_server_error());
     }
@@ -856,10 +859,8 @@ mod tests {
     #[test]
     fn test_error_sanitized_with() {
         let error = Error::new(-32603, "Database connection failed: host=db.internal");
-        let sanitized = error.sanitized_with(|e| {
-            Error::new(e.code(), "Internal server error")
-        });
-        
+        let sanitized = error.sanitized_with(|e| Error::new(e.code(), "Internal server error"));
+
         assert_eq!(sanitized.code(), -32603);
         assert_eq!(sanitized.message(), "Internal server error");
         assert!(!sanitized.message().contains("db.internal"));
@@ -900,7 +901,7 @@ mod tests {
         use std::io;
         let io_error = io::Error::new(io::ErrorKind::NotFound, "file not found");
         let error = Error::from_error_logged(&io_error);
-        
+
         assert_eq!(error.code(), error_codes::INTERNAL_ERROR);
         assert_eq!(error.message(), "Internal server error");
     }

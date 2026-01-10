@@ -7,12 +7,8 @@ impl JsonRPCMethod for PingMethod {
     fn method_name(&self) -> &'static str {
         "ping"
     }
-    
-    async fn call(
-        &self,
-        _params: Option<serde_json::Value>,
-        id: Option<RequestId>,
-    ) -> Response {
+
+    async fn call(&self, _params: Option<serde_json::Value>, id: Option<RequestId>) -> Response {
         ResponseBuilder::new()
             .success(serde_json::json!("pong"))
             .id(id)
@@ -27,20 +23,13 @@ impl JsonRPCMethod for EchoMethod {
     fn method_name(&self) -> &'static str {
         "echo"
     }
-    
-    async fn call(
-        &self,
-        params: Option<serde_json::Value>,
-        id: Option<RequestId>,
-    ) -> Response {
+
+    async fn call(&self, params: Option<serde_json::Value>, id: Option<RequestId>) -> Response {
         if let Some(params) = params {
             ResponseBuilder::new().success(params).id(id).build()
         } else {
             ResponseBuilder::new()
-                .error(
-                    ErrorBuilder::new(error_codes::INVALID_PARAMS, "Missing parameters")
-                        .build(),
-                )
+                .error(ErrorBuilder::new(error_codes::INVALID_PARAMS, "Missing parameters").build())
                 .id(id)
                 .build()
         }
@@ -64,9 +53,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     );
     println!("Max batch size: {:?}", capabilities.max_batch_size);
 
-    let request = RequestBuilder::new("ping")
-        .id(serde_json::json!(1))
-        .build();
+    let request = RequestBuilder::new("ping").id(serde_json::json!(1)).build();
     let message = Message::Request(request);
 
     println!("Message is request: {}", message.is_request());
@@ -85,7 +72,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             RequestBuilder::new("echo")
                 .params(serde_json::json!({"message": "hello"}))
                 .id(serde_json::json!(2))
-                .build()
+                .build(),
         ),
     ];
 

@@ -9,11 +9,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Define a simple ping method
     struct PingMethod;
-    
+
     #[async_trait::async_trait]
     impl JsonRPCMethod for PingMethod {
-        fn method_name(&self) -> &'static str { "ping" }
-        
+        fn method_name(&self) -> &'static str {
+            "ping"
+        }
+
         async fn call(
             &self,
             _params: Option<serde_json::Value>,
@@ -24,16 +26,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     // Create a simple registry
-    let registry = MethodRegistry::new(vec![
-        Box::new(PingMethod),
-    ]);
+    let registry = MethodRegistry::new(vec![Box::new(PingMethod)]);
 
     // Configure security settings
     let security_config = SecurityConfig {
-        max_connections: 10,              // Allow max 10 concurrent connections
-        max_request_size: 1024 * 100,     // 100 KB max request size
-        request_timeout: Duration::from_secs(10),  // 10 second request timeout
-        idle_timeout: Duration::from_secs(60),     // 60 second idle timeout
+        max_connections: 10,                      // Allow max 10 concurrent connections
+        max_request_size: 1024 * 100,             // 100 KB max request size
+        request_timeout: Duration::from_secs(10), // 10 second request timeout
+        idle_timeout: Duration::from_secs(60),    // 60 second idle timeout
     };
 
     // Create server with security configuration

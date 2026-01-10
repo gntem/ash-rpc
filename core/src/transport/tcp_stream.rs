@@ -2,8 +2,8 @@
 //!
 //! Streaming TCP server for persistent connections with multiple requests per connection.
 
-use crate::{Message, MessageProcessor};
 use super::security::SecurityConfig;
+use crate::{Message, MessageProcessor};
 use std::sync::Arc;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
@@ -82,7 +82,7 @@ impl TcpStreamServer {
     pub async fn run(&self) -> Result<(), Box<dyn std::error::Error>> {
         let listener = TcpListener::bind(&self.addr).await?;
         tracing::info!(
-            addr = %self.addr, 
+            addr = %self.addr,
             protocol = "tcp-stream",
             max_connections = self.security_config.max_connections,
             max_request_size = self.security_config.max_request_size,
@@ -91,12 +91,12 @@ impl TcpStreamServer {
 
         loop {
             let (stream, addr) = listener.accept().await?;
-            
+
             let current_connections = self.active_connections.load(Ordering::Relaxed);
-            
+
             // Check connection limit
-            if self.security_config.max_connections > 0 
-                && current_connections >= self.security_config.max_connections 
+            if self.security_config.max_connections > 0
+                && current_connections >= self.security_config.max_connections
             {
                 tracing::warn!(
                     remote_addr = %addr,
@@ -114,11 +114,11 @@ impl TcpStreamServer {
             let processor = Arc::clone(&self.processor);
             let security_config = self.security_config.clone();
             let active_connections = Arc::clone(&self.active_connections);
-            
+
             tokio::spawn(async move {
                 let result = handle_stream_client(stream, processor, security_config).await;
                 active_connections.fetch_sub(1, Ordering::Relaxed);
-                
+
                 if let Err(e) = result {
                     tracing::error!(remote_addr = %addr, error = %e, "client handler failed");
                 }
@@ -166,7 +166,8 @@ async fn handle_stream_client(
             Ok(message) => {
                 if let Some(response) = processor.process_message(message).await
                     && let Ok(response_json) = serde_json::to_string(&response)
-                    && tx.send(response_json).await.is_err() {
+                    && tx.send(response_json).await.is_err()
+                {
                     break;
                 }
             }
@@ -261,17 +262,12 @@ impl TcpStreamClient {
         }
     }
 
-    pub async fn send_message(
-        &self,
-        message: &Message,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    pub async fn send_message(&self, message: &Message) -> Result<(), Box<dyn std::error::Error>> {
         let json = serde_json::to_string(message)?;
         self.tx.send(json).await.map_err(|e| e.into())
     }
 
-    pub async fn recv_message(
-        &mut self,
-    ) -> Result<Option<Message>, Box<dyn std::error::Error>> {
+    pub async fn recv_message(&mut self) -> Result<Option<Message>, Box<dyn std::error::Error>> {
         if let Some(response) = self.rx.recv().await {
             let message: Message = serde_json::from_str(&response)?;
             Ok(Some(message))

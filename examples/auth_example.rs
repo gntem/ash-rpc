@@ -52,7 +52,10 @@ impl auth::AuthPolicy for ApiKeyAuth {
             .error(
                 ErrorBuilder::new(
                     -32001,
-                    format!("Unauthorized: valid API key required for method '{}'", method),
+                    format!(
+                        "Unauthorized: valid API key required for method '{}'",
+                        method
+                    ),
                 )
                 .build(),
             )
@@ -81,13 +84,21 @@ struct RbacPolicy {
 impl RbacPolicy {
     fn new() -> Self {
         let mut perms = HashMap::new();
-        
+
         // Define which roles can access which methods
         perms.insert("admin.delete_user".to_string(), vec![Role::Admin]);
-        perms.insert("user.update_profile".to_string(), vec![Role::Admin, Role::User]);
-        perms.insert("public.get_info".to_string(), vec![Role::Admin, Role::User, Role::Guest]);
-        
-        Self { method_permissions: perms }
+        perms.insert(
+            "user.update_profile".to_string(),
+            vec![Role::Admin, Role::User],
+        );
+        perms.insert(
+            "public.get_info".to_string(),
+            vec![Role::Admin, Role::User, Role::Guest],
+        );
+
+        Self {
+            method_permissions: perms,
+        }
     }
 
     // User implements their own token parsing logic
@@ -169,7 +180,10 @@ impl auth::AuthPolicy for IpWhitelist {
         // Now we can use the ACTUAL connection context!
         if let Some(addr) = ctx.remote_addr {
             let ip_str = addr.ip().to_string();
-            return self.allowed_ips.iter().any(|allowed| ip_str.starts_with(allowed));
+            return self
+                .allowed_ips
+                .iter()
+                .any(|allowed| ip_str.starts_with(allowed));
         }
         false
     }
@@ -179,10 +193,10 @@ impl auth::AuthPolicy for IpWhitelist {
 // Example 4: Rate Limiting
 // ============================================================================
 
+use std::collections::HashMap as StdHashMap;
 /// Simple rate limiting by counting requests
 /// In production, use a proper rate limiting library
 use std::sync::{Arc, Mutex};
-use std::collections::HashMap as StdHashMap;
 use std::time::{Duration, Instant};
 
 struct RateLimiter {
@@ -204,9 +218,7 @@ impl RateLimiter {
         let mut requests = self.requests.lock().unwrap();
         let now = Instant::now();
 
-        let (count, last_reset) = requests
-            .entry(user_id.to_string())
-            .or_insert((0, now));
+        let (count, last_reset) = requests.entry(user_id.to_string()).or_insert((0, now));
 
         // Reset if window expired
         if now.duration_since(*last_reset) > self.window {
@@ -242,10 +254,7 @@ impl auth::AuthPolicy for RateLimiter {
 
     fn unauthorized_error(&self, _method: &str) -> Response {
         ResponseBuilder::new()
-            .error(
-                ErrorBuilder::new(-32003, "Rate limit exceeded")
-                    .build(),
-            )
+            .error(ErrorBuilder::new(-32003, "Rate limit exceeded").build())
             .build()
     }
 }
@@ -262,11 +271,7 @@ impl JsonRPCMethod for PingMethod {
         "ping"
     }
 
-    async fn call(
-        &self,
-        _params: Option<serde_json::Value>,
-        id: Option<RequestId>,
-    ) -> Response {
+    async fn call(&self, _params: Option<serde_json::Value>, id: Option<RequestId>) -> Response {
         rpc_success!("pong", id)
     }
 }
@@ -279,11 +284,7 @@ impl JsonRPCMethod for SecretMethod {
         "get_secret"
     }
 
-    async fn call(
-        &self,
-        _params: Option<serde_json::Value>,
-        id: Option<RequestId>,
-    ) -> Response {
+    async fn call(&self, _params: Option<serde_json::Value>, id: Option<RequestId>) -> Response {
         rpc_success!(json!({"secret": "The answer is 42"}), id)
     }
 }
@@ -305,10 +306,10 @@ async fn main() {
     // Example 1: API Key Auth
     // -------------------------
     println!("1. API Key Authentication:");
-    
+
     let api_auth = ApiKeyAuth::new(vec!["secret123".to_string()]);
-    let registry = MethodRegistry::new(register_methods![PingMethod, SecretMethod])
-        .with_auth(api_auth);
+    let registry =
+        MethodRegistry::new(register_methods![PingMethod, SecretMethod]).with_auth(api_auth);
 
     // Public method - no auth required
     let response = registry.call("ping", None, Some(json!(1))).await;
@@ -338,7 +339,7 @@ async fn main() {
     // Example 2: RBAC
     // -------------------------
     println!("2. Role-Based Access Control:");
-    
+
     let rbac = RbacPolicy::new();
     let registry = MethodRegistry::empty().with_auth(rbac);
 
@@ -366,20 +367,15 @@ async fn main() {
     // Example 3: Rate Limiting
     // -------------------------
     println!("3. Rate Limiting (3 requests per 10 seconds):");
-    
+
     let rate_limiter = RateLimiter::new(3, 10);
-    let registry = MethodRegistry::new(register_methods![PingMethod])
-        .with_auth(rate_limiter);
+    let registry = MethodRegistry::new(register_methods![PingMethod]).with_auth(rate_limiter);
 
     for i in 1..=5 {
         let response = registry
-            .call(
-                "ping",
-                Some(json!({"user_id": "user_123"})),
-                Some(json!(i)),
-            )
+            .call("ping", Some(json!({"user_id": "user_123"})), Some(json!(i)))
             .await;
-        
+
         if let Some(err) = response.error {
             println!("  Request {}: RATE LIMITED - {}", i, err.message);
         } else {

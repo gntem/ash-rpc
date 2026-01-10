@@ -1,6 +1,6 @@
 use ash_rpc_core::*;
 use serde_json::json;
-use tracing_subscriber::{fmt, prelude::*, EnvFilter};
+use tracing_subscriber::{EnvFilter, fmt, prelude::*};
 
 // Initialize tracing subscriber to see structured logs
 fn init_tracing() {
@@ -18,12 +18,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing::info!("starting json-rpc server with audit logging");
 
     // Create a few test requests with correlation IDs
-    let request1 = RequestBuilder::new("ping")
-        .id(json!(1))
-        .build();
-    
+    let request1 = RequestBuilder::new("ping").id(json!(1)).build();
+
     tracing::info!(
-        correlation_id = ?request1.correlation_id, 
+        correlation_id = ?request1.correlation_id,
         method = %request1.method,
         request_id = ?request1.id,
         "created request with auto-generated correlation id"

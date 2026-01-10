@@ -40,17 +40,14 @@ impl auth::AuthPolicy for IpWhitelistPolicy {
             );
             return self.allowed_ips.contains(&addr.ip());
         }
-        
+
         tracing::warn!("no remote address in context, denying access");
         false
     }
 
     fn unauthorized_error(&self, _method: &str) -> Response {
         ResponseBuilder::new()
-            .error(ErrorBuilder::new(
-                -32001,
-                "Unauthorized: Your IP is not whitelisted",
-            ).build())
+            .error(ErrorBuilder::new(-32001, "Unauthorized: Your IP is not whitelisted").build())
             .build()
     }
 }
@@ -93,7 +90,7 @@ impl auth::ContextExtractor for TlsContextExtractor {
         // if let Some(tls_metadata) = metadata {
         //     if let Some(peer_certs) = tls_metadata.downcast_ref::<Vec<Certificate>>() {
         //         ctx.insert("peer_certs".to_string(), peer_certs.clone());
-        //         
+        //
         //         // Extract user ID from certificate subject
         //         if let Some(user_id) = extract_user_from_cert(&peer_certs[0]) {
         //             ctx.insert("user_id".to_string(), user_id);
@@ -144,10 +141,10 @@ impl auth::AuthPolicy for CertificateAuthPolicy {
 
     fn unauthorized_error(&self, _method: &str) -> Response {
         ResponseBuilder::new()
-            .error(ErrorBuilder::new(
-                -32001,
-                "Unauthorized: Valid client certificate required",
-            ).build())
+            .error(
+                ErrorBuilder::new(-32001, "Unauthorized: Valid client certificate required")
+                    .build(),
+            )
             .build()
     }
 }
@@ -164,11 +161,7 @@ impl JsonRPCMethod for PingMethod {
         "ping"
     }
 
-    async fn call(
-        &self,
-        _params: Option<serde_json::Value>,
-        id: Option<RequestId>,
-    ) -> Response {
+    async fn call(&self, _params: Option<serde_json::Value>, id: Option<RequestId>) -> Response {
         rpc_success!("pong", id)
     }
 }
@@ -196,28 +189,43 @@ async fn main() {
         IpAddr::V4(Ipv4Addr::new(192, 168, 1, 100)),
     ]);
 
-    let registry = MethodRegistry::new(register_methods![PingMethod])
-        .with_auth(ip_policy);
+    let registry = MethodRegistry::new(register_methods![PingMethod]).with_auth(ip_policy);
 
     // Simulate connection from allowed IP
-    let ctx_allowed = auth::ConnectionContext::with_addr(
-        SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 12345)
-    );
-    
+    let ctx_allowed = auth::ConnectionContext::with_addr(SocketAddr::new(
+        IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)),
+        12345,
+    ));
+
     let response = registry
         .call_with_context("ping", None, Some(json!(1)), &ctx_allowed)
         .await;
-    println!("  Request from 127.0.0.1: {:?}", if response.result.is_some() { "ALLOWED" } else { "DENIED" });
+    println!(
+        "  Request from 127.0.0.1: {:?}",
+        if response.result.is_some() {
+            "ALLOWED"
+        } else {
+            "DENIED"
+        }
+    );
 
     // Simulate connection from blocked IP
-    let ctx_blocked = auth::ConnectionContext::with_addr(
-        SocketAddr::new(IpAddr::V4(Ipv4Addr::new(10, 0, 0, 1)), 12345)
-    );
-    
+    let ctx_blocked = auth::ConnectionContext::with_addr(SocketAddr::new(
+        IpAddr::V4(Ipv4Addr::new(10, 0, 0, 1)),
+        12345,
+    ));
+
     let response = registry
         .call_with_context("ping", None, Some(json!(2)), &ctx_blocked)
         .await;
-    println!("  Request from 10.0.0.1: {:?}", if response.result.is_some() { "ALLOWED" } else { "DENIED" });
+    println!(
+        "  Request from 10.0.0.1: {:?}",
+        if response.result.is_some() {
+            "ALLOWED"
+        } else {
+            "DENIED"
+        }
+    );
     if let Some(err) = response.error {
         println!("    Error: {}", err.message);
     }
@@ -228,30 +236,45 @@ async fn main() {
     println!("\n2. Certificate-Based Auth (using custom metadata):");
 
     let cert_policy = CertificateAuthPolicy;
-    let registry = MethodRegistry::new(register_methods![PingMethod])
-        .with_auth(cert_policy);
+    let registry = MethodRegistry::new(register_methods![PingMethod]).with_auth(cert_policy);
 
     // Simulate connection WITH certificate
-    let mut ctx_with_cert = auth::ConnectionContext::with_addr(
-        SocketAddr::new(IpAddr::V4(Ipv4Addr::new(192, 168, 1, 50)), 12345)
-    );
+    let mut ctx_with_cert = auth::ConnectionContext::with_addr(SocketAddr::new(
+        IpAddr::V4(Ipv4Addr::new(192, 168, 1, 50)),
+        12345,
+    ));
     ctx_with_cert.insert("user_id".to_string(), "user123".to_string());
     ctx_with_cert.insert("peer_certs".to_string(), vec!["cert1".to_string()]);
 
     let response = registry
         .call_with_context("ping", None, Some(json!(3)), &ctx_with_cert)
         .await;
-    println!("  With certificate: {:?}", if response.result.is_some() { "ALLOWED" } else { "DENIED" });
+    println!(
+        "  With certificate: {:?}",
+        if response.result.is_some() {
+            "ALLOWED"
+        } else {
+            "DENIED"
+        }
+    );
 
     // Simulate connection WITHOUT certificate
-    let ctx_no_cert = auth::ConnectionContext::with_addr(
-        SocketAddr::new(IpAddr::V4(Ipv4Addr::new(192, 168, 1, 51)), 12345)
-    );
+    let ctx_no_cert = auth::ConnectionContext::with_addr(SocketAddr::new(
+        IpAddr::V4(Ipv4Addr::new(192, 168, 1, 51)),
+        12345,
+    ));
 
     let response = registry
         .call_with_context("ping", None, Some(json!(4)), &ctx_no_cert)
         .await;
-    println!("  Without certificate: {:?}", if response.result.is_some() { "ALLOWED" } else { "DENIED" });
+    println!(
+        "  Without certificate: {:?}",
+        if response.result.is_some() {
+            "ALLOWED"
+        } else {
+            "DENIED"
+        }
+    );
     if let Some(err) = response.error {
         println!("    Error: {}", err.message);
     }

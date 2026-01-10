@@ -26,7 +26,9 @@ pub use tcp::{TcpServer, TcpServerBuilder};
 
 // Re-export TCP stream transport
 #[cfg(feature = "tcp-stream")]
-pub use tcp_stream::{TcpStreamClient, TcpStreamClientBuilder, TcpStreamServer, TcpStreamServerBuilder};
+pub use tcp_stream::{
+    TcpStreamClient, TcpStreamClientBuilder, TcpStreamServer, TcpStreamServerBuilder,
+};
 
 // Re-export TLS transport
 #[cfg(feature = "tcp-stream-tls")]

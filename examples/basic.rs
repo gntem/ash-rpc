@@ -7,12 +7,8 @@ impl JsonRPCMethod for AddMethod {
     fn method_name(&self) -> &'static str {
         "add"
     }
-    
-    async fn call(
-        &self,
-        params: Option<serde_json::Value>,
-        id: Option<RequestId>,
-    ) -> Response {
+
+    async fn call(&self, params: Option<serde_json::Value>, id: Option<RequestId>) -> Response {
         if let Some(params) = params {
             if let Ok(numbers) = serde_json::from_value::<[i32; 2]>(params) {
                 let result = numbers[0] + numbers[1];
@@ -31,10 +27,7 @@ impl JsonRPCMethod for AddMethod {
             }
         } else {
             ResponseBuilder::new()
-                .error(
-                    ErrorBuilder::new(error_codes::INVALID_PARAMS, "Missing parameters")
-                        .build(),
-                )
+                .error(ErrorBuilder::new(error_codes::INVALID_PARAMS, "Missing parameters").build())
                 .id(id)
                 .build()
         }
@@ -48,12 +41,8 @@ impl JsonRPCMethod for SubtractMethod {
     fn method_name(&self) -> &'static str {
         "subtract"
     }
-    
-    async fn call(
-        &self,
-        params: Option<serde_json::Value>,
-        id: Option<RequestId>,
-    ) -> Response {
+
+    async fn call(&self, params: Option<serde_json::Value>, id: Option<RequestId>) -> Response {
         if let Some(params) = params {
             if let Ok(numbers) = serde_json::from_value::<[i32; 2]>(params) {
                 let result = numbers[0] - numbers[1];
@@ -72,10 +61,7 @@ impl JsonRPCMethod for SubtractMethod {
             }
         } else {
             ResponseBuilder::new()
-                .error(
-                    ErrorBuilder::new(error_codes::INVALID_PARAMS, "Missing parameters")
-                        .build(),
-                )
+                .error(ErrorBuilder::new(error_codes::INVALID_PARAMS, "Missing parameters").build())
                 .id(id)
                 .build()
         }

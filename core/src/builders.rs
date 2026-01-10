@@ -196,56 +196,65 @@ impl SecurityConfigBuilder {
     }
 
     /// Set maximum concurrent connections
-    /// 
+    ///
     /// # Arguments
     /// * `max` - Maximum number of connections (1-100000)
-    /// 
+    ///
     /// # Panics
     /// Panics if max is 0 or greater than 100000
     pub fn max_connections(mut self, max: usize) -> Self {
-        assert!(max > 0 && max <= 100_000, "max_connections must be between 1 and 100000");
+        assert!(
+            max > 0 && max <= 100_000,
+            "max_connections must be between 1 and 100000"
+        );
         self.max_connections = max;
         self
     }
 
     /// Set maximum request size in bytes
-    /// 
+    ///
     /// # Arguments
     /// * `size` - Maximum size in bytes (1024 to 100MB)
-    /// 
+    ///
     /// # Panics
     /// Panics if size is less than 1024 bytes or greater than 100MB
     pub fn max_request_size(mut self, size: usize) -> Self {
-        assert!((1024..=100 * 1024 * 1024).contains(&size), 
-                "max_request_size must be between 1KB and 100MB");
+        assert!(
+            (1024..=100 * 1024 * 1024).contains(&size),
+            "max_request_size must be between 1KB and 100MB"
+        );
         self.max_request_size = size;
         self
     }
 
     /// Set request timeout
-    /// 
+    ///
     /// # Arguments
     /// * `timeout` - Timeout duration (1 second to 5 minutes)
-    /// 
+    ///
     /// # Panics
     /// Panics if timeout is less than 1 second or greater than 5 minutes
     pub fn request_timeout(mut self, timeout: std::time::Duration) -> Self {
-        assert!((1..=300).contains(&timeout.as_secs()),
-                "request_timeout must be between 1 second and 5 minutes");
+        assert!(
+            (1..=300).contains(&timeout.as_secs()),
+            "request_timeout must be between 1 second and 5 minutes"
+        );
         self.request_timeout = timeout;
         self
     }
 
     /// Set idle connection timeout
-    /// 
+    ///
     /// # Arguments
     /// * `timeout` - Timeout duration (10 seconds to 1 hour)
-    /// 
+    ///
     /// # Panics
     /// Panics if timeout is less than 10 seconds or greater than 1 hour
     pub fn idle_timeout(mut self, timeout: std::time::Duration) -> Self {
-        assert!((10..=3600).contains(&timeout.as_secs()),
-                "idle_timeout must be between 10 seconds and 1 hour");
+        assert!(
+            (10..=3600).contains(&timeout.as_secs()),
+            "idle_timeout must be between 10 seconds and 1 hour"
+        );
         self.idle_timeout = timeout;
         self
     }
@@ -259,7 +268,7 @@ impl SecurityConfigBuilder {
             idle_timeout_secs = self.idle_timeout.as_secs(),
             "creating security configuration"
         );
-        
+
         crate::transport::SecurityConfig {
             max_connections: self.max_connections,
             max_request_size: self.max_request_size,
@@ -276,16 +285,17 @@ impl Default for SecurityConfigBuilder {
     }
 }
 
-#[cfg(all(test, any(feature = "tcp", feature = "tcp-stream", feature = "tcp-stream-tls")))]
+#[cfg(all(
+    test,
+    any(feature = "tcp", feature = "tcp-stream", feature = "tcp-stream-tls")
+))]
 mod tests {
     use super::*;
 
     #[test]
     #[should_panic(expected = "max_connections must be between 1 and 100000")]
     fn test_max_connections_zero_panics() {
-        SecurityConfigBuilder::new()
-            .max_connections(0)
-            .build();
+        SecurityConfigBuilder::new().max_connections(0).build();
     }
 
     #[test]
@@ -296,7 +306,7 @@ mod tests {
             .request_timeout(std::time::Duration::from_secs(60))
             .idle_timeout(std::time::Duration::from_secs(600))
             .build();
-        
+
         assert_eq!(config.max_connections, 500);
         assert_eq!(config.max_request_size, 2 * 1024 * 1024);
     }
@@ -313,18 +323,14 @@ mod tests {
     #[test]
     fn test_request_builder_with_params() {
         let params = serde_json::json!({"key": "value"});
-        let request = RequestBuilder::new("method")
-            .params(params.clone())
-            .build();
+        let request = RequestBuilder::new("method").params(params.clone()).build();
         assert_eq!(request.params, Some(params));
     }
 
     #[test]
     fn test_request_builder_with_id() {
         let id = serde_json::json!(123);
-        let request = RequestBuilder::new("method")
-            .id(id.clone())
-            .build();
+        let request = RequestBuilder::new("method").id(id.clone()).build();
         assert_eq!(request.id, Some(id));
     }
 
@@ -342,13 +348,13 @@ mod tests {
         let params = serde_json::json!([1, 2, 3]);
         let id = serde_json::json!(456);
         let correlation_id = "test-corr-id".to_string();
-        
+
         let request = RequestBuilder::new("complete_method")
             .params(params.clone())
             .id(id.clone())
             .correlation_id(correlation_id.clone())
             .build();
-        
+
         assert_eq!(request.method, "complete_method");
         assert_eq!(request.params, Some(params));
         assert_eq!(request.id, Some(id));
@@ -360,12 +366,12 @@ mod tests {
     fn test_response_builder_success() {
         let result = serde_json::json!({"status": "ok"});
         let id = serde_json::json!(1);
-        
+
         let response = ResponseBuilder::new()
             .success(result.clone())
             .id(Some(id.clone()))
             .build();
-        
+
         assert_eq!(response.result, Some(result));
         assert!(response.error.is_none());
         assert_eq!(response.id, Some(id));
@@ -375,12 +381,12 @@ mod tests {
     fn test_response_builder_error() {
         let error = crate::Error::new(-32600, "Invalid request");
         let id = serde_json::json!(2);
-        
+
         let response = ResponseBuilder::new()
             .error(error.clone())
             .id(Some(id.clone()))
             .build();
-        
+
         assert!(response.result.is_none());
         assert_eq!(response.error.unwrap().code, error.code);
         assert_eq!(response.id, Some(id));
@@ -393,7 +399,7 @@ mod tests {
             .success(serde_json::json!("ok"))
             .correlation_id(Some(correlation_id.clone()))
             .build();
-        
+
         assert_eq!(response.correlation_id, Some(correlation_id));
     }
 
@@ -452,7 +458,7 @@ mod tests {
     #[should_panic(expected = "max_request_size must be between")]
     fn test_security_config_request_size_too_small() {
         SecurityConfigBuilder::new()
-            .max_request_size(512)  // Less than 1KB
+            .max_request_size(512) // Less than 1KB
             .build();
     }
 
@@ -460,7 +466,7 @@ mod tests {
     #[should_panic(expected = "max_request_size must be between")]
     fn test_security_config_request_size_too_large() {
         SecurityConfigBuilder::new()
-            .max_request_size(200 * 1024 * 1024)  // More than 100MB
+            .max_request_size(200 * 1024 * 1024) // More than 100MB
             .build();
     }
 
@@ -495,12 +501,12 @@ mod tests {
     fn test_security_config_timeouts() {
         let request_timeout = std::time::Duration::from_secs(45);
         let idle_timeout = std::time::Duration::from_secs(900);
-        
+
         let config = SecurityConfigBuilder::new()
             .request_timeout(request_timeout)
             .idle_timeout(idle_timeout)
             .build();
-        
+
         assert_eq!(config.request_timeout, request_timeout);
         assert_eq!(config.idle_timeout, idle_timeout);
     }
@@ -581,7 +587,7 @@ mod tests {
             .id(serde_json::json!(123))
             .correlation_id("corr-123".to_string())
             .build();
-        
+
         assert_eq!(request.method, "full_test");
         assert!(request.params.is_some());
         assert_eq!(request.id, Some(serde_json::json!(123)));
@@ -618,13 +624,13 @@ mod tests {
         let error = ErrorBuilder::new(-32001, "Custom error")
             .data(serde_json::json!({"field": "value"}))
             .build();
-        
+
         let response = ResponseBuilder::new()
             .error(error.clone())
             .id(Some(serde_json::json!(1)))
             .correlation_id(Some("err-corr".to_string()))
             .build();
-        
+
         assert!(response.result.is_none());
         assert_eq!(response.error, Some(error));
         assert_eq!(response.id, Some(serde_json::json!(1)));
@@ -642,7 +648,7 @@ mod tests {
         let error = ErrorBuilder::new(-32000, "Error")
             .data(serde_json::json!({"key1": "value1"}))
             .build();
-        
+
         assert!(error.data.is_some());
         let data = error.data.unwrap();
         assert_eq!(data["key1"], "value1");

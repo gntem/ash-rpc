@@ -1,6 +1,6 @@
 use ash_rpc_core::{
-    transport::tcp_stream_tls::{TcpStreamTlsClient, TcpStreamTlsServer, TlsConfig},
     JsonRPCMethod, MethodRegistry, RequestId, Response,
+    transport::tcp_stream_tls::{TcpStreamTlsClient, TcpStreamTlsServer, TlsConfig},
 };
 
 // Simple ping method
@@ -12,11 +12,7 @@ impl JsonRPCMethod for PingMethod {
         "ping"
     }
 
-    async fn call(
-        &self,
-        _params: Option<serde_json::Value>,
-        id: Option<RequestId>,
-    ) -> Response {
+    async fn call(&self, _params: Option<serde_json::Value>, id: Option<RequestId>) -> Response {
         ash_rpc_core::rpc_success!("pong", id)
     }
 }
@@ -30,11 +26,7 @@ impl JsonRPCMethod for EchoMethod {
         "echo"
     }
 
-    async fn call(
-        &self,
-        params: Option<serde_json::Value>,
-        id: Option<RequestId>,
-    ) -> Response {
+    async fn call(&self, params: Option<serde_json::Value>, id: Option<RequestId>) -> Response {
         let message = params.unwrap_or_else(|| serde_json::json!(""));
         ash_rpc_core::rpc_success!(message, id)
     }
@@ -60,7 +52,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Create method registry
     let registry = MethodRegistry::new(ash_rpc_core::register_methods![PingMethod, EchoMethod]);
 
-    println!(" Loaded {} methods: {:?}", registry.method_count(), registry.get_methods());
+    println!(
+        " Loaded {} methods: {:?}",
+        registry.method_count(),
+        registry.get_methods()
+    );
 
     // Load TLS configuration
     println!("🔐 Loading TLS certificates...");
@@ -97,7 +93,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     client.send_request(&ping_request).await?;
     let ping_response = client.recv_response().await?;
     println!("  Request:  {}", serde_json::to_string(&ping_request)?);
-    println!("  Response: {}\n", serde_json::to_string_pretty(&ping_response)?);
+    println!(
+        "  Response: {}\n",
+        serde_json::to_string_pretty(&ping_response)?
+    );
 
     // Test echo
     println!("Testing 'echo' method:");
@@ -109,7 +108,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     client.send_request(&echo_request).await?;
     let echo_response = client.recv_response().await?;
     println!("  Request:  {}", serde_json::to_string(&echo_request)?);
-    println!("  Response: {}\n", serde_json::to_string_pretty(&echo_response)?);
+    println!(
+        "  Response: {}\n",
+        serde_json::to_string_pretty(&echo_response)?
+    );
 
     println!(" All tests passed!");
     println!("\n🔒 All communication was encrypted with TLS!");

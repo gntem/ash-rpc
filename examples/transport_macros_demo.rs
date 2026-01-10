@@ -7,12 +7,8 @@ impl JsonRPCMethod for PingMethod {
     fn method_name(&self) -> &'static str {
         "ping"
     }
-    
-    async fn call(
-        &self,
-        _params: Option<serde_json::Value>,
-        id: Option<RequestId>,
-    ) -> Response {
+
+    async fn call(&self, _params: Option<serde_json::Value>, id: Option<RequestId>) -> Response {
         rpc_success!("pong", id)
     }
 }
@@ -24,12 +20,8 @@ impl JsonRPCMethod for EchoMethod {
     fn method_name(&self) -> &'static str {
         "echo"
     }
-    
-    async fn call(
-        &self,
-        params: Option<serde_json::Value>,
-        id: Option<RequestId>,
-    ) -> Response {
+
+    async fn call(&self, params: Option<serde_json::Value>, id: Option<RequestId>) -> Response {
         rpc_success!(params.unwrap_or(serde_json::json!(null)), id)
     }
 }
@@ -43,9 +35,7 @@ async fn main() {
 
     println!(" Created JSON-RPC registry with methods: ping, echo");
 
-    let test_request = RequestBuilder::new("ping")
-        .id(serde_json::json!(1))
-        .build();
+    let test_request = RequestBuilder::new("ping").id(serde_json::json!(1)).build();
     let test_message = Message::Request(test_request);
 
     if let Some(response) = registry.process_message(test_message).await {

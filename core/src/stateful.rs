@@ -21,7 +21,7 @@ pub trait ServiceContext: Send + Sync + 'static {
 pub trait StatefulJsonRPCMethod<C: ServiceContext>: Send + Sync {
     /// Get the method name for runtime dispatch
     fn method_name(&self) -> &'static str;
-    
+
     /// Execute the JSON-RPC method asynchronously with context
     async fn call(
         &self,
@@ -29,7 +29,7 @@ pub trait StatefulJsonRPCMethod<C: ServiceContext>: Send + Sync {
         params: Option<serde_json::Value>,
         id: Option<crate::RequestId>,
     ) -> Result<Response, C::Error>;
-    
+
     /// Get OpenAPI components for this method
     fn openapi_components(&self) -> crate::traits::OpenApiMethodSpec {
         crate::traits::OpenApiMethodSpec::new(self.method_name())
@@ -92,7 +92,7 @@ impl<C: ServiceContext> StatefulMethodRegistry<C> {
                 return handler.call(context, params, id).await;
             }
         }
-        
+
         tracing::warn!(method = %method, "stateful method not found");
         // Method not found
         Ok(ResponseBuilder::new()
@@ -111,7 +111,8 @@ impl<C: ServiceContext> Default for StatefulMethodRegistry<C> {
 #[async_trait::async_trait]
 impl<C: ServiceContext> StatefulHandler<C> for StatefulMethodRegistry<C> {
     async fn handle_request(&self, context: &C, request: Request) -> Result<Response, C::Error> {
-        self.call(context, &request.method, request.params, request.id).await
+        self.call(context, &request.method, request.params, request.id)
+            .await
     }
 
     async fn handle_notification(
@@ -119,7 +120,9 @@ impl<C: ServiceContext> StatefulHandler<C> for StatefulMethodRegistry<C> {
         context: &C,
         notification: crate::Notification,
     ) -> Result<(), C::Error> {
-        let _ = self.call(context, &notification.method, notification.params, None).await?;
+        let _ = self
+            .call(context, &notification.method, notification.params, None)
+            .await?;
         Ok(())
     }
 }
@@ -155,7 +158,7 @@ impl<C: ServiceContext> MessageProcessor for StatefulProcessor<C> {
             Message::Request(request) => {
                 let request_id = request.id.clone();
                 let correlation_id = request.correlation_id.clone();
-                
+
                 match self.handler.handle_request(&self.context, request).await {
                     Ok(response) => Some(response),
                     Err(error) => {
@@ -166,16 +169,17 @@ impl<C: ServiceContext> MessageProcessor for StatefulProcessor<C> {
                             correlation_id = ?correlation_id,
                             "stateful handler error"
                         );
-                        
+
                         // Return generic error that preserves request ID
                         // Users can customize error handling by implementing their own MessageProcessor
-                        let generic_error = crate::Error::from_error_logged(&error as &dyn std::error::Error);
-                        
+                        let generic_error =
+                            crate::Error::from_error_logged(&error as &dyn std::error::Error);
+
                         Some(
                             ResponseBuilder::new()
                                 .error(generic_error)
-                                .id(request_id)  // Preserve request ID for correlation
-                                .correlation_id(correlation_id)  // Preserve correlation ID
+                                .id(request_id) // Preserve request ID for correlation
+                                .correlation_id(correlation_id) // Preserve correlation ID
                                 .build(),
                         )
                     }
@@ -184,7 +188,8 @@ impl<C: ServiceContext> MessageProcessor for StatefulProcessor<C> {
             Message::Notification(notification) => {
                 let _ = self
                     .handler
-                    .handle_notification(&self.context, notification).await;
+                    .handle_notification(&self.context, notification)
+                    .await;
                 None
             }
             Message::Response(_) => None,
@@ -235,19 +240,19 @@ impl<C: ServiceContext> StatefulProcessorBuilder<C> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{RequestBuilder, Notification};
+    use crate::{Notification, RequestBuilder};
     use std::sync::atomic::{AtomicU32, Ordering};
 
     // Test context implementation
     #[derive(Debug)]
     struct TestError(String);
-    
+
     impl std::fmt::Display for TestError {
         fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
             write!(f, "{}", self.0)
         }
     }
-    
+
     impl std::error::Error for TestError {}
 
     struct TestContext {
@@ -353,8 +358,12 @@ mod tests {
             .register(FailingMethod);
 
         // Call increment twice
-        let _ = registry.call(&context, "increment", None, Some(serde_json::json!(1))).await;
-        let _ = registry.call(&context, "increment", None, Some(serde_json::json!(2))).await;
+        let _ = registry
+            .call(&context, "increment", None, Some(serde_json::json!(1)))
+            .await;
+        let _ = registry
+            .call(&context, "increment", None, Some(serde_json::json!(2)))
+            .await;
         assert_eq!(context.get_count(), 2);
 
         // Call failing method
@@ -421,7 +430,9 @@ mod tests {
             params: None,
         };
 
-        let response = processor.process_message(Message::Notification(notification)).await;
+        let response = processor
+            .process_message(Message::Notification(notification))
+            .await;
         assert!(response.is_none());
     }
 
@@ -431,9 +442,7 @@ mod tests {
         let registry = StatefulMethodRegistry::new().register(FailingMethod);
         let processor = StatefulProcessor::new(context, registry);
 
-        let request = RequestBuilder::new("fail")
-            .id(serde_json::json!(1))
-            .build();
+        let request = RequestBuilder::new("fail").id(serde_json::json!(1)).build();
 
         let response = processor.process_message(Message::Request(request)).await;
         assert!(response.is_some());
@@ -454,7 +463,10 @@ mod tests {
             .correlation_id(correlation_id.clone())
             .build();
 
-        let response = processor.process_message(Message::Request(request)).await.unwrap();
+        let response = processor
+            .process_message(Message::Request(request))
+            .await
+            .unwrap();
         assert_eq!(response.correlation_id, Some(correlation_id));
     }
 
@@ -462,7 +474,7 @@ mod tests {
     async fn test_stateful_processor_builder() {
         let context = TestContext::new();
         let registry = StatefulMethodRegistry::new().register(IncrementMethod);
-        
+
         let processor = StatefulProcessor::builder(context)
             .registry(registry)
             .build()

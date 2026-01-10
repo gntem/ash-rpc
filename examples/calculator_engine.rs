@@ -20,20 +20,26 @@ impl JsonRPCMethod for AddMethod {
     fn method_name(&self) -> &'static str {
         "add"
     }
-    
-    async fn call(
-        &self,
-        params: Option<serde_json::Value>,
-        id: Option<RequestId>,
-    ) -> Response {
+
+    async fn call(&self, params: Option<serde_json::Value>, id: Option<RequestId>) -> Response {
         let params: MathParams = match params {
             Some(p) => match serde_json::from_value(p) {
                 Ok(params) => params,
                 Err(_) => {
-                    return rpc_error!(error_codes::INVALID_PARAMS, "Invalid parameters for add method", id);
+                    return rpc_error!(
+                        error_codes::INVALID_PARAMS,
+                        "Invalid parameters for add method",
+                        id
+                    );
                 }
             },
-            None => return rpc_error!(error_codes::INVALID_PARAMS, "Missing parameters for add method", id),
+            None => {
+                return rpc_error!(
+                    error_codes::INVALID_PARAMS,
+                    "Missing parameters for add method",
+                    id
+                );
+            }
         };
 
         let result = CalculationResult {
@@ -42,7 +48,11 @@ impl JsonRPCMethod for AddMethod {
 
         match serde_json::to_value(result) {
             Ok(result_json) => rpc_success!(result_json, id),
-            Err(_) => rpc_error!(error_codes::INTERNAL_ERROR, "Failed to serialize result", id),
+            Err(_) => rpc_error!(
+                error_codes::INTERNAL_ERROR,
+                "Failed to serialize result",
+                id
+            ),
         }
     }
 }
@@ -54,21 +64,25 @@ impl JsonRPCMethod for SubtractMethod {
     fn method_name(&self) -> &'static str {
         "subtract"
     }
-    
-    async fn call(
-        &self,
-        params: Option<serde_json::Value>,
-        id: Option<RequestId>,
-    ) -> Response {
+
+    async fn call(&self, params: Option<serde_json::Value>, id: Option<RequestId>) -> Response {
         let params: MathParams = match params {
             Some(p) => match serde_json::from_value(p) {
                 Ok(params) => params,
                 Err(_) => {
-                    return rpc_error!(error_codes::INVALID_PARAMS, "Invalid parameters for subtract method", id);
+                    return rpc_error!(
+                        error_codes::INVALID_PARAMS,
+                        "Invalid parameters for subtract method",
+                        id
+                    );
                 }
             },
             None => {
-                return rpc_error!(error_codes::INVALID_PARAMS, "Missing parameters for subtract method", id);
+                return rpc_error!(
+                    error_codes::INVALID_PARAMS,
+                    "Missing parameters for subtract method",
+                    id
+                );
             }
         };
 
@@ -78,7 +92,11 @@ impl JsonRPCMethod for SubtractMethod {
 
         match serde_json::to_value(result) {
             Ok(result_json) => rpc_success!(result_json, id),
-            Err(_) => rpc_error!(error_codes::INTERNAL_ERROR, "Failed to serialize result", id),
+            Err(_) => rpc_error!(
+                error_codes::INTERNAL_ERROR,
+                "Failed to serialize result",
+                id
+            ),
         }
     }
 }
@@ -90,21 +108,25 @@ impl JsonRPCMethod for MultiplyMethod {
     fn method_name(&self) -> &'static str {
         "multiply"
     }
-    
-    async fn call(
-        &self,
-        params: Option<serde_json::Value>,
-        id: Option<RequestId>,
-    ) -> Response {
+
+    async fn call(&self, params: Option<serde_json::Value>, id: Option<RequestId>) -> Response {
         let params: MathParams = match params {
             Some(p) => match serde_json::from_value(p) {
                 Ok(params) => params,
                 Err(_) => {
-                    return rpc_error!(error_codes::INVALID_PARAMS, "Invalid parameters for multiply method", id);
+                    return rpc_error!(
+                        error_codes::INVALID_PARAMS,
+                        "Invalid parameters for multiply method",
+                        id
+                    );
                 }
             },
             None => {
-                return rpc_error!(error_codes::INVALID_PARAMS, "Missing parameters for multiply method", id);
+                return rpc_error!(
+                    error_codes::INVALID_PARAMS,
+                    "Missing parameters for multiply method",
+                    id
+                );
             }
         };
 
@@ -114,7 +136,11 @@ impl JsonRPCMethod for MultiplyMethod {
 
         match serde_json::to_value(result) {
             Ok(result_json) => rpc_success!(result_json, id),
-            Err(_) => rpc_error!(error_codes::INTERNAL_ERROR, "Failed to serialize result", id),
+            Err(_) => rpc_error!(
+                error_codes::INTERNAL_ERROR,
+                "Failed to serialize result",
+                id
+            ),
         }
     }
 }
@@ -126,20 +152,26 @@ impl JsonRPCMethod for DivideMethod {
     fn method_name(&self) -> &'static str {
         "divide"
     }
-    
-    async fn call(
-        &self,
-        params: Option<serde_json::Value>,
-        id: Option<RequestId>,
-    ) -> Response {
+
+    async fn call(&self, params: Option<serde_json::Value>, id: Option<RequestId>) -> Response {
         let params: MathParams = match params {
             Some(p) => match serde_json::from_value(p) {
                 Ok(params) => params,
                 Err(_) => {
-                    return rpc_error!(error_codes::INVALID_PARAMS, "Invalid parameters for divide method", id);
+                    return rpc_error!(
+                        error_codes::INVALID_PARAMS,
+                        "Invalid parameters for divide method",
+                        id
+                    );
                 }
             },
-            None => return rpc_error!(error_codes::INVALID_PARAMS, "Missing parameters for divide method", id),
+            None => {
+                return rpc_error!(
+                    error_codes::INVALID_PARAMS,
+                    "Missing parameters for divide method",
+                    id
+                );
+            }
         };
 
         if params.b == 0.0 {
@@ -152,7 +184,11 @@ impl JsonRPCMethod for DivideMethod {
 
         match serde_json::to_value(result) {
             Ok(result_json) => rpc_success!(result_json, id),
-            Err(_) => rpc_error!(error_codes::INTERNAL_ERROR, "Failed to serialize result", id),
+            Err(_) => rpc_error!(
+                error_codes::INTERNAL_ERROR,
+                "Failed to serialize result",
+                id
+            ),
         }
     }
 }
@@ -164,12 +200,8 @@ impl JsonRPCMethod for ListMethodsMethod {
     fn method_name(&self) -> &'static str {
         "list_methods"
     }
-    
-    async fn call(
-        &self,
-        _params: Option<serde_json::Value>,
-        id: Option<RequestId>,
-    ) -> Response {
+
+    async fn call(&self, _params: Option<serde_json::Value>, id: Option<RequestId>) -> Response {
         let methods = vec!["add", "subtract", "multiply", "divide", "list_methods"];
         rpc_success!(methods, id)
     }

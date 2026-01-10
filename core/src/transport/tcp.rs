@@ -2,8 +2,8 @@
 //!
 //! Simple TCP server for one-request-per-connection pattern.
 
-use crate::{Message, MessageProcessor};
 use super::security::SecurityConfig;
+use crate::{Message, MessageProcessor};
 use std::sync::Arc;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
@@ -92,7 +92,7 @@ impl TcpServer {
     async fn run_async(&self) -> Result<(), std::io::Error> {
         let listener = TcpListener::bind(&self.addr).await?;
         tracing::info!(
-            addr = %self.addr, 
+            addr = %self.addr,
             protocol = "tcp",
             max_connections = self.security_config.max_connections,
             max_request_size = self.security_config.max_request_size,
@@ -103,10 +103,10 @@ impl TcpServer {
             match listener.accept().await {
                 Ok((stream, addr)) => {
                     let current_connections = self.active_connections.load(Ordering::Relaxed);
-                    
+
                     // Check connection limit
-                    if self.security_config.max_connections > 0 
-                        && current_connections >= self.security_config.max_connections 
+                    if self.security_config.max_connections > 0
+                        && current_connections >= self.security_config.max_connections
                     {
                         tracing::warn!(
                             remote_addr = %addr,
@@ -122,11 +122,11 @@ impl TcpServer {
                     let processor = Arc::clone(&self.processor);
                     let security_config = self.security_config.clone();
                     let active_connections = Arc::clone(&self.active_connections);
-                    
+
                     tokio::spawn(async move {
                         let result = handle_client(stream, processor, security_config).await;
                         active_connections.fetch_sub(1, Ordering::Relaxed);
-                        
+
                         if let Err(e) = result {
                             tracing::error!(remote_addr = %addr, error = %e, "client handler failed");
                         }
@@ -151,19 +151,17 @@ async fn handle_client(
 
     loop {
         line.clear();
-        
+
         // Apply request timeout
-        let bytes_read = match timeout(
-            security_config.request_timeout,
-            reader.read_line(&mut line)
-        ).await {
-            Ok(result) => result?,
-            Err(_) => {
-                tracing::warn!("request timeout exceeded");
-                return Err("request timeout".into());
-            }
-        };
-        
+        let bytes_read =
+            match timeout(security_config.request_timeout, reader.read_line(&mut line)).await {
+                Ok(result) => result?,
+                Err(_) => {
+                    tracing::warn!("request timeout exceeded");
+                    return Err("request timeout".into());
+                }
+            };
+
         // Check max request size
         if security_config.max_request_size > 0 && line.len() > security_config.max_request_size {
             tracing::warn!(
@@ -175,7 +173,8 @@ async fn handle_client(
                 crate::ErrorBuilder::new(
                     crate::error_codes::INVALID_REQUEST,
                     "Request size limit exceeded".to_string(),
-                ).build(),
+                )
+                .build(),
                 None,
             );
             if let Ok(json) = serde_json::to_string(&error_response) {
@@ -230,10 +229,10 @@ async fn handle_client(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{Request, Response, Error, error_codes};
+    use crate::{Error, Request, Response, error_codes};
+    use std::time::Duration;
     use tokio::io::{AsyncReadExt, AsyncWriteExt};
     use tokio::net::TcpStream;
-    use std::time::Duration;
 
     // Mock processor for testing
     struct MockProcessor;
@@ -249,10 +248,7 @@ mod tests {
                             req.id,
                         ))
                     } else if req.method == "error" {
-                        Some(Response::error(
-                            Error::new(-32000, "Test error"),
-                            req.id,
-                        ))
+                        Some(Response::error(Error::new(-32000, "Test error"), req.id))
                     } else {
                         Some(Response::error(
                             Error::new(error_codes::METHOD_NOT_FOUND, "Method not found"),
@@ -276,8 +272,7 @@ mod tests {
 
     #[test]
     fn test_tcp_server_builder_with_processor() {
-        let builder = TcpServerBuilder::new("127.0.0.1:8080")
-            .processor(MockProcessor);
+        let builder = TcpServerBuilder::new("127.0.0.1:8080").processor(MockProcessor);
         assert!(builder.processor.is_some());
     }
 
@@ -289,31 +284,27 @@ mod tests {
             request_timeout: Duration::from_secs(10),
             idle_timeout: Duration::from_secs(60),
         };
-        let builder = TcpServerBuilder::new("127.0.0.1:8080")
-            .security_config(config.clone());
+        let builder = TcpServerBuilder::new("127.0.0.1:8080").security_config(config.clone());
         assert_eq!(builder.security_config.max_connections, 50);
         assert_eq!(builder.security_config.max_request_size, 2048);
     }
 
     #[test]
     fn test_tcp_server_builder_max_connections() {
-        let builder = TcpServerBuilder::new("127.0.0.1:8080")
-            .max_connections(100);
+        let builder = TcpServerBuilder::new("127.0.0.1:8080").max_connections(100);
         assert_eq!(builder.security_config.max_connections, 100);
     }
 
     #[test]
     fn test_tcp_server_builder_max_request_size() {
-        let builder = TcpServerBuilder::new("127.0.0.1:8080")
-            .max_request_size(4096);
+        let builder = TcpServerBuilder::new("127.0.0.1:8080").max_request_size(4096);
         assert_eq!(builder.security_config.max_request_size, 4096);
     }
 
     #[test]
     fn test_tcp_server_builder_request_timeout() {
         let timeout_val = Duration::from_secs(20);
-        let builder = TcpServerBuilder::new("127.0.0.1:8080")
-            .request_timeout(timeout_val);
+        let builder = TcpServerBuilder::new("127.0.0.1:8080").request_timeout(timeout_val);
         assert_eq!(builder.security_config.request_timeout, timeout_val);
     }
 
@@ -328,8 +319,7 @@ mod tests {
 
     #[test]
     fn test_tcp_server_builder_build_success() {
-        let builder = TcpServerBuilder::new("127.0.0.1:8080")
-            .processor(MockProcessor);
+        let builder = TcpServerBuilder::new("127.0.0.1:8080").processor(MockProcessor);
         let result = builder.build();
         assert!(result.is_ok());
         let server = result.unwrap();
@@ -343,10 +333,13 @@ mod tests {
             .max_connections(200)
             .max_request_size(8192)
             .request_timeout(Duration::from_secs(30));
-        
+
         assert_eq!(builder.security_config.max_connections, 200);
         assert_eq!(builder.security_config.max_request_size, 8192);
-        assert_eq!(builder.security_config.request_timeout, Duration::from_secs(30));
+        assert_eq!(
+            builder.security_config.request_timeout,
+            Duration::from_secs(30)
+        );
     }
 
     #[test]
@@ -507,7 +500,7 @@ mod tests {
         let mut client = TcpStream::connect(addr).await.unwrap();
         // Send empty lines
         client.write_all(b"\n\n\n").await.unwrap();
-        
+
         // Then send a valid request
         let request = Request::new("echo").with_params(serde_json::json!(42));
         let request_json = serde_json::to_string(&Message::Request(request)).unwrap();
@@ -545,7 +538,8 @@ mod tests {
 
         let mut client = TcpStream::connect(addr).await.unwrap();
         // Send a request larger than 50 bytes
-        let request = Request::new("echo").with_params(serde_json::json!({"very": "long", "data": "that exceeds the limit"}));
+        let request = Request::new("echo")
+            .with_params(serde_json::json!({"very": "long", "data": "that exceeds the limit"}));
         let request_json = serde_json::to_string(&Message::Request(request)).unwrap();
         client.write_all(request_json.as_bytes()).await.unwrap();
         client.write_all(b"\n").await.unwrap();
@@ -585,7 +579,7 @@ mod tests {
         let mut client = TcpStream::connect(addr).await.unwrap();
         // Don't send anything, just wait for timeout
         tokio::time::sleep(Duration::from_millis(200)).await;
-        
+
         // Connection should be closed by server due to timeout
         let mut buf = [0u8; 1024];
         let result = client.read(&mut buf).await;
@@ -645,7 +639,10 @@ mod tests {
         // Send first request
         let request1 = Request::new("echo").with_params(serde_json::json!(1));
         let request_json1 = serde_json::to_string(&Message::Request(request1)).unwrap();
-        write_half.write_all(request_json1.as_bytes()).await.unwrap();
+        write_half
+            .write_all(request_json1.as_bytes())
+            .await
+            .unwrap();
         write_half.write_all(b"\n").await.unwrap();
         write_half.flush().await.unwrap();
 
@@ -657,7 +654,10 @@ mod tests {
         // Send second request
         let request2 = Request::new("echo").with_params(serde_json::json!(2));
         let request_json2 = serde_json::to_string(&Message::Request(request2)).unwrap();
-        write_half.write_all(request_json2.as_bytes()).await.unwrap();
+        write_half
+            .write_all(request_json2.as_bytes())
+            .await
+            .unwrap();
         write_half.write_all(b"\n").await.unwrap();
         write_half.flush().await.unwrap();
 

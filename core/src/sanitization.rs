@@ -91,11 +91,11 @@ impl PatternTransform for CaseInsensitivePattern {
     fn apply(&self, input: &str) -> String {
         let pattern_lower = self.pattern.to_lowercase();
         let input_lower = input.to_lowercase();
-        
+
         if let Some(pos) = input_lower.find(&pattern_lower) {
             let mut result = input.to_string();
             result.replace_range(pos..pos + self.pattern.len(), &self.replacement);
-            
+
             // Recursively handle multiple occurrences
             if result.to_lowercase().contains(&pattern_lower) {
                 return self.apply(&result);
@@ -118,8 +118,11 @@ impl CompositeTransform {
             transforms: Vec::new(),
         }
     }
-    
-    pub fn add_transform<T: PatternTransform + Send + Sync + 'static>(mut self, transform: T) -> Self {
+
+    pub fn add_transform<T: PatternTransform + Send + Sync + 'static>(
+        mut self,
+        transform: T,
+    ) -> Self {
         self.transforms.push(Box::new(transform));
         self
     }
@@ -133,9 +136,9 @@ impl Default for CompositeTransform {
 
 impl PatternTransform for CompositeTransform {
     fn apply(&self, input: &str) -> String {
-        self.transforms.iter().fold(input.to_string(), |acc, transform| {
-            transform.apply(&acc)
-        })
+        self.transforms
+            .iter()
+            .fold(input.to_string(), |acc, transform| transform.apply(&acc))
     }
 }
 
@@ -163,7 +166,7 @@ mod tests {
         let composite = CompositeTransform::new()
             .add_transform(SimplePattern::new("password", "[REDACTED]"))
             .add_transform(SimplePattern::new("token", "[REDACTED]"));
-        
+
         let result = composite.apply("password is secret, token is abc123");
         assert!(result.contains("[REDACTED]"));
         assert!(!result.contains("password"));
@@ -187,13 +190,13 @@ mod tests {
     #[test]
     fn test_case_insensitive_pattern_various_cases() {
         let pattern = CaseInsensitivePattern::new("secret", "[REDACTED]");
-        
+
         let result1 = pattern.apply("SECRET value");
         assert!(result1.contains("[REDACTED]"));
-        
+
         let result2 = pattern.apply("Secret value");
         assert!(result2.contains("[REDACTED]"));
-        
+
         let result3 = pattern.apply("secret value");
         assert!(result3.contains("[REDACTED]"));
     }
@@ -229,9 +232,8 @@ mod tests {
 
     #[test]
     fn test_composite_transform_single() {
-        let composite = CompositeTransform::new()
-            .add_transform(SimplePattern::new("test", "TEST"));
-        
+        let composite = CompositeTransform::new().add_transform(SimplePattern::new("test", "TEST"));
+
         let result = composite.apply("test string");
         assert_eq!(result, "TEST string");
     }
@@ -242,7 +244,7 @@ mod tests {
             .add_transform(SimplePattern::new("a", "b"))
             .add_transform(SimplePattern::new("b", "c"))
             .add_transform(SimplePattern::new("c", "d"));
-        
+
         let result = composite.apply("a");
         assert_eq!(result, "d");
     }

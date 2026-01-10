@@ -9,14 +9,10 @@ use std::collections::HashMap;
 pub trait JsonRPCMethod: Send + Sync {
     /// Get the method name that this implementation handles
     fn method_name(&self) -> &'static str;
-    
+
     /// Execute the JSON-RPC method asynchronously
-    async fn call(
-        &self,
-        params: Option<serde_json::Value>,
-        id: Option<RequestId>,
-    ) -> Response;
-    
+    async fn call(&self, params: Option<serde_json::Value>, id: Option<RequestId>) -> Response;
+
     /// Get OpenAPI components for this method
     fn openapi_components(&self) -> OpenApiMethodSpec {
         OpenApiMethodSpec::new(self.method_name())
@@ -87,7 +83,7 @@ impl Default for ProcessorCapabilities {
         Self {
             supports_batch: true,
             supports_notifications: true,
-            max_batch_size: Some(100),       // Secure default: limit batch size
+            max_batch_size: Some(100), // Secure default: limit batch size
             max_request_size: Some(1024 * 1024), // 1 MB
             request_timeout_secs: Some(30),
             supported_versions: vec!["2.0".to_string()],
@@ -131,46 +127,54 @@ impl ProcessorCapabilitiesBuilder {
     }
 
     /// Set maximum batch size with validation
-    /// 
+    ///
     /// # Arguments
     /// * `size` - Maximum batch size (1-1000), or None for unlimited
-    /// 
+    ///
     /// # Panics
     /// Panics if size is 0 or greater than 1000
     pub fn max_batch_size(mut self, size: Option<usize>) -> Self {
         if let Some(s) = size {
-            assert!(s > 0 && s <= 1000, "max_batch_size must be between 1 and 1000");
+            assert!(
+                s > 0 && s <= 1000,
+                "max_batch_size must be between 1 and 1000"
+            );
         }
         self.max_batch_size = size;
         self
     }
 
     /// Set maximum request size in bytes with validation
-    /// 
+    ///
     /// # Arguments
     /// * `size` - Maximum size in bytes (1KB-100MB), or None for unlimited
-    /// 
+    ///
     /// # Panics
     /// Panics if size is less than 1KB or greater than 100MB
     pub fn max_request_size(mut self, size: Option<usize>) -> Self {
         if let Some(s) = size {
-            assert!((1024..=100 * 1024 * 1024).contains(&s),
-                    "max_request_size must be between 1KB and 100MB");
+            assert!(
+                (1024..=100 * 1024 * 1024).contains(&s),
+                "max_request_size must be between 1KB and 100MB"
+            );
         }
         self.max_request_size = size;
         self
     }
 
     /// Set request timeout in seconds with validation
-    /// 
+    ///
     /// # Arguments
     /// * `timeout` - Timeout in seconds (1-300), or None for no timeout
-    /// 
+    ///
     /// # Panics
     /// Panics if timeout is 0 or greater than 300 seconds
     pub fn request_timeout_secs(mut self, timeout: Option<u64>) -> Self {
         if let Some(t) = timeout {
-            assert!(t > 0 && t <= 300, "request_timeout_secs must be between 1 and 300");
+            assert!(
+                t > 0 && t <= 300,
+                "request_timeout_secs must be between 1 and 300"
+            );
         }
         self.request_timeout_secs = timeout;
         self
@@ -191,7 +195,7 @@ impl ProcessorCapabilitiesBuilder {
             request_timeout_secs = ?self.request_timeout_secs,
             "creating processor capabilities"
         );
-        
+
         ProcessorCapabilities {
             supports_batch: self.supports_batch,
             supports_notifications: self.supports_notifications,
@@ -463,7 +467,7 @@ mod tests {
             .max_request_size(Some(2 * 1024 * 1024))
             .request_timeout_secs(Some(60))
             .build();
-        
+
         assert_eq!(caps.max_batch_size, Some(50));
         assert_eq!(caps.max_request_size, Some(2 * 1024 * 1024));
         assert_eq!(caps.request_timeout_secs, Some(60));
@@ -512,8 +516,7 @@ mod tests {
 
     #[test]
     fn test_openapi_method_spec_with_description() {
-        let spec = OpenApiMethodSpec::new("method")
-            .with_description("Test description");
+        let spec = OpenApiMethodSpec::new("method").with_description("Test description");
         assert_eq!(spec.description, Some("Test description".to_string()));
     }
 
@@ -521,11 +524,11 @@ mod tests {
     fn test_openapi_method_spec_with_schemas() {
         let params = json!({"type": "object"});
         let result = json!({"type": "string"});
-        
+
         let spec = OpenApiMethodSpec::new("method")
             .with_parameters(params.clone())
             .with_result(result.clone());
-        
+
         assert_eq!(spec.parameters, Some(params));
         assert_eq!(spec.result, Some(result));
     }
@@ -536,7 +539,7 @@ mod tests {
             .with_description("A complete method")
             .with_parameters(json!({"type": "array"}))
             .with_result(json!({"type": "number"}));
-        
+
         assert_eq!(spec.method_name, "complete_method");
         assert_eq!(spec.description, Some("A complete method".to_string()));
         assert!(spec.parameters.is_some());
@@ -572,10 +575,10 @@ mod tests {
     fn test_openapi_spec_serialization() {
         let mut spec = OpenApiSpec::new("Test", "1.0");
         spec.add_server(OpenApiServer::new("http://api.example.com"));
-        
+
         let json = serde_json::to_string(&spec).unwrap();
         let deserialized: OpenApiSpec = serde_json::from_str(&json).unwrap();
-        
+
         assert_eq!(deserialized.info.title, "Test");
         assert_eq!(deserialized.servers.len(), 1);
     }
@@ -590,8 +593,7 @@ mod tests {
 
     #[test]
     fn test_openapi_server_with_description() {
-        let server = OpenApiServer::new("http://api.com")
-            .with_description("Production API");
+        let server = OpenApiServer::new("http://api.com").with_description("Production API");
         assert_eq!(server.description, Some("Production API".to_string()));
     }
 
@@ -603,7 +605,7 @@ mod tests {
             version: "2.0.0".to_string(),
             description: Some("API description".to_string()),
         };
-        
+
         assert_eq!(info.title, "My API");
         assert_eq!(info.version, "2.0.0");
         assert_eq!(info.description, Some("API description".to_string()));
@@ -623,7 +625,7 @@ mod tests {
             "User".to_string(),
             json!({"type": "object", "properties": {"name": {"type": "string"}}}),
         );
-        
+
         assert_eq!(components.schemas.len(), 1);
         assert!(components.schemas.contains_key("User"));
     }
@@ -637,11 +639,7 @@ mod tests {
             "test"
         }
 
-        async fn call(
-            &self,
-            params: Option<serde_json::Value>,
-            id: Option<RequestId>,
-        ) -> Response {
+        async fn call(&self, params: Option<serde_json::Value>, id: Option<RequestId>) -> Response {
             Response::success(params.unwrap_or(json!(null)), id)
         }
     }
@@ -650,10 +648,10 @@ mod tests {
     async fn test_jsonrpc_method_trait() {
         let method = TestMethod;
         assert_eq!(method.method_name(), "test");
-        
+
         let params = json!({"key": "value"});
         let response = method.call(Some(params.clone()), Some(json!(1))).await;
-        
+
         assert!(response.is_success());
         assert_eq!(response.result, Some(params));
     }
@@ -817,7 +815,7 @@ mod tests {
             .max_request_size(None)
             .request_timeout_secs(None)
             .build();
-        
+
         assert!(caps.max_batch_size.is_none());
         assert!(caps.max_request_size.is_none());
         assert!(caps.request_timeout_secs.is_none());
@@ -836,7 +834,10 @@ mod tests {
     fn test_openapi_error_with_description() {
         let error = OpenApiError::new(-32600, "Invalid Request")
             .with_description("The JSON sent is not a valid Request object");
-        assert_eq!(error.description, Some("The JSON sent is not a valid Request object".to_string()));
+        assert_eq!(
+            error.description,
+            Some("The JSON sent is not a valid Request object".to_string())
+        );
     }
 
     // OpenApiExample tests
@@ -855,9 +856,12 @@ mod tests {
             .with_description("A complete example with all fields")
             .with_params(json!({"x": 1, "y": 2}))
             .with_result(json!(3));
-        
+
         assert_eq!(example.summary, Some("Complete example".to_string()));
-        assert_eq!(example.description, Some("A complete example with all fields".to_string()));
+        assert_eq!(
+            example.description,
+            Some("A complete example with all fields".to_string())
+        );
         assert!(example.params.is_some());
         assert!(example.result.is_some());
     }
@@ -866,9 +870,8 @@ mod tests {
     #[test]
     fn test_openapi_method_spec_with_error() {
         let error = OpenApiError::new(-32602, "Invalid params");
-        let spec = OpenApiMethodSpec::new("method")
-            .with_error(error);
-        
+        let spec = OpenApiMethodSpec::new("method").with_error(error);
+
         assert_eq!(spec.errors.len(), 1);
         assert_eq!(spec.errors[0].code, -32602);
     }
@@ -878,7 +881,7 @@ mod tests {
         let spec = OpenApiMethodSpec::new("method")
             .with_tag("utility")
             .with_tag("public");
-        
+
         assert_eq!(spec.tags.len(), 2);
         assert!(spec.tags.contains(&"utility".to_string()));
         assert!(spec.tags.contains(&"public".to_string()));
@@ -887,17 +890,15 @@ mod tests {
     #[test]
     fn test_openapi_method_spec_with_example() {
         let example = OpenApiExample::new("example1");
-        let spec = OpenApiMethodSpec::new("method")
-            .with_example(example);
-        
+        let spec = OpenApiMethodSpec::new("method").with_example(example);
+
         assert_eq!(spec.examples.len(), 1);
         assert_eq!(spec.examples[0].name, "example1");
     }
 
     #[test]
     fn test_openapi_method_spec_with_summary() {
-        let spec = OpenApiMethodSpec::new("method")
-            .with_summary("Method summary");
+        let spec = OpenApiMethodSpec::new("method").with_summary("Method summary");
         assert_eq!(spec.summary, Some("Method summary".to_string()));
     }
 
@@ -910,16 +911,18 @@ mod tests {
             OpenApiMethodSpec::new("method2"),
             OpenApiMethodSpec::new("method3"),
         ];
-        
+
         spec.add_methods(methods);
         assert_eq!(spec.methods.len(), 3);
     }
 
     #[test]
     fn test_openapi_spec_with_description() {
-        let spec = OpenApiSpec::new("API", "1.0")
-            .with_description("Test API description");
-        assert_eq!(spec.info.description, Some("Test API description".to_string()));
+        let spec = OpenApiSpec::new("API", "1.0").with_description("Test API description");
+        assert_eq!(
+            spec.info.description,
+            Some("Test API description".to_string())
+        );
     }
 
     #[test]
@@ -927,7 +930,7 @@ mod tests {
         let mut spec = OpenApiSpec::new("API", "1.0");
         spec.add_server(OpenApiServer::new("http://dev.example.com"));
         spec.add_server(OpenApiServer::new("https://prod.example.com"));
-        
+
         assert_eq!(spec.servers.len(), 2);
     }
 }
