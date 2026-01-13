@@ -42,10 +42,10 @@ macro_rules! observable_setup {
         $(,)?
     ) => {{
         #[allow(unused_imports)]
-        use $crate::logging::{Logger, SlogLoggerImpl};
+        use $crate::logging::{Logger, TracingLogger};
 
         // Setup logger
-        let logger: ::std::sync::Arc<dyn Logger> = ::std::sync::Arc::new(SlogLoggerImpl::new());
+        let logger: ::std::sync::Arc<dyn Logger> = ::std::sync::Arc::new(TracingLogger::new());
         logger.info(
             "Initializing observability stack",
             &[
@@ -126,9 +126,9 @@ macro_rules! observable_setup {
         $(,)?
     ) => {{
         #[allow(unused_imports)]
-        use $crate::logging::{Logger, SlogLoggerImpl};
+        use $crate::logging::{Logger, TracingLogger};
 
-        let logger: ::std::sync::Arc<dyn Logger> = ::std::sync::Arc::new(SlogLoggerImpl::new());
+        let logger: ::std::sync::Arc<dyn Logger> = ::std::sync::Arc::new(TracingLogger::new());
         logger.info(
             "Initializing observability stack",
             &[("metrics_prefix", &$metrics_prefix)],
@@ -174,9 +174,9 @@ macro_rules! observable_setup {
         $(,)?
     ) => {{
         #[allow(unused_imports)]
-        use $crate::logging::{Logger, SlogLoggerImpl};
+        use $crate::logging::{Logger, TracingLogger};
 
-        let logger: ::std::sync::Arc<dyn Logger> = ::std::sync::Arc::new(SlogLoggerImpl::new());
+        let logger: ::std::sync::Arc<dyn Logger> = ::std::sync::Arc::new(TracingLogger::new());
         logger.info(
             "Initializing observability stack",
             &[

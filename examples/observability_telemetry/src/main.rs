@@ -1,5 +1,5 @@
-use ash_rpc_contrib::logging::{Logger, SlogLoggerImpl};
-use ash_rpc_contrib::observability::prometheus::{get_metrics_method, PrometheusMetrics};
+use ash_rpc_contrib::logging::{Logger, TracingLogger};
+use ash_rpc_contrib::observability::prometheus::PrometheusMetrics;
 use ash_rpc_contrib::observability::ObservableProcessor;
 use ash_rpc_core::*;
 use ::axum::{
@@ -17,10 +17,112 @@ use opentelemetry_otlp::{SpanExporter, WithExportConfig};
 use prometheus::process_collector::ProcessCollector;
 use std::sync::Arc;
 
+// Define RPC methods using trait-based API
+struct PingMethod;
+
+#[async_trait::async_trait]
+impl JsonRPCMethod for PingMethod {
+    fn method_name(&self) -> &'static str {
+        "ping"
+    }
+
+    async fn call(&self, _params: Option<serde_json::Value>, id: Option<RequestId>) -> Response {
+        rpc_success!("pong", id)
+    }
+}
+
+struct EchoMethod;
+
+#[async_trait::async_trait]
+impl JsonRPCMethod for EchoMethod {
+    fn method_name(&self) -> &'static str {
+        "echo"
+    }
+
+    async fn call(&self, params: Option<serde_json::Value>, id: Option<RequestId>) -> Response {
+        rpc_success!(params.unwrap_or(serde_json::json!(null)), id)
+    }
+}
+
+struct AddMethod;
+
+#[async_trait::async_trait]
+impl JsonRPCMethod for AddMethod {
+    fn method_name(&self) -> &'static str {
+        "add"
+    }
+
+    async fn call(&self, params: Option<serde_json::Value>, id: Option<RequestId>) -> Response {
+        if let Some(params) = params {
+            if let Ok(numbers) = serde_json::from_value::<[f64; 2]>(params) {
+                let result = numbers[0] + numbers[1];
+                rpc_success!(result, id)
+            } else {
+                rpc_invalid_params!("Expected array of two numbers", id)
+            }
+        } else {
+            rpc_invalid_params!("Missing parameters", id)
+        }
+    }
+}
+
+struct MultiplyMethod;
+
+#[async_trait::async_trait]
+impl JsonRPCMethod for MultiplyMethod {
+    fn method_name(&self) -> &'static str {
+        "multiply"
+    }
+
+    async fn call(&self, params: Option<serde_json::Value>, id: Option<RequestId>) -> Response {
+        if let Some(params) = params {
+            if let Ok(numbers) = serde_json::from_value::<[f64; 2]>(params) {
+                let result = numbers[0] * numbers[1];
+                rpc_success!(result, id)
+            } else {
+                rpc_invalid_params!("Expected array of two numbers", id)
+            }
+        } else {
+            rpc_invalid_params!("Missing parameters", id)
+        }
+    }
+}
+
+struct SlowOperationMethod;
+
+#[async_trait::async_trait]
+impl JsonRPCMethod for SlowOperationMethod {
+    fn method_name(&self) -> &'static str {
+        "slow_operation"
+    }
+
+    async fn call(&self, _params: Option<serde_json::Value>, id: Option<RequestId>) -> Response {
+        tokio::time::sleep(tokio::time::Duration::from_millis(500)).await;
+        rpc_success!("completed", id)
+    }
+}
+
+struct AlwaysFailsMethod;
+
+#[async_trait::async_trait]
+impl JsonRPCMethod for AlwaysFailsMethod {
+    fn method_name(&self) -> &'static str {
+        "always_fails"
+    }
+
+    async fn call(&self, _params: Option<serde_json::Value>, id: Option<RequestId>) -> Response {
+        rpc_error!(
+            error_codes::INTERNAL_ERROR,
+            "This method always fails for demo purposes",
+            id
+        )
+    }
+}
+
 #[tokio::main]
 async fn main() {
-    // Setup structured logging with slog
-    let logger: Arc<dyn Logger> = Arc::new(SlogLoggerImpl::new());
+    // Setup structured logging with tracing
+    let logger: Arc<dyn Logger> = Arc::new(TracingLogger::new());
     logger.info("Starting Observability Telemetry Demo Server", &[]);
 
     // Initialize OpenTelemetry tracer with OTLP exporter to Jaeger
@@ -66,64 +168,15 @@ async fn main() {
     #[cfg(not(target_os = "linux"))]
     logger.info("Prometheus metrics initialized", &[]);
 
-    // Create method registry with various RPC methods
-    let mut registry = MethodRegistry::new();
-
-    // Simple ping method
-    registry = registry.register("ping", |_params, id| {
-        rpc_success!("pong", id)
-    });
-
-    // Echo method
-    registry = registry.register("echo", |params, id| {
-        rpc_success!(params.unwrap_or(serde_json::json!(null)), id)
-    });
-
-    // Math operations
-    registry = registry.register("add", |params, id| {
-        if let Some(params) = params {
-            if let Ok(numbers) = serde_json::from_value::<[f64; 2]>(params) {
-                let result = numbers[0] + numbers[1];
-                rpc_success!(result, id)
-            } else {
-                rpc_invalid_params!("Expected array of two numbers", id)
-            }
-        } else {
-            rpc_invalid_params!("Missing parameters", id)
-        }
-    });
-
-    registry = registry.register("multiply", |params, id| {
-        if let Some(params) = params {
-            if let Ok(numbers) = serde_json::from_value::<[f64; 2]>(params) {
-                let result = numbers[0] * numbers[1];
-                rpc_success!(result, id)
-            } else {
-                rpc_invalid_params!("Expected array of two numbers", id)
-            }
-        } else {
-            rpc_invalid_params!("Missing parameters", id)
-        }
-    });
-
-    // Simulate slow operation
-    registry = registry.register("slow_operation", |_params, id| {
-        std::thread::sleep(std::time::Duration::from_millis(500));
-        rpc_success!("completed", id)
-    });
-
-    // Method that always fails (for error metrics)
-    registry = registry.register("always_fails", |_params, id| {
-        rpc_error!(
-            error_codes::INTERNAL_ERROR,
-            "This method always fails for demo purposes",
-            id
-        )
-    });
-
-    // Add metrics endpoint as RPC method
-    let metrics_clone = Arc::clone(&metrics);
-    registry = registry.register("get_metrics", get_metrics_method(metrics_clone));
+    // Create method registry with various RPC methods using new trait-based API
+    let registry = MethodRegistry::new(register_methods![
+        PingMethod,
+        EchoMethod,
+        AddMethod,
+        MultiplyMethod,
+        SlowOperationMethod,
+        AlwaysFailsMethod,
+    ]);
 
     // Wrap registry in observable processor
     let observable_processor = ObservableProcessor::builder(Arc::new(registry))
@@ -134,7 +187,7 @@ async fn main() {
     let processor = Arc::new(observable_processor);
 
     logger.info("Method registry configured", &[
-        ("methods", &"ping, echo, add, multiply, slow_operation, always_fails, get_metrics"),
+        ("methods", &"ping, echo, add, multiply, slow_operation, always_fails"),
     ]);
 
     // Create Axum router
@@ -170,7 +223,7 @@ async fn handle_rpc(
         let mut responses = Vec::new();
 
         for message in messages {
-            if let Some(response) = processor.process_message(message) {
+            if let Some(response) = processor.process_message(message).await {
                 responses.push(response);
             }
         }
@@ -180,7 +233,7 @@ async fn handle_rpc(
         // Single request
         match serde_json::from_value::<Message>(request) {
             Ok(message) => {
-                if let Some(response) = processor.process_message(message) {
+                if let Some(response) = processor.process_message(message).await {
                     serde_json::to_value(response).unwrap()
                 } else {
                     serde_json::json!(null)

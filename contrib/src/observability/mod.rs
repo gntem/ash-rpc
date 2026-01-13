@@ -3,6 +3,7 @@
 //! Provides metrics collection, distributed tracing, and unified observability wrapper.
 
 use ash_rpc_core::{Message, MessageProcessor, ProcessorCapabilities, Response};
+use async_trait::async_trait;
 use std::sync::Arc;
 
 #[cfg(feature = "prometheus")]
@@ -42,8 +43,9 @@ impl ObservableProcessor {
     }
 }
 
+#[async_trait]
 impl MessageProcessor for ObservableProcessor {
-    fn process_message(&self, message: Message) -> Option<Response> {
+    async fn process_message(&self, message: Message) -> Option<Response> {
         #[cfg(feature = "logging")]
         if let Some(logger) = &self.logger {
             match &message {
@@ -72,7 +74,7 @@ impl MessageProcessor for ObservableProcessor {
             None
         };
 
-        let response = self.inner.process_message(message.clone());
+        let response = self.inner.process_message(message.clone()).await;
 
         #[cfg(feature = "prometheus")]
         if let Some(metrics) = &self.metrics {

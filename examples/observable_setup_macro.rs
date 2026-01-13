@@ -6,36 +6,46 @@ use ::axum::{
     routing::{get, post},
 };
 use ash_rpc_contrib::observability::ObservableProcessor;
-use ash_rpc_contrib::observability::prometheus::get_metrics_method;
 use ash_rpc_contrib::observable_setup;
 use ash_rpc_core::*;
 use std::sync::Arc;
 
-#[tokio::main]
-async fn main() {
-    // Everything in one macro call!
-    let observability = observable_setup! {
-        service_name: "ash-rpc-server",
-        metrics_prefix: "ash_rpc",
-        otlp_endpoint: "http://jaeger:4317",
-    };
+// Define methods using the new trait-based API
+struct PingMethod;
 
-    // Extract components
-    let logger = observability.logger();
-    let metrics = observability.metrics();
+#[async_trait::async_trait]
+impl JsonRPCMethod for PingMethod {
+    fn method_name(&self) -> &'static str {
+        "ping"
+    }
 
-    logger.info("Observability stack initialized", &[]);
+    async fn call(&self, _params: Option<serde_json::Value>, id: Option<RequestId>) -> Response {
+        rpc_success!("pong", id)
+    }
+}
 
-    // Create method registry
-    let mut registry = MethodRegistry::new();
+struct EchoMethod;
 
-    registry = registry.register("ping", |_params, id| rpc_success!("pong", id));
+#[async_trait::async_trait]
+impl JsonRPCMethod for EchoMethod {
+    fn method_name(&self) -> &'static str {
+        "echo"
+    }
 
-    registry = registry.register("echo", |params, id| {
+    async fn call(&self, params: Option<serde_json::Value>, id: Option<RequestId>) -> Response {
         rpc_success!(params.unwrap_or(serde_json::json!(null)), id)
-    });
+    }
+}
 
-    registry = registry.register("add", |params, id| {
+struct AddMethod;
+
+#[async_trait::async_trait]
+impl JsonRPCMethod for AddMethod {
+    fn method_name(&self) -> &'static str {
+        "add"
+    }
+
+    async fn call(&self, params: Option<serde_json::Value>, id: Option<RequestId>) -> Response {
         if let Some(params) = params {
             if let Ok(numbers) = serde_json::from_value::<[f64; 2]>(params) {
                 let result = numbers[0] + numbers[1];
@@ -46,9 +56,18 @@ async fn main() {
         } else {
             rpc_invalid_params!("Missing parameters", id)
         }
-    });
+    }
+}
 
-    registry = registry.register("multiply", |params, id| {
+struct MultiplyMethod;
+
+#[async_trait::async_trait]
+impl JsonRPCMethod for MultiplyMethod {
+    fn method_name(&self) -> &'static str {
+        "multiply"
+    }
+
+    async fn call(&self, params: Option<serde_json::Value>, id: Option<RequestId>) -> Response {
         if let Some(params) = params {
             if let Ok(numbers) = serde_json::from_value::<[f64; 2]>(params) {
                 let result = numbers[0] * numbers[1];
@@ -59,11 +78,30 @@ async fn main() {
         } else {
             rpc_invalid_params!("Missing parameters", id)
         }
-    });
+    }
+}
 
-    // Add metrics endpoint
-    let metrics_clone = Arc::clone(&metrics);
-    registry = registry.register("get_metrics", get_metrics_method(metrics_clone));
+#[tokio::main]
+async fn main() {
+    // Simplified setup with just metrics and logging
+    let observability = observable_setup! {
+        service_name: "ash-rpc-server",
+        metrics_prefix: "ash_rpc",
+    };
+
+    // Extract components
+    let logger = observability.logger();
+    let metrics = observability.metrics();
+
+    logger.info("Observability stack initialized", &[]);
+
+    // Create method registry with trait-based methods
+    let registry = MethodRegistry::new(register_methods![
+        PingMethod,
+        EchoMethod,
+        AddMethod,
+        MultiplyMethod,
+    ]);
 
     // Wrap registry in observable processor
     let observable_processor = ObservableProcessor::builder(Arc::new(registry))
@@ -75,7 +113,7 @@ async fn main() {
 
     logger.info(
         "Method registry configured",
-        &[("methods", &"ping, echo, add, multiply, get_metrics")],
+        &[("methods", &"ping, echo, add, multiply")],
     );
 
     // Create Axum router
@@ -109,7 +147,7 @@ async fn handle_rpc(
         let mut responses = Vec::new();
 
         for message in messages {
-            if let Some(response) = processor.process_message(message) {
+            if let Some(response) = processor.process_message(message).await {
                 responses.push(response);
             }
         }
@@ -118,7 +156,7 @@ async fn handle_rpc(
     } else {
         match serde_json::from_value::<Message>(request) {
             Ok(message) => {
-                if let Some(response) = processor.process_message(message) {
+                if let Some(response) = processor.process_message(message).await {
                     serde_json::to_value(response).unwrap()
                 } else {
                     serde_json::json!(null)

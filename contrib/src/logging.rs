@@ -1,6 +1,6 @@
 //! Trait-based logging abstraction for ash-rpc
 //!
-//! Provides a transport-agnostic logging interface with a default slog-rs implementation.
+//! Provides a transport-agnostic logging interface with a tracing backend.
 
 use std::fmt::Display;
 
@@ -40,83 +40,67 @@ impl Default for NoopLogger {
 }
 
 #[cfg(feature = "logging")]
-mod slog_impl {
+mod tracing_impl {
     use super::*;
-    use slog::{Drain, o};
 
-    /// Slog-based logger implementation
-    pub struct SlogLoggerImpl {
-        logger: slog::Logger,
-    }
+    /// Tracing-based logger implementation
+    #[derive(Debug, Clone, Copy)]
+    pub struct TracingLogger;
 
-    impl SlogLoggerImpl {
-        /// Create a new slog logger with default configuration (terminal output)
+    impl TracingLogger {
+        /// Create a new tracing logger
         pub fn new() -> Self {
-            let decorator = slog_term::TermDecorator::new().build();
-            let drain = slog_term::FullFormat::new(decorator).build().fuse();
-            let drain = slog_async::Async::new(drain).build().fuse();
-            let logger = slog::Logger::root(drain, o!());
-
-            Self { logger }
-        }
-
-        /// Create a new slog logger with JSON output
-        pub fn new_json() -> Self {
-            let drain = slog_json::Json::default(std::io::stdout()).fuse();
-            let drain = slog_async::Async::new(drain).build().fuse();
-            let logger = slog::Logger::root(drain, o!());
-
-            Self { logger }
-        }
-
-        /// Create a logger from an existing slog Logger
-        pub fn from_slog(logger: slog::Logger) -> Self {
-            Self { logger }
-        }
-
-        /// Create a child logger with additional context
-        pub fn child(&self, name: &str) -> Self {
-            Self {
-                logger: self.logger.new(o!("component" => name.to_string())),
-            }
+            Self
         }
     }
 
-    impl Default for SlogLoggerImpl {
+    impl Default for TracingLogger {
         fn default() -> Self {
             Self::new()
         }
     }
 
-    impl Logger for SlogLoggerImpl {
+    impl Logger for TracingLogger {
         fn debug(&self, message: &str, kvs: &[LogKv]) {
-            let values: Vec<String> = kvs.iter().map(|(k, v)| format!("{}={}", k, v)).collect();
-            let kv_str = values.join(" ");
-            slog::debug!(self.logger, "{} {}", message, kv_str);
+            if kvs.is_empty() {
+                tracing::debug!("{}", message);
+            } else {
+                let fields: Vec<String> = kvs.iter().map(|(k, v)| format!("{}={}", k, v)).collect();
+                tracing::debug!("{} {}", message, fields.join(" "));
+            }
         }
 
         fn info(&self, message: &str, kvs: &[LogKv]) {
-            let values: Vec<String> = kvs.iter().map(|(k, v)| format!("{}={}", k, v)).collect();
-            let kv_str = values.join(" ");
-            slog::info!(self.logger, "{} {}", message, kv_str);
+            if kvs.is_empty() {
+                tracing::info!("{}", message);
+            } else {
+                let fields: Vec<String> = kvs.iter().map(|(k, v)| format!("{}={}", k, v)).collect();
+                tracing::info!("{} {}", message, fields.join(" "));
+            }
         }
 
         fn warn(&self, message: &str, kvs: &[LogKv]) {
-            let values: Vec<String> = kvs.iter().map(|(k, v)| format!("{}={}", k, v)).collect();
-            let kv_str = values.join(" ");
-            slog::warn!(self.logger, "{} {}", message, kv_str);
+            if kvs.is_empty() {
+                tracing::warn!("{}", message);
+            } else {
+                let fields: Vec<String> = kvs.iter().map(|(k, v)| format!("{}={}", k, v)).collect();
+                tracing::warn!("{} {}", message, fields.join(" "));
+            }
         }
 
         fn error(&self, message: &str, kvs: &[LogKv]) {
-            let values: Vec<String> = kvs.iter().map(|(k, v)| format!("{}={}", k, v)).collect();
-            let kv_str = values.join(" ");
-            slog::error!(self.logger, "{} {}", message, kv_str);
+            if kvs.is_empty() {
+                tracing::error!("{}", message);
+            } else {
+                let fields: Vec<String> = kvs.iter().map(|(k, v)| format!("{}={}", k, v)).collect();
+                tracing::error!("{} {}", message, fields.join(" "));
+            }
         }
     }
 }
 
 #[cfg(feature = "logging")]
-pub use slog_impl::SlogLoggerImpl;
+pub use tracing_impl::TracingLogger;
 
 #[cfg(test)]
 mod tests {
@@ -133,8 +117,8 @@ mod tests {
 
     #[cfg(feature = "logging")]
     #[test]
-    fn test_slog_logger() {
-        let logger = SlogLoggerImpl::new();
+    fn test_tracing_logger() {
+        let logger = TracingLogger::new();
         logger.info("test message", &[("method", &"test"), ("id", &123)]);
     }
 }
