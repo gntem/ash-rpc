@@ -4,7 +4,10 @@ fn main() {
     println!("=== Basic Macros Demo ===\n");
 
     // Request macro
-    let request = rpc_request!("add", [5, 3], 1);
+    let request = RequestBuilder::new("add")
+        .params(serde_json::json!([5, 3]))
+        .id(serde_json::json!(1))
+        .build();
     println!(
         "Request: {}",
         serde_json::to_string_pretty(&request).unwrap()
@@ -12,7 +15,7 @@ fn main() {
 
     // Notification macro
     let log_data = serde_json::json!({"level": "info", "message": "Hello World"});
-    let notification = rpc_notification!("log", log_data);
+    let notification = NotificationBuilder::new("log").params(log_data).build();
     println!(
         "Notification: {}",
         serde_json::to_string_pretty(&notification).unwrap()
@@ -26,8 +29,11 @@ fn main() {
     );
 
     // Error response macro
-    let error_response =
-        rpc_invalid_params!("Expected array of two numbers", Some(serde_json::json!(1)));
+    let error_response = rpc_error!(
+        error_codes::INVALID_PARAMS,
+        "Expected array of two numbers",
+        Some(serde_json::json!(1))
+    );
     println!(
         "Error Response: {}",
         serde_json::to_string_pretty(&error_response).unwrap()
@@ -43,17 +49,9 @@ fn main() {
     #[cfg(feature = "tcp-stream")]
     println!("✓ rpc_tcp_stream_client! - Create a TCP streaming client");
 
-    #[cfg(feature = "axum")]
-    println!("✓ rpc_axum_router! - Create an Axum router");
-
-    #[cfg(feature = "axum")]
-    println!("✓ rpc_axum_server! - Create and run an Axum server");
-
-    #[cfg(feature = "axum")]
-    println!("✓ rpc_axum_layer! - Create an Axum middleware layer");
-
-    #[cfg(feature = "websocket")]
-    println!("✓ rpc_websocket_server! - Create a WebSocket server");
+    // Note: Axum and WebSocket features are not available in this core version
+    println!("✗ rpc_axum_* macros - Requires contrib package with axum feature");
+    println!("✗ rpc_websocket_* macros - Requires contrib package with websocket feature");
 
     println!("\n=== Available Stateful Macros ===");
     #[cfg(feature = "stateful")]
@@ -65,7 +63,5 @@ fn main() {
     #[cfg(feature = "stateful")]
     println!("✓ rpc_stateful_builder! - Create a stateful processor with builder");
 
-    println!(
-        "\n✨ See transport_macros_demo.rs and stateful_websocket_macro.rs for usage examples!"
-    );
+    println!("\n✨ See transport_macros_demo.rs for usage examples!");
 }

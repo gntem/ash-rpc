@@ -5,7 +5,7 @@
 //! ## Features
 //!
 //! - **Complete JSON-RPC 2.0 support** - Request, response, notification, and batch handling
-//! - **Multiple transports** - TCP, TCP streaming, WebSocket, HTTP via Axum, and Tower middleware
+//! - **Multiple transports** - TCP, TCP streaming, HTTP via Axum, and Tower middleware
 //! - **Stateful handlers** - Context-aware method handlers with shared application state
 //! - **Type-safe builders** - Fluent API for constructing requests and responses
 //! - **Method registry** - Organize and dispatch JSON-RPC methods
@@ -15,55 +15,48 @@
 //!
 //! ## Quick Start
 //!
-//! ```rust,no_run
+//! ```rust
 //! use ash_rpc_core::*;
-//! use serde_json::Value;
+//!
+//! struct PingMethod;
+//!
+//! #[async_trait::async_trait]
+//! impl JsonRPCMethod for PingMethod {
+//!     fn method_name(&self) -> &'static str { "ping" }
+//!     
+//!     async fn call(
+//!         &self,
+//!         _params: Option<serde_json::Value>,
+//!         id: Option<RequestId>,
+//!     ) -> Response {
+//!         rpc_success!("pong", id)
+//!     }
+//! }
 //!
 //! // Create a method registry
-//! let registry = MethodRegistry::new()
-//!     .register("ping", |_params, id| {
-//!         rpc_success!("pong", id)
-//!     })
-//!     .register("add", |params, id| {
-//!         if let Some(params) = params {
-//!             let nums: Vec<i32> = serde_json::from_value(params).unwrap();
-//!             if nums.len() == 2 {
-//!                 rpc_success!(nums[0] + nums[1], id)
-//!             } else {
-//!                 rpc_error!(error_codes::INVALID_PARAMS, "Expected 2 numbers", id)
-//!             }
-//!         } else {
-//!             rpc_error!(error_codes::INVALID_PARAMS, "Parameters required", id)
-//!         }
-//!     });
-//!
-//! // Call a method
-//! let response = registry.call("ping", None, Some(Value::Number(serde_json::Number::from(1))));
+//! let registry = MethodRegistry::new(register_methods![PingMethod]);
 //! ```
 
 // Module declarations
+pub mod auth;
 pub mod builders;
 pub mod logger;
 pub mod macros;
 pub mod registry;
+pub mod sanitization;
 pub mod traits;
 pub mod transport;
 pub mod types;
-pub mod utils;
-
-#[cfg(feature = "tower")]
-pub mod middleware;
 
 #[cfg(feature = "stateful")]
 pub mod stateful;
 
+// Re-export async_trait for users implementing traits
+pub use async_trait::async_trait;
+
 // Re-export tokio for tcp-stream feature
 #[cfg(feature = "tcp-stream")]
 pub use tokio;
-
-// Re-export tower for tower feature
-#[cfg(feature = "tower")]
-pub use tower;
 
 // Re-export all core types
 pub use types::*;
@@ -77,15 +70,8 @@ pub use traits::*;
 // Re-export registry
 pub use registry::*;
 
-// Re-export logger
-pub use logger::*;
-
-// Re-export transport functionality
-pub use transport::*;
-
-// Re-export middleware when tower feature is enabled
-#[cfg(feature = "tower")]
-pub use middleware::*;
+// Re-export transport functionality when needed
+// pub use transport::*;
 
 // Re-export stateful module when stateful feature is enabled
 #[cfg(feature = "stateful")]

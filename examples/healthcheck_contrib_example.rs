@@ -1,32 +1,16 @@
-//! Example demonstrating a simple healthcheck functionality
+//! Example demonstrating the healthcheck functionality from ash-rpc-contrib
 
+use ash_rpc_contrib::healthcheck::HealthcheckMethod;
 use ash_rpc_core::*;
-
-struct HealthcheckMethod;
-
-#[async_trait::async_trait]
-impl JsonRPCMethod for HealthcheckMethod {
-    fn method_name(&self) -> &'static str {
-        "healthcheck"
-    }
-
-    async fn call(&self, _params: Option<serde_json::Value>, id: Option<RequestId>) -> Response {
-        let health_status = serde_json::json!({
-            "status": "healthy",
-            "timestamp": std::time::SystemTime::now()
-                .duration_since(std::time::UNIX_EPOCH)
-                .unwrap()
-                .as_secs(),
-            "service": "ash-rpc-example"
-        });
-        rpc_success!(health_status, id)
-    }
-}
 
 #[tokio::main]
 async fn main() {
-    // Create a registry and register the healthcheck method
-    let registry = MethodRegistry::new(register_methods![HealthcheckMethod]);
+    // Create a registry with healthcheck method
+    let healthcheck = HealthcheckMethod::new()
+        .service_name("example-service")
+        .with_version("1.0.0");
+
+    let registry = MethodRegistry::new(register_methods![healthcheck]);
 
     // Create a healthcheck request
     let request = RequestBuilder::new("healthcheck")

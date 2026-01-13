@@ -1,6 +1,6 @@
 .PHONY: help publish-core publish-contrib publish-all check-all test-all clean tag tag-version \
         bump-version check-login check-branch release release-patch release-minor release-major \
-        dry-run-core dry-run-contrib dry-run-all
+        dry-run-core dry-run-contrib dry-run-all pre-commit check fmt lint doc-test
 
 CURRENT_VERSION := $(shell grep '^version = ' core/Cargo.toml | head -1 | sed 's/version = "\(.*\)"/\1/')
 
@@ -30,6 +30,13 @@ check-branch:
 
 help:
 	@echo "Available targets:"
+	@echo ""
+	@echo "Development:"
+	@echo "  pre-commit       - Run all checks before committing (format, lint, tests, docs)"
+	@echo "  check            - Run cargo check on all packages"
+	@echo "  fmt              - Format all code with rustfmt"
+	@echo "  lint             - Run clippy linter"
+	@echo "  doc-test         - Run documentation tests"
 	@echo ""
 	@echo "Release Management:"
 	@echo "  release-patch    - Bump patch version, commit, tag, and publish (e.g., 1.0.4 -> 1.0.5)"
@@ -127,7 +134,28 @@ check-all:
 
 test-all:
 	@echo "Testing all packages..."
-	@cargo test --workspace --all-features
+	@cargo test --workspace --all-features --lib --bins
+
+# Development workflow commands
+check:
+	@echo "Running cargo check..."
+	@cargo check --workspace --all-features
+
+fmt:
+	@echo "Formatting code..."
+	@cargo fmt --all
+
+lint:
+	@echo "Running clippy..."
+	@cargo clippy --workspace --lib --bins --all-features -- -D warnings
+
+doc-test:
+	@echo "Running documentation tests..."
+	@cargo test --workspace --doc --all-features
+
+pre-commit: fmt lint check test-all doc-test
+	@echo ""
+	@echo "All checks passed! Ready to commit."
 
 publish-core: check-branch check-login check-all test-all
 	@echo "Publishing ash-rpc-core..."
