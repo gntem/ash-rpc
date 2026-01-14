@@ -254,6 +254,8 @@ mod tests {
     #[test]
     fn test_custom_prefix() {
         let metrics = PrometheusMetrics::with_prefix("custom").unwrap();
+        // Record a request to ensure metrics appear in output
+        metrics.record_request("ping", Duration::from_millis(10), true);
         let text = metrics.gather_text().unwrap();
         assert!(text.contains("custom_requests_total"));
     }
