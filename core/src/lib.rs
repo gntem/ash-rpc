@@ -40,6 +40,7 @@
 // Module declarations
 pub mod auth;
 pub mod builders;
+pub mod logger;
 pub mod macros;
 pub mod registry;
 pub mod sanitization;

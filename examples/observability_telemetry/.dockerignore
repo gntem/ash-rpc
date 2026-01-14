@@ -1,0 +1,30 @@
+# Git
+.git/
+.gitignore
+
+# Target directories
+target/
+**/target/
+
+# IDE
+.vscode/
+.idea/
+*.iml
+
+# Documentation
+*.md
+!README.md
+
+# Docker
+docker-compose.yml
+Dockerfile
+.dockerignore
+
+# Test files
+test-requests.sh
+
+# Grafana
+grafana/
+
+# Prometheus
+prometheus.yml

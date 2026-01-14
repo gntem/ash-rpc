@@ -1,0 +1,19 @@
+[package]
+name = "observability-telemetry-example"
+version = "0.1.0"
+edition = "2021"
+publish = false
+# Make this a standalone package, not part of the workspace
+[workspace]
+[dependencies]
+ash-rpc-core = { path = "../../core" }
+ash-rpc-contrib = { path = "../../contrib", features = ["axum", "observability", "logging", "prometheus", "opentelemetry"] }
+axum = "0.8"
+tokio = { version = "1.47", features = ["full"] }
+serde_json = "1.0"
+tracing = "0.1"
+opentelemetry = "0.26"
+opentelemetry_sdk = { version = "0.26", features = ["rt-tokio"] }
+opentelemetry-otlp = { version = "0.26", features = ["tonic"] }
+prometheus = { version = "0.14", features = ["process"] }
+async-trait = "0.1"

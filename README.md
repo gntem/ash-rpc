@@ -22,19 +22,14 @@ use std::future::Future;
 
 struct EchoMethod;
 
+#[async_trait::async_trait]
 impl JsonRPCMethod for EchoMethod {
     fn method_name(&self) -> &'static str {
         "echo"
     }
     
-    fn call<'a>(
-        &'a self,
-        params: Option<serde_json::Value>,
-        id: Option<RequestId>,
-    ) -> Pin<Box<dyn Future<Output = Response> + Send + 'a>> {
-        Box::pin(async move {
-            rpc_success!(params.unwrap_or(serde_json::json!(null)), id)
-        })
+    async fn call(&self, params: Option<serde_json::Value>, id: Option<RequestId>) -> Response {
+        rpc_success!(params.unwrap_or(serde_json::json!(null)), id)
     }
 }
 
@@ -58,19 +53,14 @@ use std::future::Future;
 
 struct PingMethod;
 
+#[async_trait::async_trait]
 impl JsonRPCMethod for PingMethod {
     fn method_name(&self) -> &'static str {
         "ping"
     }
-    
-    fn call<'a>(
-        &'a self,
-        _params: Option<serde_json::Value>,
-        id: Option<RequestId>,
-    ) -> Pin<Box<dyn Future<Output = Response> + Send + 'a>> {
-        Box::pin(async move {
-            rpc_success!("pong", id)
-        })
+
+    async fn call(&self, _params: Option<serde_json::Value>, id: Option<RequestId>) -> Response {
+        rpc_success!("pong", id)
     }
 }
 
