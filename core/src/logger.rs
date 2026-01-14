@@ -76,3 +76,58 @@ impl Logger for StdoutLogger {
         eprintln!();
     }
 }
+
+/// Tracing-based logger implementation using the `tracing` crate
+#[derive(Debug, Clone, Copy)]
+pub struct TracingLogger;
+
+impl TracingLogger {
+    /// Create a new tracing logger
+    pub fn new() -> Self {
+        Self
+    }
+}
+
+impl Default for TracingLogger {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl Logger for TracingLogger {
+    fn debug(&self, message: &str, kvs: &[LogKv]) {
+        if kvs.is_empty() {
+            tracing::debug!("{}", message);
+        } else {
+            let fields: Vec<String> = kvs.iter().map(|(k, v)| format!("{}={}", k, v)).collect();
+            tracing::debug!("{} {}", message, fields.join(" "));
+        }
+    }
+
+    fn info(&self, message: &str, kvs: &[LogKv]) {
+        if kvs.is_empty() {
+            tracing::info!("{}", message);
+        } else {
+            let fields: Vec<String> = kvs.iter().map(|(k, v)| format!("{}={}", k, v)).collect();
+            tracing::info!("{} {}", message, fields.join(" "));
+        }
+    }
+
+    fn warn(&self, message: &str, kvs: &[LogKv]) {
+        if kvs.is_empty() {
+            tracing::warn!("{}", message);
+        } else {
+            let fields: Vec<String> = kvs.iter().map(|(k, v)| format!("{}={}", k, v)).collect();
+            tracing::warn!("{} {}", message, fields.join(" "));
+        }
+    }
+
+    fn error(&self, message: &str, kvs: &[LogKv]) {
+        if kvs.is_empty() {
+            tracing::error!("{}", message);
+        } else {
+            let fields: Vec<String> = kvs.iter().map(|(k, v)| format!("{}={}", k, v)).collect();
+            tracing::error!("{} {}", message, fields.join(" "));
+        }
+    }
+}

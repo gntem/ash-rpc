@@ -8,9 +8,6 @@ pub mod healthcheck;
 #[cfg(feature = "tower")]
 pub mod middleware;
 
-#[cfg(feature = "logging")]
-pub mod logging;
-
 #[cfg(any(feature = "logging", feature = "prometheus", feature = "opentelemetry"))]
 pub mod observability;
 
@@ -30,12 +27,8 @@ pub use middleware::*;
 #[cfg(feature = "tower")]
 pub use tower;
 
-// Re-export logging for convenience
-#[cfg(feature = "logging")]
-pub use logging::{LogKv, Logger, NoopLogger};
-
-#[cfg(feature = "logging")]
-pub use logging::TracingLogger;
+// Re-export logger types from core
+pub use ash_rpc_core::logger::{LogKv, Logger, NoopLogger, StdoutLogger, TracingLogger};
 
 // Re-export observability for convenience
 #[cfg(any(feature = "logging", feature = "prometheus", feature = "opentelemetry"))]

@@ -14,8 +14,7 @@ pub mod tracing;
 
 pub mod macros;
 
-#[cfg(feature = "logging")]
-use crate::logging::Logger;
+use ash_rpc_core::logger::Logger;
 
 /// Unified observability processor wrapping metrics, tracing, and logging
 pub struct ObservableProcessor {
