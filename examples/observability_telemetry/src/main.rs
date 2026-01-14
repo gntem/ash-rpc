@@ -1,4 +1,4 @@
-use ash_rpc_contrib::logging::{Logger, TracingLogger};
+use ash_rpc_core::logger::{Logger, TracingLogger};
 use ash_rpc_contrib::observability::prometheus::PrometheusMetrics;
 use ash_rpc_contrib::observability::ObservableProcessor;
 use ash_rpc_core::*;
@@ -12,7 +12,7 @@ use ::axum::{
 use opentelemetry::global;
 use opentelemetry_sdk::trace::TracerProvider;
 use opentelemetry_sdk::Resource;
-use opentelemetry_otlp::{SpanExporter, WithExportConfig};
+use opentelemetry_otlp::WithExportConfig;
 #[cfg(target_os = "linux")]
 use prometheus::process_collector::ProcessCollector;
 use std::sync::Arc;
@@ -131,19 +131,23 @@ async fn main() {
     
     logger.info("Initializing OpenTelemetry tracer", &[("endpoint", &otlp_endpoint.as_str())]);
     
-    // Create OTLP exporter
-    let exporter = SpanExporter::builder()
-        .with_tonic()
-        .with_endpoint(otlp_endpoint)
-        .build()
-        .expect("Failed to create OTLP exporter");
+    // Create OTLP exporter using the new API
+    let exporter = opentelemetry_otlp::SpanExporter::new(
+        opentelemetry_otlp::TonicExporterBuilder::default()
+            .with_endpoint(otlp_endpoint)
+            .build_span_exporter()
+            .expect("Failed to create OTLP exporter")
+    );
     
     // Create tracer provider with batch processor
     let tracer_provider = TracerProvider::builder()
         .with_batch_exporter(exporter, opentelemetry_sdk::runtime::Tokio)
-        .with_resource(Resource::new(vec![
-            opentelemetry::KeyValue::new("service.name", "ash-rpc-server"),
-        ]))
+        .with_config(
+            opentelemetry_sdk::trace::Config::default()
+                .with_resource(Resource::new(vec![
+                    opentelemetry::KeyValue::new("service.name", "ash-rpc-server"),
+                ]))
+        )
         .build();
     
     global::set_tracer_provider(tracer_provider);
