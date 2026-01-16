@@ -153,6 +153,18 @@ doc-test:
 	@echo "Running documentation tests..."
 	@cargo test --workspace --doc --all-features
 
+check-commits:
+	@echo "Checking conventional commits..."
+	@npx commitlint --from=HEAD~1 --to=HEAD --verbose
+
+check-commits-range:
+	@if [ -z "$(FROM)" ] || [ -z "$(TO)" ]; then \
+		echo "Usage: make check-commits-range FROM=<ref> TO=<ref>"; \
+		echo "Example: make check-commits-range FROM=main TO=HEAD"; \
+		exit 1; \
+	fi
+	@npx commitlint --from=$(FROM) --to=$(TO) --verbose
+
 pre-commit: fmt lint check test-all doc-test
 	@echo ""
 	@echo "All checks passed! Ready to commit."
