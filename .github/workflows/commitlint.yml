@@ -3,7 +3,7 @@ name: Conventional Commits
 on:
   pull_request:
     branches: [ "master", "main" ]
-    types: [opened, synchronize, reopened]
+    types: [opened, synchronize, reopened, edited]
 
 permissions:
   contents: read
@@ -12,15 +12,11 @@ permissions:
 
 jobs:
   commitlint:
-    name: Validate Commit Messages
+    name: Validate PR Title
     runs-on: ubuntu-latest
     if: github.base_ref == 'master' || github.base_ref == 'main'
     
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -29,10 +25,10 @@ jobs:
       - name: Install commitlint
         run: npm install --save-dev @commitlint/cli@latest @commitlint/config-conventional@latest
       
-      - name: Validate PR commits
+      - name: Validate PR title
         id: commitlint
         continue-on-error: true
-        run: npx commitlint --from ${{ github.event.pull_request.base.sha }} --to ${{ github.event.pull_request.head.sha }} --verbose
+        run: echo "${{ github.event.pull_request.title }}" | npx commitlint --verbose
       
       - name: Add warning label
         if: steps.commitlint.outcome != 'success'
@@ -43,7 +39,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              labels: ['conventional-commits-warning']
+              labels: ['pr-title-warning']
             });
       
       - name: Remove warning label
@@ -56,7 +52,7 @@ jobs:
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                name: 'conventional-commits-warning'
+                name: 'pr-title-warning'
               });
             } catch (error) {
               // Label doesn't exist, ignore
