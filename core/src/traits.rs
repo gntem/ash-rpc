@@ -68,6 +68,30 @@ pub trait MessageProcessor: Send + Sync {
     }
 }
 
+/// Trait for processing streaming JSON-RPC messages with subscriptions
+#[cfg(feature = "streaming")]
+#[async_trait::async_trait]
+pub trait StreamingMessageProcessor: MessageProcessor {
+    /// Process a stream subscription request
+    async fn process_stream_request(
+        &self,
+        request: crate::streaming::StreamRequest,
+    ) -> crate::streaming::StreamResponse;
+
+    /// Process an unsubscribe request
+    async fn process_unsubscribe(&self, stream_id: &str) -> Result<(), crate::Error>;
+
+    /// Check if streaming is supported
+    fn supports_streaming(&self) -> bool {
+        true
+    }
+
+    /// Get active stream count
+    async fn active_stream_count(&self) -> usize {
+        0
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct ProcessorCapabilities {
     pub supports_batch: bool,

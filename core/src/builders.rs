@@ -654,3 +654,59 @@ mod tests {
         assert_eq!(data["key1"], "value1");
     }
 }
+
+/// Builder for streaming response
+#[cfg(feature = "streaming")]
+pub struct StreamResponseBuilder {
+    result: Option<serde_json::Value>,
+    error: Option<Error>,
+    id: RequestId,
+    stream_id: String,
+    stream_status: Option<crate::streaming::StreamStatus>,
+}
+
+#[cfg(feature = "streaming")]
+impl StreamResponseBuilder {
+    /// Create a new stream response builder
+    pub fn new(stream_id: impl Into<String>, id: RequestId) -> Self {
+        Self {
+            result: None,
+            error: None,
+            id,
+            stream_id: stream_id.into(),
+            stream_status: None,
+        }
+    }
+
+    /// Set successful result
+    pub fn success(mut self, result: serde_json::Value) -> Self {
+        self.result = Some(result);
+        self.stream_status = Some(crate::streaming::StreamStatus::Active);
+        self
+    }
+
+    /// Set error
+    pub fn error(mut self, error: Error) -> Self {
+        self.error = Some(error);
+        self.stream_status = Some(crate::streaming::StreamStatus::Error);
+        self
+    }
+
+    /// Set stream status
+    pub fn status(mut self, status: crate::streaming::StreamStatus) -> Self {
+        self.stream_status = Some(status);
+        self
+    }
+
+    /// Build the stream response
+    pub fn build(self) -> crate::streaming::StreamResponse {
+        crate::streaming::StreamResponse {
+            jsonrpc: "2.0".to_string(),
+            result: self.result,
+            error: self.error,
+            id: self.id,
+            stream_id: self.stream_id,
+            stream_status: self.stream_status,
+        }
+    }
+}
