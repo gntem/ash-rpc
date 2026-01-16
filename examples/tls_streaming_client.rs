@@ -12,8 +12,8 @@
 //! cargo run --example tls_streaming_client --features tcp-stream-tls
 //! ```
 
-use ash_rpc_core::transport::tcp_tls::TcpStreamTlsClient;
 use ash_rpc_core::Request;
+use ash_rpc_core::transport::tcp_tls::TcpStreamTlsClient;
 use serde_json::json;
 use std::time::Duration;
 
@@ -34,7 +34,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let ping_request = Request::new("ping").with_id(json!(1));
     client.send_request(&ping_request).await?;
     let response = client.recv_response().await?;
-    println!("   Response: {}\n", serde_json::to_string_pretty(&response)?);
+    println!(
+        "   Response: {}\n",
+        serde_json::to_string_pretty(&response)?
+    );
 
     tokio::time::sleep(Duration::from_millis(500)).await;
 
@@ -43,7 +46,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let info_request = Request::new("info").with_id(json!(2));
     client.send_request(&info_request).await?;
     let response = client.recv_response().await?;
-    println!("   Response: {}\n", serde_json::to_string_pretty(&response)?);
+    println!(
+        "   Response: {}\n",
+        serde_json::to_string_pretty(&response)?
+    );
 
     tokio::time::sleep(Duration::from_millis(500)).await;
 
@@ -54,7 +60,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .with_id(json!(3));
     client.send_request(&subscribe_prices).await?;
     let response = client.recv_response().await?;
-    println!("   Response: {}\n", serde_json::to_string_pretty(&response)?);
+    println!(
+        "   Response: {}\n",
+        serde_json::to_string_pretty(&response)?
+    );
 
     // Parse stream_id from response
     let price_stream_id: String = response
@@ -73,7 +82,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .with_id(json!(4));
     client.send_request(&subscribe_alerts).await?;
     let response = client.recv_response().await?;
-    println!("   Response: {}\n", serde_json::to_string_pretty(&response)?);
+    println!(
+        "   Response: {}\n",
+        serde_json::to_string_pretty(&response)?
+    );
 
     let alerts_stream_id: String = response
         .result()
@@ -89,11 +101,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let list_streams = Request::new("list_active_streams").with_id(json!(5));
     client.send_request(&list_streams).await?;
     let response = client.recv_response().await?;
-    println!("   Response: {}\n", serde_json::to_string_pretty(&response)?);
+    println!(
+        "   Response: {}\n",
+        serde_json::to_string_pretty(&response)?
+    );
 
     println!("6. Listening for encrypted events (10 seconds)...\n");
     println!("   Note: In this example, the server logs events but doesn't send them back");
-    println!("   In a production implementation, you would receive encrypted StreamEvent messages\n");
+    println!(
+        "   In a production implementation, you would receive encrypted StreamEvent messages\n"
+    );
 
     // In a real implementation, the server would push encrypted StreamEvent messages
     tokio::time::sleep(Duration::from_secs(10)).await;
@@ -106,7 +123,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             .with_id(json!(6));
         client.send_request(&unsubscribe).await?;
         let response = client.recv_response().await?;
-        println!("   Response: {}\n", serde_json::to_string_pretty(&response)?);
+        println!(
+            "   Response: {}\n",
+            serde_json::to_string_pretty(&response)?
+        );
     }
 
     tokio::time::sleep(Duration::from_millis(500)).await;
@@ -119,7 +139,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             .with_id(json!(7));
         client.send_request(&unsubscribe).await?;
         let response = client.recv_response().await?;
-        println!("   Response: {}\n", serde_json::to_string_pretty(&response)?);
+        println!(
+            "   Response: {}\n",
+            serde_json::to_string_pretty(&response)?
+        );
     }
 
     tokio::time::sleep(Duration::from_millis(500)).await;
@@ -129,7 +152,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let list_streams = Request::new("list_active_streams").with_id(json!(8));
     client.send_request(&list_streams).await?;
     let response = client.recv_response().await?;
-    println!("   Response: {}\n", serde_json::to_string_pretty(&response)?);
+    println!(
+        "   Response: {}\n",
+        serde_json::to_string_pretty(&response)?
+    );
     println!("=== Secure Client Demo Complete ===");
     println!("\n🔒 All communication was encrypted with TLS 1.3");
     println!("✓ Subscription lifecycle demonstrated successfully");

@@ -10,8 +10,8 @@
 //! cargo run --example streaming_shutdown_example --features tcp-stream,streaming,shutdown
 //! ```
 
-use ash_rpc_core::*;
 use ash_rpc_core::transport::TcpStreamServer;
+use ash_rpc_core::*;
 use serde_json::json;
 use std::sync::Arc;
 use std::time::Duration;
@@ -24,9 +24,7 @@ struct TickerStreamHandler {
 
 impl TickerStreamHandler {
     fn new(name: impl Into<String>) -> Self {
-        Self {
-            name: name.into(),
-        }
+        Self { name: name.into() }
     }
 }
 
@@ -57,7 +55,7 @@ impl StreamHandler for TickerStreamHandler {
         sender: mpsc::UnboundedSender<StreamEvent>,
     ) -> Result<(), Error> {
         let name = self.name.clone();
-        
+
         tokio::spawn(async move {
             let mut counter = 0u64;
 
@@ -71,8 +69,8 @@ impl StreamHandler for TickerStreamHandler {
                     "timestamp": chrono::Utc::now().to_rfc3339(),
                 });
 
-                let event = StreamEvent::new(stream_id.clone(), "tick", event_data)
-                    .with_sequence(counter);
+                let event =
+                    StreamEvent::new(stream_id.clone(), "tick", event_data).with_sequence(counter);
 
                 if sender.send(event).is_err() {
                     tracing::info!(stream_id = %stream_id, "stream closed");
@@ -98,7 +96,9 @@ struct StreamingProcessor {
 impl StreamingProcessor {
     async fn new() -> Self {
         let stream_manager = Arc::new(StreamManager::new());
-        stream_manager.register_handler(TickerStreamHandler::new("main")).await;
+        stream_manager
+            .register_handler(TickerStreamHandler::new("main"))
+            .await;
 
         let registry = Arc::new(MethodRegistry::new(register_methods![PingMethod]));
 
@@ -188,7 +188,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let shutdown_manager = ShutdownManager::new(
         ShutdownConfigBuilder::new()
             .grace_period(Duration::from_secs(10))
-            .build()
+            .build(),
     );
 
     let processor = StreamingProcessor::new().await;
@@ -196,21 +196,25 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Register shutdown hooks
     let stream_manager_hook = Arc::clone(&stream_manager);
-    shutdown_manager.register_hook(move || {
-        let sm = Arc::clone(&stream_manager_hook);
-        async move {
-            let count = sm.active_count().await;
-            tracing::info!(active_streams = count, "Closing active streams...");
-            sm.close_all().await;
-            tracing::info!("✓ All streams closed");
-        }
-    }).await;
+    shutdown_manager
+        .register_hook(move || {
+            let sm = Arc::clone(&stream_manager_hook);
+            async move {
+                let count = sm.active_count().await;
+                tracing::info!(active_streams = count, "Closing active streams...");
+                sm.close_all().await;
+                tracing::info!("✓ All streams closed");
+            }
+        })
+        .await;
 
-    shutdown_manager.register_hook(|| async {
-        tracing::info!("Cleaning up streaming resources...");
-        tokio::time::sleep(Duration::from_millis(500)).await;
-        tracing::info!("✓ Streaming cleanup completed");
-    }).await;
+    shutdown_manager
+        .register_hook(|| async {
+            tracing::info!("Cleaning up streaming resources...");
+            tokio::time::sleep(Duration::from_millis(500)).await;
+            tracing::info!("✓ Streaming cleanup completed");
+        })
+        .await;
 
     let addr = "127.0.0.1:8080";
     let server = TcpStreamServer::builder(addr)

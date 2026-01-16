@@ -120,9 +120,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             },
             "id": 4
         });
-        writer
-            .write_all(unsubscribe.to_string().as_bytes())
-            .await?;
+        writer.write_all(unsubscribe.to_string().as_bytes()).await?;
         writer.write_all(b"\n").await?;
         writer.flush().await?;
 
@@ -144,9 +142,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             },
             "id": 5
         });
-        writer
-            .write_all(unsubscribe.to_string().as_bytes())
-            .await?;
+        writer.write_all(unsubscribe.to_string().as_bytes()).await?;
         writer.write_all(b"\n").await?;
         writer.flush().await?;
 

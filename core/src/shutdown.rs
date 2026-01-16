@@ -10,7 +10,7 @@ use std::future::Future;
 use std::pin::Pin;
 use std::sync::Arc;
 use std::time::Duration;
-use tokio::sync::{mpsc, Mutex, RwLock};
+use tokio::sync::{Mutex, RwLock, mpsc};
 use tokio::time::timeout;
 
 /// A future that completes when shutdown is triggered
@@ -63,10 +63,10 @@ impl ShutdownHandle {
 pub struct ShutdownConfig {
     /// Grace period to wait for connections to drain
     pub grace_period: Duration,
-    
+
     /// Force shutdown after this timeout
     pub force_timeout: Duration,
-    
+
     /// Whether to handle OS signals (SIGTERM, SIGINT)
     pub handle_signals: bool,
 }
@@ -202,15 +202,12 @@ impl ShutdownManager {
     /// Execute all registered shutdown hooks
     async fn execute_hooks(&self) {
         let hooks = self.hooks.read().await;
-        
-        tracing::info!(
-            hook_count = hooks.len(),
-            "executing shutdown hooks"
-        );
+
+        tracing::info!(hook_count = hooks.len(), "executing shutdown hooks");
 
         for (i, hook) in hooks.iter().enumerate() {
             tracing::debug!(hook_index = i, "executing shutdown hook");
-            
+
             match timeout(self.config.grace_period, hook()).await {
                 Ok(_) => {
                     tracing::debug!(hook_index = i, "shutdown hook completed");
@@ -231,12 +228,12 @@ impl ShutdownManager {
     /// Wait for OS signals (SIGTERM, SIGINT)
     #[cfg(unix)]
     async fn wait_for_signal() {
-        use tokio::signal::unix::{signal, SignalKind};
+        use tokio::signal::unix::{SignalKind, signal};
 
-        let mut sigterm = signal(SignalKind::terminate())
-            .expect("failed to register SIGTERM handler");
-        let mut sigint = signal(SignalKind::interrupt())
-            .expect("failed to register SIGINT handler");
+        let mut sigterm =
+            signal(SignalKind::terminate()).expect("failed to register SIGTERM handler");
+        let mut sigint =
+            signal(SignalKind::interrupt()).expect("failed to register SIGINT handler");
 
         tokio::select! {
             _ = sigterm.recv() => {
@@ -311,12 +308,14 @@ mod tests {
         let called = Arc::new(AtomicBool::new(false));
         let called_clone = Arc::clone(&called);
 
-        manager.register_hook(move || {
-            let c = Arc::clone(&called_clone);
-            async move {
-                c.store(true, Ordering::SeqCst);
-            }
-        }).await;
+        manager
+            .register_hook(move || {
+                let c = Arc::clone(&called_clone);
+                async move {
+                    c.store(true, Ordering::SeqCst);
+                }
+            })
+            .await;
 
         // Trigger shutdown
         let handle = manager.handle();
@@ -332,16 +331,18 @@ mod tests {
     async fn test_multiple_hooks() {
         let manager = create_shutdown_manager();
         let counter = Arc::new(AtomicBool::new(false));
-        
+
         for i in 0..3 {
             let c = Arc::clone(&counter);
-            manager.register_hook(move || {
-                let c = Arc::clone(&c);
-                async move {
-                    tracing::debug!("Hook {} executed", i);
-                    c.store(true, Ordering::SeqCst);
-                }
-            }).await;
+            manager
+                .register_hook(move || {
+                    let c = Arc::clone(&c);
+                    async move {
+                        tracing::debug!("Hook {} executed", i);
+                        c.store(true, Ordering::SeqCst);
+                    }
+                })
+                .await;
         }
 
         let handle = manager.handle();

@@ -7,7 +7,7 @@ use crate::types::*;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::Arc;
-use tokio::sync::{mpsc, RwLock};
+use tokio::sync::{RwLock, mpsc};
 
 /// Unique identifier for a stream/subscription
 pub type StreamId = String;
@@ -330,21 +330,18 @@ impl StreamManager {
     {
         let method = handler.subscription_method().to_string();
         let handler_arc = Arc::new(handler);
-        
+
         let mut handlers = self.handlers.write().await;
         handlers.insert(method.clone(), handler_arc);
-        
+
         tracing::debug!(method = %method, "stream handler registered");
     }
 
     /// Subscribe to a stream
-    pub async fn subscribe(
-        &self,
-        request: StreamRequest,
-    ) -> Result<StreamResponse, crate::Error> {
+    pub async fn subscribe(&self, request: StreamRequest) -> Result<StreamResponse, crate::Error> {
         let stream_id = request.stream_id();
         let method = request.method().to_string();
-        
+
         // Get the handler for this method
         let handlers = self.handlers.read().await;
         let handler = handlers.get(&method).ok_or_else(|| {
@@ -357,7 +354,9 @@ impl StreamManager {
         drop(handlers);
 
         // Call the handler to subscribe
-        let response = handler.subscribe(request.params.clone(), stream_id.clone()).await?;
+        let response = handler
+            .subscribe(request.params.clone(), stream_id.clone())
+            .await?;
 
         // Store stream info
         let stream_info = StreamInfo {
@@ -368,7 +367,7 @@ impl StreamManager {
             status: StreamStatus::Active,
             sequence: 0,
         };
-        
+
         let mut streams = self.active_streams.write().await;
         streams.insert(stream_id.clone(), stream_info);
         drop(streams);
@@ -377,7 +376,10 @@ impl StreamManager {
         let event_sender = self.event_sender.clone();
         let stream_id_clone = stream_id.clone();
         tokio::spawn(async move {
-            if let Err(e) = handler.start_stream(stream_id_clone.clone(), request.params, event_sender).await {
+            if let Err(e) = handler
+                .start_stream(stream_id_clone.clone(), request.params, event_sender)
+                .await
+            {
                 tracing::error!(stream_id = %stream_id_clone, error = ?e, "stream failed");
             }
         });
@@ -396,7 +398,7 @@ impl StreamManager {
                 format!("Stream not found: {}", stream_id),
             )
         })?;
-        
+
         let method = stream_info.method.clone();
         drop(streams);
 
@@ -456,7 +458,7 @@ impl StreamManager {
         for stream_id in stream_ids {
             let _ = self.unsubscribe(&stream_id).await;
         }
-        
+
         tracing::info!("all streams closed");
     }
 
@@ -489,11 +491,7 @@ impl StreamManager {
 
         for stream_info in matching_streams {
             let sequence = self.increment_sequence(&stream_info.stream_id).await;
-            let event = StreamEvent::new(
-                stream_info.stream_id.clone(),
-                method,
-                data.clone(),
-            );
+            let event = StreamEvent::new(stream_info.stream_id.clone(), method, data.clone());
             let event = if let Some(seq) = sequence {
                 event.with_sequence(seq)
             } else {
@@ -552,20 +550,20 @@ impl StreamRequestBuilder {
 
     /// Build the stream request
     pub fn build(self) -> StreamRequest {
-        let id = self.id.unwrap_or_else(|| {
-            serde_json::Value::String(uuid::Uuid::new_v4().to_string())
-        });
-        
+        let id = self
+            .id
+            .unwrap_or_else(|| serde_json::Value::String(uuid::Uuid::new_v4().to_string()));
+
         let mut request = StreamRequest::new(self.method, id);
-        
+
         if let Some(params) = self.params {
             request = request.with_params(params);
         }
-        
+
         if let Some(stream_id) = self.stream_id {
             request = request.with_stream_id(stream_id);
         }
-        
+
         request
     }
 }

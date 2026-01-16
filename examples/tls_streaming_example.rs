@@ -16,8 +16,8 @@
 //! cd examples/tls_example && ./generate_certs.sh
 //! ```
 
-use ash_rpc_core::*;
 use ash_rpc_core::transport::tcp_tls::{TcpStreamTlsServer, TlsConfig};
+use ash_rpc_core::*;
 use serde_json::json;
 use std::sync::Arc;
 use std::time::Duration;
@@ -162,7 +162,12 @@ impl StreamHandler for SecureMarketAlertsHandler {
 
         // Spawn a task that generates market alerts
         tokio::spawn(async move {
-            let alert_types = vec!["PRICE_SURGE", "PRICE_DROP", "VOLUME_SPIKE", "WHALE_MOVEMENT"];
+            let alert_types = vec![
+                "PRICE_SURGE",
+                "PRICE_DROP",
+                "VOLUME_SPIKE",
+                "WHALE_MOVEMENT",
+            ];
             let mut sequence = 0u64;
 
             loop {
@@ -247,16 +252,14 @@ impl MessageProcessor for SecureStreamingProcessor {
                     };
 
                     match self.stream_manager.subscribe(stream_req).await {
-                        Ok(stream_resp) => {
-                            Some(Response::success(
-                                json!({
-                                    "stream_id": stream_resp.stream_id,
-                                    "status": "subscribed",
-                                    "encrypted": true
-                                }),
-                                req.id,
-                            ))
-                        }
+                        Ok(stream_resp) => Some(Response::success(
+                            json!({
+                                "stream_id": stream_resp.stream_id,
+                                "status": "subscribed",
+                                "encrypted": true
+                            }),
+                            req.id,
+                        )),
                         Err(e) => Some(Response::error(e, req.id)),
                     }
                 } else if req.method() == "unsubscribe" {
@@ -306,11 +309,7 @@ impl JsonRPCMethod for PingMethod {
         "ping"
     }
 
-    async fn call(
-        &self,
-        _params: Option<serde_json::Value>,
-        id: Option<RequestId>,
-    ) -> Response {
+    async fn call(&self, _params: Option<serde_json::Value>, id: Option<RequestId>) -> Response {
         rpc_success!("pong", id)
     }
 }
@@ -324,11 +323,7 @@ impl JsonRPCMethod for ServerInfoMethod {
         "info"
     }
 
-    async fn call(
-        &self,
-        _params: Option<serde_json::Value>,
-        id: Option<RequestId>,
-    ) -> Response {
+    async fn call(&self, _params: Option<serde_json::Value>, id: Option<RequestId>) -> Response {
         rpc_success!(
             json!({
                 "server": "ash-rpc secure streaming example",
@@ -350,11 +345,7 @@ impl JsonRPCMethod for ListStreamsMethod {
         "list_active_streams"
     }
 
-    async fn call(
-        &self,
-        _params: Option<serde_json::Value>,
-        id: Option<RequestId>,
-    ) -> Response {
+    async fn call(&self, _params: Option<serde_json::Value>, id: Option<RequestId>) -> Response {
         // This is handled by the processor, but we define it here for completeness
         rpc_success!(json!({"streams": []}), id)
     }
@@ -432,7 +423,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tokio::spawn(async move {
         loop {
             tokio::time::sleep(Duration::from_secs(15)).await;
-            
+
             let count = stream_manager_clone2.active_count().await;
             if count > 0 {
                 tracing::info!(active_streams = count, "active encrypted subscriptions");
@@ -447,11 +438,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("  • ping - Test connection");
     println!("  • info - Get server information");
     println!("  • subscribe_secure_prices - Subscribe to encrypted price updates");
-    println!("    Example: {{\"jsonrpc\":\"2.0\",\"method\":\"subscribe_secure_prices\",\"params\":{{\"symbol\":\"BTC/USD\"}},\"id\":1}}");
+    println!(
+        "    Example: {{\"jsonrpc\":\"2.0\",\"method\":\"subscribe_secure_prices\",\"params\":{{\"symbol\":\"BTC/USD\"}},\"id\":1}}"
+    );
     println!("  • subscribe_market_alerts - Subscribe to encrypted market alerts");
-    println!("    Example: {{\"jsonrpc\":\"2.0\",\"method\":\"subscribe_market_alerts\",\"params\":{{\"threshold\":5.0}},\"id\":2}}");
+    println!(
+        "    Example: {{\"jsonrpc\":\"2.0\",\"method\":\"subscribe_market_alerts\",\"params\":{{\"threshold\":5.0}},\"id\":2}}"
+    );
     println!("  • unsubscribe - Unsubscribe from a stream");
-    println!("    Example: {{\"jsonrpc\":\"2.0\",\"method\":\"unsubscribe\",\"params\":{{\"stream_id\":\"<stream_id>\"}},\"id\":3}}");
+    println!(
+        "    Example: {{\"jsonrpc\":\"2.0\",\"method\":\"unsubscribe\",\"params\":{{\"stream_id\":\"<stream_id>\"}},\"id\":3}}"
+    );
     println!("  • list_active_streams - List all active subscriptions");
     println!("\n⚠️  Note: Use TLS-enabled clients only (e.g., openssl s_client)");
     println!("Connect with: openssl s_client -connect 127.0.0.1:8443");

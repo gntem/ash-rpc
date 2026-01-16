@@ -8,8 +8,8 @@
 //! cargo run --example tcp_streaming_example --features tcp-stream,streaming
 //! ```
 
-use ash_rpc_core::*;
 use ash_rpc_core::transport::TcpStreamServer;
+use ash_rpc_core::*;
 use serde_json::json;
 use std::sync::Arc;
 use std::time::Duration;
@@ -182,14 +182,11 @@ impl StreamingProcessor {
         stream_manager
             .register_handler(PriceTickerHandler::new())
             .await;
-        stream_manager
-            .register_handler(SystemEventsHandler)
-            .await;
+        stream_manager.register_handler(SystemEventsHandler).await;
 
         // Create regular RPC methods
         let registry = Arc::new(MethodRegistry::new(register_methods![
-            PingMethod,
-            InfoMethod,
+            PingMethod, InfoMethod,
         ]));
 
         Self {
@@ -265,11 +262,7 @@ impl JsonRPCMethod for PingMethod {
         "ping"
     }
 
-    async fn call(
-        &self,
-        _params: Option<serde_json::Value>,
-        id: Option<RequestId>,
-    ) -> Response {
+    async fn call(&self, _params: Option<serde_json::Value>, id: Option<RequestId>) -> Response {
         rpc_success!("pong", id)
     }
 }
@@ -283,11 +276,7 @@ impl JsonRPCMethod for InfoMethod {
         "info"
     }
 
-    async fn call(
-        &self,
-        _params: Option<serde_json::Value>,
-        id: Option<RequestId>,
-    ) -> Response {
+    async fn call(&self, _params: Option<serde_json::Value>, id: Option<RequestId>) -> Response {
         rpc_success!(
             json!({
                 "server": "ash-rpc streaming example",
@@ -355,7 +344,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tokio::spawn(async move {
         loop {
             tokio::time::sleep(Duration::from_secs(10)).await;
-            
+
             let count = stream_manager_clone2.active_count().await;
             if count > 0 {
                 tracing::info!(active_streams = count, "active subscriptions");
@@ -369,11 +358,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("  • ping - Regular RPC method");
     println!("  • info - Get server information");
     println!("  • subscribe_prices - Subscribe to price updates");
-    println!("    Example: {{\"jsonrpc\":\"2.0\",\"method\":\"subscribe_prices\",\"params\":{{\"symbol\":\"BTC/USD\"}},\"id\":1}}");
+    println!(
+        "    Example: {{\"jsonrpc\":\"2.0\",\"method\":\"subscribe_prices\",\"params\":{{\"symbol\":\"BTC/USD\"}},\"id\":1}}"
+    );
     println!("  • subscribe_events - Subscribe to system events");
     println!("    Example: {{\"jsonrpc\":\"2.0\",\"method\":\"subscribe_events\",\"id\":2}}");
     println!("  • unsubscribe - Unsubscribe from a stream");
-    println!("    Example: {{\"jsonrpc\":\"2.0\",\"method\":\"unsubscribe\",\"params\":{{\"stream_id\":\"<stream_id>\"}},\"id\":3}}");
+    println!(
+        "    Example: {{\"jsonrpc\":\"2.0\",\"method\":\"unsubscribe\",\"params\":{{\"stream_id\":\"<stream_id>\"}},\"id\":3}}"
+    );
     println!("\nConnect with: nc 127.0.0.1 8080");
     println!("=====================================\n");
 

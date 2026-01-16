@@ -16,8 +16,8 @@
 //! - Send SIGTERM: `kill <pid>`
 //! - Or wait 30 seconds for auto-shutdown
 
-use ash_rpc_core::*;
 use ash_rpc_core::transport::TcpStreamServer;
+use ash_rpc_core::*;
 use serde_json::json;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicUsize, Ordering};
@@ -40,11 +40,7 @@ impl JsonRPCMethod for SlowMethod {
         "slow_operation"
     }
 
-    async fn call(
-        &self,
-        params: Option<serde_json::Value>,
-        id: Option<RequestId>,
-    ) -> Response {
+    async fn call(&self, params: Option<serde_json::Value>, id: Option<RequestId>) -> Response {
         let delay_ms = params
             .as_ref()
             .and_then(|p| p.get("delay_ms"))
@@ -52,14 +48,14 @@ impl JsonRPCMethod for SlowMethod {
             .unwrap_or(1000);
 
         tracing::info!(delay_ms = delay_ms, "starting slow operation");
-        
+
         // Simulate long-running work
         tokio::time::sleep(Duration::from_millis(delay_ms)).await;
-        
+
         let count = self.call_count.fetch_add(1, Ordering::SeqCst) + 1;
-        
+
         tracing::info!(count = count, "slow operation completed");
-        
+
         rpc_success!(
             json!({
                 "status": "completed",
@@ -79,11 +75,7 @@ impl JsonRPCMethod for PingMethod {
         "ping"
     }
 
-    async fn call(
-        &self,
-        _params: Option<serde_json::Value>,
-        id: Option<RequestId>,
-    ) -> Response {
+    async fn call(&self, _params: Option<serde_json::Value>, id: Option<RequestId>) -> Response {
         rpc_success!("pong", id)
     }
 }
@@ -117,37 +109,42 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("Registering shutdown hooks...\n");
 
     // Hook 1: Close database connections (simulated)
-    shutdown_manager.register_hook(|| async {
-        tracing::info!("Closing database connections...");
-        tokio::time::sleep(Duration::from_millis(500)).await;
-        tracing::info!("✓ Database connections closed");
-    }).await;
+    shutdown_manager
+        .register_hook(|| async {
+            tracing::info!("Closing database connections...");
+            tokio::time::sleep(Duration::from_millis(500)).await;
+            tracing::info!("✓ Database connections closed");
+        })
+        .await;
 
     // Hook 2: Flush in-memory cache (simulated)
-    shutdown_manager.register_hook(|| async {
-        tracing::info!("Flushing cache to disk...");
-        tokio::time::sleep(Duration::from_millis(300)).await;
-        tracing::info!("✓ Cache flushed");
-    }).await;
+    shutdown_manager
+        .register_hook(|| async {
+            tracing::info!("Flushing cache to disk...");
+            tokio::time::sleep(Duration::from_millis(300)).await;
+            tracing::info!("✓ Cache flushed");
+        })
+        .await;
 
     // Hook 3: Report final statistics
-    shutdown_manager.register_hook(move || {
-        let count = Arc::clone(&call_count_clone);
-        async move {
-            let final_count = count.load(Ordering::SeqCst);
-            tracing::info!(
-                total_calls = final_count,
-                "Final statistics"
-            );
-        }
-    }).await;
+    shutdown_manager
+        .register_hook(move || {
+            let count = Arc::clone(&call_count_clone);
+            async move {
+                let final_count = count.load(Ordering::SeqCst);
+                tracing::info!(total_calls = final_count, "Final statistics");
+            }
+        })
+        .await;
 
     // Hook 4: Custom cleanup
-    shutdown_manager.register_hook(|| async {
-        tracing::info!("Running custom cleanup...");
-        tokio::time::sleep(Duration::from_millis(200)).await;
-        tracing::info!("✓ Cleanup completed");
-    }).await;
+    shutdown_manager
+        .register_hook(|| async {
+            tracing::info!("Running custom cleanup...");
+            tokio::time::sleep(Duration::from_millis(200)).await;
+            tracing::info!("✓ Cleanup completed");
+        })
+        .await;
 
     tracing::info!("shutdown hooks registered: 4 hooks");
 
@@ -168,7 +165,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("\nAvailable methods:");
     println!("  • ping - Quick test");
     println!("  • slow_operation - Simulates long-running work");
-    println!("    Example: {{\"jsonrpc\":\"2.0\",\"method\":\"slow_operation\",\"params\":{{\"delay_ms\":3000}},\"id\":1}}");
+    println!(
+        "    Example: {{\"jsonrpc\":\"2.0\",\"method\":\"slow_operation\",\"params\":{{\"delay_ms\":3000}},\"id\":1}}"
+    );
     println!("\nShutdown triggers:");
     println!("  • Press Ctrl-C");
     println!("  • Send SIGTERM signal");
