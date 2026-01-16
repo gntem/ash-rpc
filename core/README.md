@@ -31,8 +31,11 @@ cargo add ash-rpc-core --features tcp-stream-tls
 # With stateful handlers
 cargo add ash-rpc-core --features stateful
 
+# With streaming/subscriptions
+cargo add ash-rpc-core --features streaming
+
 # Multiple features
-cargo add ash-rpc-core --features tcp-stream,stateful
+cargo add ash-rpc-core --features tcp-stream,stateful,streaming
 ```
 
 ## Quick Start
@@ -156,6 +159,75 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .build()?;
     
     server.run().await?;
+    Ok(())
+}
+```
+
+### Streaming and Subscriptions
+
+Enable real-time event streaming to clients:
+
+```rust
+use ash_rpc_core::*;
+use tokio::sync::mpsc;
+
+// Implement a stream handler
+struct PriceTickerHandler;
+
+#[async_trait::async_trait]
+impl StreamHandler for PriceTickerHandler {
+    fn subscription_method(&self) -> &'static str {
+        "subscribe_prices"
+    }
+
+    async fn subscribe(
+        &self,
+        params: Option<serde_json::Value>,
+        stream_id: StreamId,
+    ) -> Result<StreamResponse, Error> {
+        Ok(StreamResponse::success(stream_id, serde_json::json!(1)))
+    }
+
+    async fn unsubscribe(&self, stream_id: &str) -> Result<(), Error> {
+        Ok(())
+    }
+
+    async fn start_stream(
+        &self,
+        stream_id: StreamId,
+        params: Option<serde_json::Value>,
+        sender: mpsc::UnboundedSender<StreamEvent>,
+    ) -> Result<(), Error> {
+        // Emit events to the stream
+        tokio::spawn(async move {
+            loop {
+                tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+                let event = StreamEvent::new(
+                    stream_id.clone(),
+                    "price_update",
+                    serde_json::json!({"price": 50000.0}),
+                );
+                if sender.send(event).is_err() {
+                    break;
+                }
+            }
+        });
+        Ok(())
+    }
+
+    async fn is_active(&self, _stream_id: &str) -> bool {
+        true
+    }
+}
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let stream_manager = StreamManager::new();
+    stream_manager.register_handler(PriceTickerHandler).await;
+    
+    // Clients can now subscribe with:
+    // {"jsonrpc":"2.0","method":"subscribe_prices","id":1}
+    
     Ok(())
 }
 ```
