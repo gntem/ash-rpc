@@ -20,6 +20,7 @@ tcp-stream = ["tokio"]
 tcp-stream-tls = ["tokio", "tokio-rustls"]
 stateful = []
 streaming = ["tokio"]
+shutdown = ["tokio"]
 
 [dependencies]
 tracing = "0.1"
@@ -27,7 +28,7 @@ uuid = { version = "1.0", features = ["v4", "serde"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 async-trait = "0.1"
-tokio = { version = "1.47", features = ["net", "io-util", "rt", "rt-multi-thread", "sync", "macros", "time"], optional = true }
+tokio = { version = "1.47", features = ["net", "io-util", "rt", "rt-multi-thread", "sync", "macros", "time", "signal"], optional = true }
 tokio-rustls = { version = "0.26", optional = true }
 
 [dev-dependencies]
@@ -190,3 +191,13 @@ required-features = ["tcp-stream-tls", "streaming"]
 name = "tls_streaming_client"
 path = "../examples/tls_streaming_client.rs"
 required-features = ["tcp-stream-tls"]
+
+[[example]]
+name = "graceful_shutdown_example"
+path = "../examples/graceful_shutdown_example.rs"
+required-features = ["tcp-stream", "shutdown"]
+
+[[example]]
+name = "streaming_shutdown_example"
+path = "../examples/streaming_shutdown_example.rs"
+required-features = ["tcp-stream", "streaming", "shutdown"]

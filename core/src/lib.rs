@@ -45,6 +45,9 @@ pub mod macros;
 pub mod registry;
 pub mod sanitization;
 
+#[cfg(feature = "shutdown")]
+pub mod shutdown;
+
 #[cfg(feature = "streaming")]
 pub mod streaming;
 
@@ -84,3 +87,7 @@ pub use stateful::*;
 // Re-export streaming module when streaming feature is enabled
 #[cfg(feature = "streaming")]
 pub use streaming::*;
+
+// Re-export shutdown module when shutdown feature is enabled
+#[cfg(feature = "shutdown")]
+pub use shutdown::*;

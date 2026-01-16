@@ -34,8 +34,11 @@ cargo add ash-rpc-core --features stateful
 # With streaming/subscriptions
 cargo add ash-rpc-core --features streaming
 
+# With graceful shutdown
+cargo add ash-rpc-core --features shutdown
+
 # Multiple features
-cargo add ash-rpc-core --features tcp-stream,stateful,streaming
+cargo add ash-rpc-core --features tcp-stream,stateful,streaming,shutdown
 ```
 
 ## Quick Start
