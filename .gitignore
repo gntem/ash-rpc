@@ -1,2 +1,3 @@
 /target
 .github/instructions
+examples/tls_example/certs/*.pem

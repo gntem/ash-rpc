@@ -180,3 +180,13 @@ required-features = ["tcp-stream", "streaming"]
 name = "tcp_streaming_client"
 path = "../examples/tcp_streaming_client.rs"
 required-features = ["tcp-stream"]
+
+[[example]]
+name = "tls_streaming_example"
+path = "../examples/tls_streaming_example.rs"
+required-features = ["tcp-stream-tls", "streaming"]
+
+[[example]]
+name = "tls_streaming_client"
+path = "../examples/tls_streaming_client.rs"
+required-features = ["tcp-stream-tls"]
