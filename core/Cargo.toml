@@ -19,6 +19,7 @@ tcp = ["tokio"]
 tcp-stream = ["tokio"]
 tcp-stream-tls = ["tokio", "tokio-rustls"]
 stateful = []
+streaming = ["tokio"]
 
 [dependencies]
 tracing = "0.1"
