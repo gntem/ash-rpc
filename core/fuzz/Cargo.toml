@@ -1,0 +1,45 @@
+[package]
+name = "ash-rpc-core-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2024"
+
+[workspace]
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+serde_json = "1.0"
+
+[dependencies.ash-rpc-core]
+path = ".."
+
+[[bin]]
+name = "fuzz_request_parse"
+path = "fuzz_targets/fuzz_request_parse.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "fuzz_response_parse"
+path = "fuzz_targets/fuzz_response_parse.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "fuzz_error_parse"
+path = "fuzz_targets/fuzz_error_parse.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "fuzz_batch_parse"
+path = "fuzz_targets/fuzz_batch_parse.rs"
+test = false
+doc = false
+bench = false

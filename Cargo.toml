@@ -1,5 +1,6 @@
 [workspace]
 members = ["core", "contrib"]
+exclude = ["core/fuzz"]
 # Examples excluded (may use old API)
 resolver = "2"
 
