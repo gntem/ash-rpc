@@ -17,57 +17,57 @@ serde_json = "1.0"
 path = ".."
 
 [[bin]]
-name = "fuzz_request_parse"
-path = "fuzz_targets/fuzz_request_parse.rs"
+name = "request_parse"
+path = "fuzz_targets/request_parse.rs"
 test = false
 doc = false
 bench = false
 
 [[bin]]
-name = "fuzz_response_parse"
-path = "fuzz_targets/fuzz_response_parse.rs"
+name = "response_parse"
+path = "fuzz_targets/response_parse.rs"
 test = false
 doc = false
 bench = false
 
 [[bin]]
-name = "fuzz_error_parse"
-path = "fuzz_targets/fuzz_error_parse.rs"
+name = "error_parse"
+path = "fuzz_targets/error_parse.rs"
 test = false
 doc = false
 bench = false
 
 [[bin]]
-name = "fuzz_batch_parse"
-path = "fuzz_targets/fuzz_batch_parse.rs"
+name = "batch_parse"
+path = "fuzz_targets/batch_parse.rs"
 test = false
 doc = false
 bench = false
 
 [[bin]]
-name = "fuzz_request_builder"
-path = "fuzz_targets/fuzz_request_builder.rs"
+name = "request_builder"
+path = "fuzz_targets/request_builder.rs"
 test = false
 doc = false
 bench = false
 
 [[bin]]
-name = "fuzz_response_builder"
-path = "fuzz_targets/fuzz_response_builder.rs"
+name = "response_builder"
+path = "fuzz_targets/response_builder.rs"
 test = false
 doc = false
 bench = false
 
 [[bin]]
-name = "fuzz_error_builder"
-path = "fuzz_targets/fuzz_error_builder.rs"
+name = "error_builder"
+path = "fuzz_targets/error_builder.rs"
 test = false
 doc = false
 bench = false
 
 [[bin]]
-name = "fuzz_notification_builder"
-path = "fuzz_targets/fuzz_notification_builder.rs"
+name = "notification_builder"
+path = "fuzz_targets/notification_builder.rs"
 test = false
 doc = false
 bench = false
