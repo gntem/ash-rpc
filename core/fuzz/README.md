@@ -12,21 +12,41 @@ cargo install cargo-fuzz
 
 ## Available Fuzz Targets
 
-### 1. `fuzz_request_parse`
+### Parsing Fuzz Targets
+
+#### 1. `fuzz_request_parse`
 
 Tests the robustness of JSON-RPC Request deserialization by feeding arbitrary bytes to the parser.
 
-### 2. `fuzz_response_parse`
+#### 2. `fuzz_response_parse`
 
 Tests the robustness of JSON-RPC Response deserialization by feeding arbitrary bytes to the parser.
 
-### 3. `fuzz_error_parse`
+#### 3. `fuzz_error_parse`
 
 Tests the robustness of JSON-RPC Error deserialization by feeding arbitrary bytes to the parser.
 
-### 4. `fuzz_batch_parse`
+#### 4. `fuzz_batch_parse`
 
 Tests the robustness of JSON-RPC BatchRequest deserialization by feeding arbitrary bytes to the parser.
+
+### Builder Fuzz Targets
+
+#### 5. `fuzz_request_builder`
+
+Tests the RequestBuilder pattern with structured fuzzing. Generates various combinations of method names, parameters, IDs, and correlation IDs to ensure the builder never panics and produces valid requests.
+
+#### 6. `fuzz_response_builder`
+
+Tests the ResponseBuilder pattern with structured fuzzing. Tests both success and error response building, validates response invariants (e.g., a response cannot have both result and error).
+
+#### 7. `fuzz_error_builder`
+
+Tests the ErrorBuilder pattern with structured fuzzing. Validates error code handling, message generation, and optional data fields. Tests error type detection methods.
+
+#### 8. `fuzz_notification_builder`
+
+Tests the NotificationBuilder pattern with structured fuzzing. Ensures notifications are built correctly without IDs (since they don't expect responses).
 
 ## Running Fuzz Tests
 
@@ -91,11 +111,11 @@ cargo fuzz run fuzz_request_parse fuzz/artifacts/fuzz_request_parse/crash-<hash>
 
 Future fuzz targets to add:
 
-- Builder pattern fuzzing (RequestBuilder, ResponseBuilder)
 - Sanitization module fuzzing
 - Auth token validation fuzzing
 - Registry method dispatch fuzzing
 - Transport layer fuzzing (when features are enabled)
+- Stream processing fuzzing
 
 ## Resources
 
