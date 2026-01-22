@@ -71,3 +71,52 @@ path = "fuzz_targets/notification_builder.rs"
 test = false
 doc = false
 bench = false
+
+[[bin]]
+name = "sanitization_simple_pattern"
+path = "fuzz_targets/sanitization_simple_pattern.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "sanitization_case_insensitive"
+path = "fuzz_targets/sanitization_case_insensitive.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "sanitization_composite"
+path = "fuzz_targets/sanitization_composite.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "auth_connection_context"
+path = "fuzz_targets/auth_connection_context.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "registry_method_lookup"
+path = "fuzz_targets/registry_method_lookup.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "request_creation"
+path = "fuzz_targets/request_creation.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "notification_parse"
+path = "fuzz_targets/notification_parse.rs"
+test = false
+doc = false
+bench = false

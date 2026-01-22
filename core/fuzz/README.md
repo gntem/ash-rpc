@@ -8,12 +8,6 @@ Fuzz tests for `ash-rpc-core` using cargo-fuzz.
 cargo install cargo-fuzz
 ```
 
-## Targets
-
-**Parsing**: `fuzz_request_parse`, `fuzz_response_parse`, `fuzz_error_parse`, `fuzz_batch_parse`
-
-**Builders**: `fuzz_request_builder`, `fuzz_response_builder`, `fuzz_error_builder`, `fuzz_notification_builder`
-
 ## Usage
 
 ```bash
