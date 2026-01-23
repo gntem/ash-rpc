@@ -1,4 +1,4 @@
-# ash-rpc
+# ASH-RPC
 
 [![ash-rpc-core on crates.io](https://img.shields.io/crates/v/ash-rpc-core)](https://crates.io/crates/ash-rpc-core)
 [![ash-rpc-core docs](https://img.shields.io/docsrs/ash-rpc-core)](https://docs.rs/ash-rpc-core)
