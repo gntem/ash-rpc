@@ -10,6 +10,7 @@
 | 0.x.x   | Not supported |
 
 ## Reporting a Vulnerability
+
 Please report security issues responsibly and in private.
 
 - Do **not** open a public issue.
@@ -19,6 +20,7 @@ Please report security issues responsibly and in private.
   - Click **Report a vulnerability**
 
 Include:
+
 - A clear description of the issue  
 - Steps to reproduce  
 - Potential impact  
@@ -27,4 +29,5 @@ Include:
 You can expect an initial response within a reasonable timeframe.
 
 ## Disclosure Policy
+
 Please allow reasonable time for the issue to be investigated and resolved before any public disclosure. Responsible disclosure is appreciated.

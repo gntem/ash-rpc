@@ -1,0 +1,122 @@
+[package]
+name = "ash-rpc-core-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2024"
+
+[workspace]
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = { version = "0.4", features = ["arbitrary-derive"] }
+serde_json = "1.0"
+
+[dependencies.ash-rpc-core]
+path = ".."
+
+[[bin]]
+name = "request_parse"
+path = "fuzz_targets/request_parse.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "response_parse"
+path = "fuzz_targets/response_parse.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "error_parse"
+path = "fuzz_targets/error_parse.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "batch_parse"
+path = "fuzz_targets/batch_parse.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "request_builder"
+path = "fuzz_targets/request_builder.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "response_builder"
+path = "fuzz_targets/response_builder.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "error_builder"
+path = "fuzz_targets/error_builder.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "notification_builder"
+path = "fuzz_targets/notification_builder.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "sanitization_simple_pattern"
+path = "fuzz_targets/sanitization_simple_pattern.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "sanitization_case_insensitive"
+path = "fuzz_targets/sanitization_case_insensitive.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "sanitization_composite"
+path = "fuzz_targets/sanitization_composite.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "auth_connection_context"
+path = "fuzz_targets/auth_connection_context.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "registry_method_lookup"
+path = "fuzz_targets/registry_method_lookup.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "request_creation"
+path = "fuzz_targets/request_creation.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "notification_parse"
+path = "fuzz_targets/notification_parse.rs"
+test = false
+doc = false
+bench = false
