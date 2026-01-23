@@ -235,7 +235,7 @@ impl AuditEventBuilder {
         let result = self.result.expect("result is required");
 
         // Determine default severity based on result
-        let severity = self.severity.unwrap_or_else(|| match result {
+        let severity = self.severity.unwrap_or(match result {
             AuditResult::Success => AuditSeverity::Info,
             AuditResult::Failure => AuditSeverity::Warning,
             AuditResult::Denied | AuditResult::Violation => AuditSeverity::Critical,
