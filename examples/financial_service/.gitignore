@@ -1,0 +1,7 @@
+# Ignore database file
+sample.db
+sample.db-*
+
+# Ignore build artifacts
+target/
+Cargo.lock

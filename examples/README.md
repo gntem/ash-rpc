@@ -71,6 +71,7 @@ See [observability_telemetry/](observability_telemetry/) for complete telemetry 
 | [params_validation_demo.rs](params_validation_demo.rs) | Parameter validation and type-safe deserialization | `cargo run --example params_validation_demo` |
 | [optional_methods_demo.rs](optional_methods_demo.rs) | Optional method parameters and default values | `cargo run --example optional_methods_demo` |
 | [openapi_demo.rs](openapi_demo.rs) | OpenAPI schema generation for JSON-RPC methods | `cargo run --example openapi_demo` |
+| [financial_service](financial_service/) | Complete financial data service with authentication, auditing, and database access |  |
 
 ## Macro Examples
 
