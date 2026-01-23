@@ -126,11 +126,7 @@ impl AuditEvent {
     }
 
     /// Add a metadata entry
-    pub fn add_metadata<K: Into<String>, V: Into<serde_json::Value>>(
-        &mut self,
-        key: K,
-        value: V,
-    ) {
+    pub fn add_metadata<K: Into<String>, V: Into<serde_json::Value>>(&mut self, key: K, value: V) {
         self.metadata.insert(key.into(), value.into());
     }
 

@@ -9,8 +9,8 @@
 
 use ash_rpc_core::audit_logging::*;
 use ash_rpc_core::{
+    MessageProcessor, MethodRegistry, RequestBuilder, Response, ResponseBuilder,
     auth::{AuthPolicy, ConnectionContext},
-    MethodRegistry, MessageProcessor, RequestBuilder, Response, ResponseBuilder,
 };
 use std::net::SocketAddr;
 use std::sync::Arc;
@@ -46,13 +46,7 @@ impl AuthPolicy for AuditingAuthPolicy {
         let allowed = self.allowed_methods.contains(&method.to_string());
 
         // Log the authorization check
-        log_auth_event(
-            &*self.backend,
-            &*self.integrity,
-            method,
-            ctx,
-            allowed,
-        );
+        log_auth_event(&*self.backend, &*self.integrity, method, ctx, allowed);
 
         allowed
     }
@@ -128,10 +122,7 @@ async fn example_audit_with_auth() {
     let integrity: Arc<dyn AuditIntegrity> = Arc::new(SequenceIntegrity::new());
 
     // Create auth policy that uses audit logging
-    let auth_policy = AuditingAuthPolicy::new(
-        Arc::clone(&backend),
-        Arc::clone(&integrity),
-    );
+    let auth_policy = AuditingAuthPolicy::new(Arc::clone(&backend), Arc::clone(&integrity));
 
     // Create method registry with auth policy
     let methods = MethodRegistry::new(vec![]).with_auth(auth_policy);

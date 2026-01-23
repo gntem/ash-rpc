@@ -46,10 +46,7 @@ impl AuditBackend for StderrAuditBackend {
                 eprintln!("{}", json);
             }
             Err(e) => {
-                eprintln!(
-                    "[AUDIT ERROR] Failed to serialize audit event: {}",
-                    e
-                );
+                eprintln!("[AUDIT ERROR] Failed to serialize audit event: {}", e);
             }
         }
     }
@@ -143,10 +140,8 @@ mod tests {
 
     #[test]
     fn test_multi_backend() {
-        let multi = MultiAuditBackend::new(vec![
-            Box::new(NoopAuditBackend),
-            Box::new(NoopAuditBackend),
-        ]);
+        let multi =
+            MultiAuditBackend::new(vec![Box::new(NoopAuditBackend), Box::new(NoopAuditBackend)]);
 
         let event = AuditEvent::builder()
             .event_type(AuditEventType::AuthenticationAttempt)

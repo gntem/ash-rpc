@@ -1,11 +1,7 @@
 //! MessageProcessor wrapper that automatically logs security audit events.
 
-use super::{
-    AuditBackend, AuditEvent, AuditEventType, AuditIntegrity, AuditResult, AuditSeverity,
-};
-use crate::{
-    auth::ConnectionContext, Message, MessageProcessor, ProcessorCapabilities, Response,
-};
+use super::{AuditBackend, AuditEvent, AuditEventType, AuditIntegrity, AuditResult, AuditSeverity};
+use crate::{Message, MessageProcessor, ProcessorCapabilities, Response, auth::ConnectionContext};
 use async_trait::async_trait;
 use std::sync::Arc;
 
@@ -49,7 +45,7 @@ impl AuditProcessor {
 
                 // Add correlation ID if present
                 if let Some(ref id) = req.id {
-                    event = event.correlation_id(format!("{:?}", id));
+                    event = event.correlation_id(id.to_string());
                 }
 
                 // Add connection context if available
@@ -69,7 +65,7 @@ impl AuditProcessor {
                 // Sanitize and add parameters (avoid logging sensitive data)
                 if let Some(ref params) = req.params {
                     // For security, we only log the structure, not the full content
-                    event = event.metadata("params_type", format!("{:?}", params));
+                    event = event.metadata("params_type", params.clone());
                 }
 
                 Some(event.build())
@@ -107,7 +103,7 @@ impl AuditProcessor {
         };
 
         let correlation_id = match message {
-            Message::Request(req) => req.id.as_ref().map(|id| format!("{:?}", id)),
+            Message::Request(req) => req.id.as_ref().map(|id| id.to_string()),
             _ => None,
         };
 
