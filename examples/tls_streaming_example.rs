@@ -383,7 +383,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Load TLS configuration
     println!("🔐 Loading TLS certificates...");
     let tls_config = TlsConfig::from_pem_files(cert_path, key_path)?;
-    println!("✓ TLS configuration loaded successfully\n");
+    println!("TLS configuration loaded successfully\n");
 
     tracing::info!(
         addr = %addr,
@@ -431,7 +431,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     });
 
-    println!("🚀 TLS Streaming Server Started!");
+    println!("TLS Streaming Server Started!");
     println!("Address: {}", addr);
     println!("Encryption: TLS 1.3\n");
     println!("Available methods:");

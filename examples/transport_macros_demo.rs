@@ -45,29 +45,29 @@ async fn main() {
         );
     }
 
-    println!("\n📚 Available Transport Macros:");
+    println!("\nAvailable Transport Macros:");
     println!("==============================");
 
-    println!("🔧 TCP Server (requires 'tcp' feature):");
+    println!("TCP Server (requires 'tcp' feature):");
     println!("   rpc_tcp_server!(\"127.0.0.1:8080\", registry)");
 
-    println!("\n🚀 TCP Streaming Server (requires 'tcp-stream' feature):");
+    println!("\nTCP Streaming Server (requires 'tcp-stream' feature):");
     println!("   rpc_tcp_stream_server!(\"127.0.0.1:8080\", registry).await");
 
-    println!("\n📡 TCP Streaming Client (requires 'tcp-stream' feature):");
+    println!("\nTCP Streaming Client (requires 'tcp-stream' feature):");
     println!("   let client = rpc_tcp_stream_client!(\"127.0.0.1:8080\").await?;");
 
-    println!("\n🌐 Axum HTTP Router (requires 'axum' feature):");
+    println!("\nAxum HTTP Router (requires 'axum' feature):");
     println!("   let app = rpc_axum_router!(registry);");
     println!("   let app = rpc_axum_router!(registry, \"/api/rpc\");");
 
-    println!("\n🚀 Axum HTTP Server (requires 'axum' feature):");
+    println!("\nAxum HTTP Server (requires 'axum' feature):");
     println!("   rpc_axum_server!(\"127.0.0.1:3000\", registry).await");
 
-    println!("\n🔧 Axum RPC Layer (requires 'axum' feature):");
+    println!("\nAxum RPC Layer (requires 'axum' feature):");
     println!("   let layer = rpc_axum_layer!(registry);");
 
-    println!("\n💡 Usage Examples:");
+    println!("\nUsage Examples:");
     println!("=================");
 
     println!("// TCP Server");

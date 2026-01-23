@@ -96,14 +96,14 @@ fn main() {
 
     match server_result {
         Ok(_server) => {
-            println!("   ✓ Server configured with security limits");
-            println!("   ✓ Connection limit: 100");
-            println!("   ✓ Request size limit: 256 KB");
-            println!("   ✓ Request timeout: 10 seconds");
-            println!("   ✓ Idle timeout: 60 seconds");
+            println!("   Server configured with security limits");
+            println!("   Connection limit: 100");
+            println!("   Request size limit: 256 KB");
+            println!("   Request timeout: 10 seconds");
+            println!("   Idle timeout: 60 seconds");
         }
         Err(e) => {
-            println!("   ✗ Server configuration failed: {}", e);
+            println!("   Server configuration failed: {}", e);
         }
     }
 }

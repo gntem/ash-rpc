@@ -203,7 +203,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 let count = sm.active_count().await;
                 tracing::info!(active_streams = count, "Closing active streams...");
                 sm.close_all().await;
-                tracing::info!("✓ All streams closed");
+                tracing::info!("All streams closed");
             }
         })
         .await;
@@ -212,7 +212,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .register_hook(|| async {
             tracing::info!("Cleaning up streaming resources...");
             tokio::time::sleep(Duration::from_millis(500)).await;
-            tracing::info!("✓ Streaming cleanup completed");
+            tracing::info!("Streaming cleanup completed");
         })
         .await;
 
@@ -251,7 +251,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     }
                 }
                 _ = event_signal.recv() => {
-                    tracing::info!("📡 Event broadcaster stopping...");
+                    tracing::info!("Event broadcaster stopping...");
                     break;
                 }
             }

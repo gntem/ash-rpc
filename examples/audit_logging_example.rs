@@ -110,7 +110,7 @@ async fn example_basic_audit() {
     let _ = audit_processor
         .process_message(ash_rpc_core::Message::Request(request))
         .await;
-    println!("✓ Audit events logged to stdout (check above for JSON output)\n");
+    println!("Audit events logged to stdout (check above for JSON output)\n");
 }
 
 /// Example 2: Audit logging with authentication integration
@@ -150,7 +150,7 @@ async fn example_audit_with_auth() {
     let _ = audit_processor
         .process_message(ash_rpc_core::Message::Request(request))
         .await;
-    println!("✓ Authorization check logged (allowed)\n");
+    println!("Authorization check logged (allowed)\n");
 
     // Test denied method
     println!("Test 2: Accessing denied method (admin_delete_user)");
@@ -162,7 +162,7 @@ async fn example_audit_with_auth() {
     let _ = audit_processor
         .process_message(ash_rpc_core::Message::Request(request))
         .await;
-    println!("✓ Authorization denial logged (denied - critical severity)\n");
+    println!("Authorization denial logged (denied - critical severity)\n");
 }
 
 /// Example 3: Multiple backends and integrity mechanisms
@@ -204,7 +204,7 @@ async fn example_multi_backend() {
     let _ = audit_processor
         .process_message(ash_rpc_core::Message::Request(request))
         .await;
-    println!("✓ Events logged to both stdout and stderr with sequence+checksum\n");
+    println!("Events logged to both stdout and stderr with sequence+checksum\n");
 }
 
 /// Example 4: Logging security violations
@@ -224,7 +224,7 @@ async fn example_security_violations() {
         Some(addr),
         Some("user@example.com"),
     );
-    println!("✓ Rate limit violation logged\n");
+    println!("Rate limit violation logged\n");
 
     // Simulate banned IP connection
     println!("Scenario 2: Connection from banned IP");
@@ -236,7 +236,7 @@ async fn example_security_violations() {
         Some(banned_addr),
         None,
     );
-    println!("✓ Banned IP violation logged\n");
+    println!("Banned IP violation logged\n");
 
     // Simulate oversized request
     println!("Scenario 3: Oversized request blocked");
@@ -247,7 +247,7 @@ async fn example_security_violations() {
         Some("203.0.113.42:8080".parse().unwrap()),
         Some("api_key:abc123"),
     );
-    println!("✓ Request size violation logged\n");
+    println!("Request size violation logged\n");
 
     // Manually create a custom security event
     println!("Scenario 4: Custom security event");
@@ -265,7 +265,7 @@ async fn example_security_violations() {
 
     integrity.add_integrity(&mut event);
     backend.log_audit(&event);
-    println!("✓ Custom security event logged\n");
+    println!("Custom security event logged\n");
 }
 
 /// Helper to demonstrate event verification

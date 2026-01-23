@@ -69,7 +69,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .tls_config(tls_config)
         .build()?;
 
-    println!("🚀 Starting TLS server on 127.0.0.1:8443...\n");
+    println!("Starting TLS server on 127.0.0.1:8443...\n");
 
     // Run server in background task
     let server_handle = tokio::spawn(async move {
@@ -82,7 +82,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
 
     // Test client connection
-    println!("📡 Testing TLS client connection...\n");
+    println!("Testing TLS client connection...\n");
 
     let mut client = TcpStreamTlsClient::connect_insecure("127.0.0.1:8443").await?;
     println!(" TLS handshake successful!\n");
@@ -114,7 +114,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     );
 
     println!(" All tests passed!");
-    println!("\n🔒 All communication was encrypted with TLS!");
+    println!("\nAll communication was encrypted with TLS!");
     println!("\nServer will continue running. Press Ctrl+C to stop.");
 
     // Wait for server (or Ctrl+C)

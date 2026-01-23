@@ -282,8 +282,8 @@ mod example {
     }
 
     pub fn run() -> Result<(), Box<dyn std::error::Error>> {
-        println!("🚀 Starting DashMap Stateful JSON-RPC Server");
-        println!("📍 Listening on 127.0.0.1:8080");
+        println!("Starting DashMap Stateful JSON-RPC Server");
+        println!("Listening on 127.0.0.1:8080");
         println!();
         println!("Available methods:");
         println!("  - set(key, value)    : Store a key-value pair");

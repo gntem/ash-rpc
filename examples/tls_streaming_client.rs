@@ -24,8 +24,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Connect with insecure mode (for self-signed certificates)
     let mut client = TcpStreamTlsClient::connect_insecure("127.0.0.1:8443").await?;
-    println!("✓ TLS handshake successful!\n");
-    println!("🔒 Connection encrypted with TLS 1.3\n");
+    println!("TLS handshake successful!\n");
+    println!("Connection encrypted with TLS 1.3\n");
 
     tokio::time::sleep(Duration::from_millis(500)).await;
 
@@ -157,8 +157,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         serde_json::to_string_pretty(&response)?
     );
     println!("=== Secure Client Demo Complete ===");
-    println!("\n🔒 All communication was encrypted with TLS 1.3");
-    println!("✓ Subscription lifecycle demonstrated successfully");
+    println!("\nAll communication was encrypted with TLS 1.3");
+    println!("Subscription lifecycle demonstrated successfully");
     println!("\nNote: In a full implementation, the server would push encrypted");
     println!("StreamEvent messages through the secure TLS channel between your");
     println!("requests and responses.\n");

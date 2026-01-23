@@ -171,7 +171,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let metrics = observability.metrics();
 
     logger.info("Observability initialized", &[]);
-    println!("✓ Observability stack ready\n");
+    println!("Observability stack ready\n");
 
     // Create method registry
     let registry = MethodRegistry::new(register_methods![
@@ -201,7 +201,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("Loading TLS certificates...");
     let tls_config = TlsConfig::from_pem_files(cert_path, key_path)?;
     logger.info("TLS configuration loaded", &[]);
-    println!("✓ TLS configuration ready\n");
+    println!("TLS configuration ready\n");
 
     // Build TLS TCP server
     let rpc_addr = "127.0.0.1:8443";
@@ -233,7 +233,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             .await
             .expect("Failed to bind metrics server");
 
-        println!("📡 HTTP Metrics Server: http://{}", metrics_addr);
+        println!("HTTP Metrics Server: http://{}", metrics_addr);
         println!("   • GET /metrics - Prometheus metrics");
         println!("   • GET /health - Health check\n");
 

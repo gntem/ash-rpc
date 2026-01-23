@@ -41,27 +41,27 @@ fn main() {
 
     println!("\n=== Available Transport Macros ===");
     #[cfg(feature = "tcp")]
-    println!("✓ rpc_tcp_server! - Create a TCP server");
+    println!("rpc_tcp_server! - Create a TCP server");
 
     #[cfg(feature = "tcp-stream")]
-    println!("✓ rpc_tcp_stream_server! - Create a TCP streaming server");
+    println!("rpc_tcp_stream_server! - Create a TCP streaming server");
 
     #[cfg(feature = "tcp-stream")]
-    println!("✓ rpc_tcp_stream_client! - Create a TCP streaming client");
+    println!("rpc_tcp_stream_client! - Create a TCP streaming client");
 
     // Note: Axum and WebSocket features are not available in this core version
-    println!("✗ rpc_axum_* macros - Requires contrib package with axum feature");
-    println!("✗ rpc_websocket_* macros - Requires contrib package with websocket feature");
+    println!("rpc_axum_* macros - Requires contrib package with axum feature");
+    println!("rpc_websocket_* macros - Requires contrib package with websocket feature");
 
     println!("\n=== Available Stateful Macros ===");
     #[cfg(feature = "stateful")]
-    println!("✓ rpc_stateful_processor! - Create a stateful processor");
+    println!("rpc_stateful_processor! - Create a stateful processor");
 
     #[cfg(feature = "stateful")]
-    println!("✓ rpc_stateful_registry! - Create a stateful method registry");
+    println!("rpc_stateful_registry! - Create a stateful method registry");
 
     #[cfg(feature = "stateful")]
-    println!("✓ rpc_stateful_builder! - Create a stateful processor with builder");
+    println!("rpc_stateful_builder! - Create a stateful processor with builder");
 
-    println!("\n✨ See transport_macros_demo.rs for usage examples!");
+    println!("\nSee transport_macros_demo.rs for usage examples!");
 }
