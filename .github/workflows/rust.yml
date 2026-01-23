@@ -61,7 +61,6 @@ jobs:
     name: Code Coverage
     runs-on: ubuntu-latest
     needs: [format-and-lint]
-    if: github.event_name == 'push'
     steps:
       - uses: actions/checkout@v4
       
@@ -85,6 +84,11 @@ jobs:
           files: lcov.info
           fail_ci_if_error: false
           token: ${{ secrets.CODECOV_TOKEN }}
+          flags: core
+          name: ash-rpc-core
+          verbose: true
+        env:
+          CODECOV_COMMENT: ${{ github.event_name == 'pull_request' }}
 
   check-features:
     name: Feature Combinations
