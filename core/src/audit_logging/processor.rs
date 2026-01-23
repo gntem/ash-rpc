@@ -79,10 +79,10 @@ impl AuditProcessor {
                     .metadata("notification", true);
 
                 // Add connection context if available
-                if let Some(ref ctx) = self.connection_context {
-                    if let Some(addr) = ctx.remote_addr {
-                        event = event.remote_addr(addr);
-                    }
+                if let Some(ref ctx) = self.connection_context
+                    && let Some(addr) = ctx.remote_addr
+                {
+                    event = event.remote_addr(addr);
                 }
 
                 Some(event.build())
