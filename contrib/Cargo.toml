@@ -1,6 +1,6 @@
 [package]
 name = "ash-rpc-contrib"
-version = "3.2.2"
+version = "3.3.0"
 edition = "2024"
 description = "Contributed JSON-RPC methods and utilities for ash-rpc"
 license = "Apache-2.0"
@@ -21,7 +21,7 @@ observability = ["logging", "prometheus", "opentelemetry"]
 audit-logging = ["ash-rpc-core/audit-logging"]
 
 [dependencies]
-ash-rpc-core = { version = "3.2.2", path = "../core" }
+ash-rpc-core = { version = "3.3.0", path = "../core" }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 async-trait = "0.1"
