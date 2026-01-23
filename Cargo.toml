@@ -1,6 +1,6 @@
 [workspace]
 members = ["core", "contrib"]
-exclude = ["core/fuzz"]
+exclude = ["core/fuzz", "examples/financial_service"]
 # Examples excluded (may use old API)
 resolver = "2"
 

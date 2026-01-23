@@ -1,0 +1,16 @@
+[package]
+name = "financial-service"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+ash-rpc-core = { path = "../../core", features = ["tcp", "stateful", "audit-logging"] }
+ash-rpc-contrib = { path = "../../contrib", features = ["healthcheck", "logging", "audit-logging"] }
+tokio = { version = "1.47", features = ["full"] }
+sqlx = { version = "0.8", features = ["runtime-tokio", "sqlite"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+async-trait = "0.1"

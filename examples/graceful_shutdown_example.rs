@@ -113,7 +113,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .register_hook(|| async {
             tracing::info!("Closing database connections...");
             tokio::time::sleep(Duration::from_millis(500)).await;
-            tracing::info!("✓ Database connections closed");
+            tracing::info!("Database connections closed");
         })
         .await;
 
@@ -122,7 +122,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .register_hook(|| async {
             tracing::info!("Flushing cache to disk...");
             tokio::time::sleep(Duration::from_millis(300)).await;
-            tracing::info!("✓ Cache flushed");
+            tracing::info!("Cache flushed");
         })
         .await;
 
@@ -142,7 +142,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .register_hook(|| async {
             tracing::info!("Running custom cleanup...");
             tokio::time::sleep(Duration::from_millis(200)).await;
-            tracing::info!("✓ Cleanup completed");
+            tracing::info!("Cleanup completed");
         })
         .await;
 

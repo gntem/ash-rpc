@@ -55,3 +55,12 @@ pub use opentelemetry_otlp;
 
 #[cfg(feature = "opentelemetry")]
 pub use opentelemetry_sdk;
+
+// Re-export audit logging types from core
+#[cfg(feature = "audit-logging")]
+pub use ash_rpc_core::audit_logging::{
+    AuditBackend, AuditEvent, AuditEventBuilder, AuditEventType, AuditIntegrity, AuditProcessor,
+    AuditProcessorBuilder, AuditResult, AuditSeverity, ChecksumIntegrity, CombinedIntegrity,
+    MultiAuditBackend, NoIntegrity, NoopAuditBackend, SequenceIntegrity, StderrAuditBackend,
+    StdoutAuditBackend, log_auth_event, log_security_violation,
+};

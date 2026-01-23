@@ -150,11 +150,11 @@ fn main() {
     }
 
     println!("\n=== Key Benefits ===");
-    println!("✓ Users have full control over what gets sanitized");
-    println!("✓ No assumptions about what's 'sensitive'");
-    println!("✓ Flexible callback-based approach");
-    println!("✓ Reusable sanitizers via Sanitizer trait");
-    println!("✓ Composable transformations");
-    println!("✓ Simple to understand and customize");
+    println!("Users have full control over what gets sanitized");
+    println!("No assumptions about what's 'sensitive'");
+    println!("Flexible callback-based approach");
+    println!("Reusable sanitizers via Sanitizer trait");
+    println!("Composable transformations");
+    println!("Simple to understand and customize");
     println!("\nYou decide what information should be hidden!");
 }

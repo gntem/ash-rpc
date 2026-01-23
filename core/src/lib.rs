@@ -45,6 +45,9 @@ pub mod macros;
 pub mod registry;
 pub mod sanitization;
 
+#[cfg(feature = "audit-logging")]
+pub mod audit_logging;
+
 #[cfg(feature = "shutdown")]
 pub mod shutdown;
 
@@ -91,3 +94,7 @@ pub use streaming::*;
 // Re-export shutdown module when shutdown feature is enabled
 #[cfg(feature = "shutdown")]
 pub use shutdown::*;
+
+// Re-export audit_logging module when audit-logging feature is enabled
+#[cfg(feature = "audit-logging")]
+pub use audit_logging::*;

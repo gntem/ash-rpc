@@ -69,7 +69,7 @@ for iteration in {1..10}; do
     make_request "add" "[1]"  # Invalid params
 done
 
-echo -e "\n${BOLD}${GREEN}✓ Load test completed!${NC}"
+echo -e "\n${BOLD}${GREEN}Load test completed!${NC}"
 echo -e "${BLUE}Total requests sent: ${BOLD}$REQUEST_COUNT${NC}"
 echo -e "${BLUE}Check Grafana dashboard at: ${BOLD}http://localhost:3001${NC}"
 echo -e "${BLUE}  Username: admin${NC}"
