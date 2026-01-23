@@ -21,6 +21,7 @@ tcp-stream-tls = ["tokio", "tokio-rustls"]
 stateful = []
 streaming = ["tokio"]
 shutdown = ["tokio"]
+audit-logging = []
 
 [dependencies]
 tracing = "0.1"
@@ -201,3 +202,8 @@ required-features = ["tcp-stream", "shutdown"]
 name = "streaming_shutdown_example"
 path = "../examples/streaming_shutdown_example.rs"
 required-features = ["tcp-stream", "streaming", "shutdown"]
+
+[[example]]
+name = "audit_logging_example"
+path = "../examples/audit_logging_example.rs"
+required-features = ["audit-logging"]

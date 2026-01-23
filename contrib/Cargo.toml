@@ -18,6 +18,7 @@ logging = ["dep:tracing"]
 prometheus = ["dep:prometheus"]
 opentelemetry = ["dep:opentelemetry", "dep:opentelemetry-otlp", "dep:opentelemetry_sdk"]
 observability = ["logging", "prometheus", "opentelemetry"]
+audit-logging = ["ash-rpc-core/audit-logging"]
 
 [dependencies]
 ash-rpc-core = { version = "3.2.1", path = "../core" }
