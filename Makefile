@@ -1,145 +1,48 @@
-.PHONY: help publish-core publish-contrib publish-all check-all test-all clean tag tag-version \
-        bump-version check-login check-branch release release-patch release-minor release-major \
-        dry-run-core dry-run-contrib dry-run-all pre-commit check fmt lint doc-test
+.PHONY: help publish check test clean tag release release-patch release-minor release-major \
+        dry-run pre-commit fmt lint doc build
 
-CURRENT_VERSION := $(shell grep '^version = ' core/Cargo.toml | head -1 | sed 's/version = "\(.*\)"/\1/')
-
-check-login:
-	@echo "Checking cargo login status..."
-	@if ! cargo login --help > /dev/null 2>&1; then \
-		echo "Error: cargo is not installed or not in PATH"; \
-		exit 1; \
-	fi
-	@if ! cargo owner --list ash-rpc-core 2>/dev/null | grep -q .; then \
-		echo "Error: not logged in to crates.io or no permission to query packages"; \
-		echo "Please run 'cargo login' first"; \
-		exit 1; \
-	fi
-	@echo "✓ Cargo login verified"
-
-check-branch:
-	@echo "Checking git branch..."
-	@CURRENT_BRANCH=$$(git rev-parse --abbrev-ref HEAD); \
-	if [ "$$CURRENT_BRANCH" != "master" ]; then \
-		echo "Error: publishing must be done from master branch"; \
-		echo "Current branch: $$CURRENT_BRANCH"; \
-		echo "Please switch to master branch first: git checkout master"; \
-		exit 1; \
-	fi
-	@echo "✓ On master branch"
+# Extract version from Cargo.toml
+CURRENT_VERSION := $(shell grep '^version = ' Cargo.toml | head -1 | sed 's/version = "\(.*\)"/\1/')
 
 help:
 	@echo "Available targets:"
 	@echo ""
 	@echo "Development:"
 	@echo "  pre-commit       - Run all checks before committing (format, lint, tests, docs)"
-	@echo "  check            - Run cargo check on all packages"
-	@echo "  fmt              - Format all code with rustfmt"
+	@echo "  check            - Run cargo check"
+	@echo "  build            - Build the project"
+	@echo "  test             - Run tests"
+	@echo "  fmt              - Format code with rustfmt"
 	@echo "  lint             - Run clippy linter"
+	@echo "  doc              - Build documentation"
 	@echo "  doc-test         - Run documentation tests"
+	@echo "  clean            - Clean build artifacts"
 	@echo ""
 	@echo "Release Management:"
-	@echo "  release-patch    - Bump patch version, commit, tag, and publish (e.g., 1.0.4 -> 1.0.5)"
-	@echo "  release-minor    - Bump minor version, commit, tag, and publish (e.g., 1.0.4 -> 1.1.0)"
-	@echo "  release-major    - Bump major version, commit, tag, and publish (e.g., 1.0.4 -> 2.0.0)"
-	@echo "  release          - Full release with custom VERSION=x.y.z"
-	@echo ""
-	@echo "Version Management:"
-	@echo "  bump-version     - Bump all crate versions (requires VERSION=x.y.z)"
-	@echo "  tag              - Create a new git tag (interactive)"
-	@echo "  tag-version      - Create a new git tag (requires VERSION=vx.y.z)"
+	@echo "  release-patch    - Bump patch version and release (e.g., 1.0.4 -> 1.0.5)"
+	@echo "  release-minor    - Bump minor version and release (e.g., 1.0.4 -> 1.1.0)"
+	@echo "  release-major    - Bump major version and release (e.g., 1.0.4 -> 2.0.0)"
+	@echo "  release          - Custom version release (requires VERSION=x.y.z)"
 	@echo ""
 	@echo "Publishing:"
-	@echo "  publish-core     - Publish ash-rpc-core package"
-	@echo "  publish-contrib  - Publish ash-rpc-contrib package"
-	@echo "  publish-all      - Publish all packages in dependency order"
-	@echo ""
-	@echo "Dry Run:"
-	@echo "  dry-run-core     - Dry run publish for core"
-	@echo "  dry-run-contrib  - Dry run publish for contrib"
-	@echo "  dry-run-all      - Dry run publish for all packages"
-	@echo ""
-	@echo "Checks & Testing:"
-	@echo "  check-all        - Run cargo check on all packages"
-	@echo "  test-all         - Run cargo test on all packages"
-	@echo "  check-branch     - Verify on master branch"
-	@echo "  check-login      - Verify cargo login status"
-	@echo ""
-	@echo "Utilities:"
-	@echo "  clean            - Clean build artifacts"
-	@echo "  help             - Show this help message"
+	@echo "  publish          - Publish to crates.io (requires VERSION=x.y.z)"
+	@echo "  dry-run          - Dry run publish"
+	@echo "  tag              - Create and push git tag (requires VERSION=x.y.z)"
 	@echo ""
 	@echo "Current version: $(CURRENT_VERSION)"
 
-tag:
-	@echo "Enter version (e.g., v1.0.5):"
-	@read -r version; \
-	git tag $$version && \
-	git push origin $$version && \
-	echo "Created and pushed tag: $$version"
-
-tag-version:
-	@if [ -z "$(VERSION)" ]; then \
-		echo "Usage: make tag-version VERSION=v1.0.5"; \
-		exit 1; \
-	fi
-	@git tag $(VERSION) && \
-	git push origin $(VERSION) && \
-	echo "Created and pushed tag: $(VERSION)"
-
-bump-version:
-	@if [ -z "$(VERSION)" ]; then \
-		echo "Usage: make bump-version VERSION=1.0.5"; \
-		exit 1; \
-	fi
-	@echo "Bumping all crate versions to $(VERSION)..."
-	@sed -i.bak 's/^version = ".*"/version = "$(VERSION)"/' core/Cargo.toml
-	@sed -i.bak 's/^version = ".*"/version = "$(VERSION)"/' contrib/Cargo.toml
-	@sed -i.bak 's/ash-rpc-core = { version = "[^"]*"/ash-rpc-core = { version = "$(VERSION)"/g' contrib/Cargo.toml
-	@sed -i.bak 's/ash-rpc-contrib = { version = "[^"]*"/ash-rpc-contrib = { version = "$(VERSION)"/g' core/Cargo.toml
-	@rm -f core/Cargo.toml.bak contrib/Cargo.toml.bak
-	@echo "✓ Updated all crate versions to $(VERSION)"
-	@echo "To commit: git add . && git commit -m \"Bump version to $(VERSION)\""
-
-bump-patch:
-	@echo "Current version: $(CURRENT_VERSION)"
-	@MAJOR=$$(echo $(CURRENT_VERSION) | cut -d. -f1); \
-	MINOR=$$(echo $(CURRENT_VERSION) | cut -d. -f2); \
-	PATCH=$$(echo $(CURRENT_VERSION) | cut -d. -f3); \
-	NEW_PATCH=$$((PATCH + 1)); \
-	NEW_VERSION="$$MAJOR.$$MINOR.$$NEW_PATCH"; \
-	echo "Bumping to: $$NEW_VERSION"; \
-	$(MAKE) bump-version VERSION=$$NEW_VERSION
-
-bump-minor:
-	@echo "Current version: $(CURRENT_VERSION)"
-	@MAJOR=$$(echo $(CURRENT_VERSION) | cut -d. -f1); \
-	MINOR=$$(echo $(CURRENT_VERSION) | cut -d. -f2); \
-	NEW_MINOR=$$((MINOR + 1)); \
-	NEW_VERSION="$$MAJOR.$$NEW_MINOR.0"; \
-	echo "Bumping to: $$NEW_VERSION"; \
-	$(MAKE) bump-version VERSION=$$NEW_VERSION
-
-bump-major:
-	@echo "Current version: $(CURRENT_VERSION)"
-	@MAJOR=$$(echo $(CURRENT_VERSION) | cut -d. -f1); \
-	NEW_MAJOR=$$((MAJOR + 1)); \
-	NEW_VERSION="$$NEW_MAJOR.0.0"; \
-	echo "Bumping to: $$NEW_VERSION"; \
-	$(MAKE) bump-version VERSION=$$NEW_VERSION
-
-check-all:
-	@echo "Checking all packages..."
-	@cargo check --workspace --all-features
-
-test-all:
-	@echo "Testing all packages..."
-	@cargo test --workspace --all-features --lib --bins
-
-# Development workflow commands
+# Development commands
 check:
 	@echo "Running cargo check..."
 	@cargo check --workspace --all-features
+
+build:
+	@echo "Building project..."
+	@cargo build --workspace --all-features
+
+test:
+	@echo "Running tests..."
+	@cargo test --workspace --all-features --lib --bins
 
 fmt:
 	@echo "Formatting code..."
@@ -149,82 +52,88 @@ lint:
 	@echo "Running clippy..."
 	@cargo clippy --workspace --lib --bins --all-features -- -D warnings
 
+doc:
+	@echo "Building documentation..."
+	@cargo doc --workspace --all-features --no-deps
+
 doc-test:
 	@echo "Running documentation tests..."
 	@cargo test --workspace --doc --all-features
 
-check-commits:
-	@echo "Checking conventional commits..."
-	@npx commitlint --from=HEAD~1 --to=HEAD --verbose
-
-check-commits-range:
-	@if [ -z "$(FROM)" ] || [ -z "$(TO)" ]; then \
-		echo "Usage: make check-commits-range FROM=<ref> TO=<ref>"; \
-		echo "Example: make check-commits-range FROM=main TO=HEAD"; \
-		exit 1; \
-	fi
-	@npx commitlint --from=$(FROM) --to=$(TO) --verbose
-
-pre-commit: fmt lint check test-all doc-test
-	@echo ""
-	@echo "All checks passed! Ready to commit."
-
-publish-core: check-branch check-login check-all test-all
-	@echo "Publishing ash-rpc-core..."
-	cd core && cargo publish
-
-publish-contrib: check-branch check-login check-all test-all
-	@echo "Publishing ash-rpc-contrib..."
-	cd contrib && cargo publish
-
-publish-all: check-branch check-login check-all test-all
-	@echo "Publishing ash-rpc-core..."
-	cd core && cargo publish
-	@echo "Waiting 45 seconds for core to propagate on crates.io..."
-	@sleep 45
-	@echo "Publishing ash-rpc-contrib..."
-	cd contrib && cargo publish
-	@echo "✓ All packages published successfully!"
-
 clean:
 	@echo "Cleaning build artifacts..."
 	@cargo clean
-	@rm -rf target/
 
-dry-run-core:
-	@echo "Dry run publishing ash-rpc-core..."
-	cd core && cargo publish --dry-run
+pre-commit: fmt lint check test doc-test
+	@echo ""
+	@echo "✓ All checks passed! Ready to commit."
 
-dry-run-contrib:
-	@echo "Dry run publishing ash-rpc-contrib..."
-	cd contrib && cargo publish --dry-run
+# Publishing
+dry-run:
+	@echo "Dry run publishing ash-rpc..."
+	@cargo publish --dry-run
 
-dry-run-all: dry-run-core dry-run-contrib
-	@echo "✓ All dry runs completed!"
-
-release: check-branch
+publish:
 	@if [ -z "$(VERSION)" ]; then \
-		echo "Usage: make release VERSION=1.0.5"; \
+		echo "Error: VERSION not specified"; \
+		echo "Usage: make publish VERSION=x.y.z"; \
 		exit 1; \
 	fi
-	@echo "=== Starting release process for version $(VERSION) ==="
+	@echo "Publishing ash-rpc $(VERSION) to crates.io..."
+	@cargo publish
+
+# Version management
+tag:
+	@if [ -z "$(VERSION)" ]; then \
+		echo "Error: VERSION not specified"; \
+		echo "Usage: make tag VERSION=x.y.z"; \
+		exit 1; \
+	fi
+	@echo "Creating and pushing tag v$(VERSION)..."
+	@git tag -a "v$(VERSION)" -m "Release version $(VERSION)"
+	@git push origin "v$(VERSION)"
+	@echo "✓ Tag v$(VERSION) created and pushed"
+
+bump-version:
+	@if [ -z "$(VERSION)" ]; then \
+		echo "Error: VERSION not specified"; \
+		echo "Usage: make bump-version VERSION=x.y.z"; \
+		exit 1; \
+	fi
+	@echo "Bumping version to $(VERSION)..."
+	@sed -i.bak 's/^version = ".*"/version = "$(VERSION)"/' Cargo.toml
+	@rm -f Cargo.toml.bak
+	@echo "✓ Updated version to $(VERSION)"
+
+# Release process
+release:
+	@if [ -z "$(VERSION)" ]; then \
+		echo "Error: VERSION not specified"; \
+		echo "Usage: make release VERSION=x.y.z"; \
+		exit 1; \
+	fi
+	@echo "=== Starting release $(VERSION) ==="
 	@echo ""
-	@echo "Step 1: Bumping version to $(VERSION)..."
+	@echo "Step 1: Running pre-commit checks..."
+	@$(MAKE) pre-commit
+	@echo ""
+	@echo "Step 2: Bumping version to $(VERSION)..."
 	@$(MAKE) bump-version VERSION=$(VERSION)
 	@echo ""
-	@echo "Step 2: Committing version bump..."
-	@git add . && git commit -m "Bump version to $(VERSION)"
+	@echo "Step 3: Committing version bump..."
+	@git add Cargo.toml
+	@git commit -m "chore: bump version to $(VERSION)"
 	@echo ""
-	@echo "Step 3: Creating and pushing tag v$(VERSION)..."
-	@$(MAKE) tag-version VERSION=v$(VERSION)
+	@echo "Step 4: Creating and pushing tag..."
+	@$(MAKE) tag VERSION=$(VERSION)
 	@echo ""
-	@echo "Step 4: Publishing all packages..."
-	@$(MAKE) publish-all
+	@echo "✓ Release $(VERSION) prepared!"
 	@echo ""
-	@echo "=== Release $(VERSION) completed successfully! ==="
+	@echo "GitHub Actions will handle publishing to crates.io when the tag is pushed."
+	@echo "Check the release workflow at: https://github.com/gntem/ash-rpc/actions"
 
-release-patch: check-branch
-	@echo "=== Starting PATCH release ==="
+release-patch:
+	@echo "=== Patch Release ==="
 	@echo "Current version: $(CURRENT_VERSION)"
 	@MAJOR=$$(echo $(CURRENT_VERSION) | cut -d. -f1); \
 	MINOR=$$(echo $(CURRENT_VERSION) | cut -d. -f2); \
@@ -235,8 +144,8 @@ release-patch: check-branch
 	echo ""; \
 	$(MAKE) release VERSION=$$NEW_VERSION
 
-release-minor: check-branch
-	@echo "=== Starting MINOR release ==="
+release-minor:
+	@echo "=== Minor Release ==="
 	@echo "Current version: $(CURRENT_VERSION)"
 	@MAJOR=$$(echo $(CURRENT_VERSION) | cut -d. -f1); \
 	MINOR=$$(echo $(CURRENT_VERSION) | cut -d. -f2); \
@@ -246,17 +155,16 @@ release-minor: check-branch
 	echo ""; \
 	$(MAKE) release VERSION=$$NEW_VERSION
 
-release-major: check-branch
-	@echo "=== Starting MAJOR release ==="
+release-major:
+	@echo "=== Major Release ==="
 	@echo "Current version: $(CURRENT_VERSION)"
 	@MAJOR=$$(echo $(CURRENT_VERSION) | cut -d. -f1); \
 	NEW_MAJOR=$$((MAJOR + 1)); \
 	NEW_VERSION="$$NEW_MAJOR.0.0"; \
-	echo "New version: $$NEW_VERSION"; \
-	echo ""; \
-	echo "⚠️  WARNING: This is a MAJOR version bump!"; \
-	echo "Press Ctrl+C to cancel, or Enter to continue..."; \
-	@read -r confirm; \
+	echo "⚠️  WARNING: Major version bump ($$NEW_MAJOR.0.0)"; \
+	echo "This indicates breaking changes!"; \
+	echo "Press Enter to continue or Ctrl+C to cancel..."; \
+	@read confirm; \
 	MAJOR=$$(echo $(CURRENT_VERSION) | cut -d. -f1); \
 	NEW_MAJOR=$$((MAJOR + 1)); \
 	NEW_VERSION="$$NEW_MAJOR.0.0"; \
