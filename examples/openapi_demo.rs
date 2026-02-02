@@ -1,4 +1,4 @@
-use ash_rpc_core::*;
+use ash_rpc::*;
 
 // Example method implementations with OpenAPI documentation
 struct HelloMethod;

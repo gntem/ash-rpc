@@ -1,4 +1,4 @@
-use ash_rpc_core::*;
+use ash_rpc::*;
 
 fn main() -> Result<(), std::io::Error> {
     println!("Starting TCP JSON-RPC Server with macro on 127.0.0.1:8080");

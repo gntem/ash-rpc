@@ -8,7 +8,7 @@
 //! - Batch request support
 //! - Error handling with proper HTTP status codes
 
-use ash_rpc_core::{
+use crate::{
     ErrorBuilder, Message, MessageProcessor, Response, ResponseBuilder, error_codes,
 };
 use axum::{Router, extract::State, http::StatusCode, response::Json, routing::post};

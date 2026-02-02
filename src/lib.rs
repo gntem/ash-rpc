@@ -1,4 +1,4 @@
-//! # ash-rpc-core
+//! # ash-rpc
 //!
 //! A comprehensive JSON-RPC 2.0 implementation with transport support.
 //!
@@ -16,7 +16,7 @@
 //! ## Quick Start
 //!
 //! ```rust
-//! use ash_rpc_core::*;
+//! use ash_rpc::*;
 //!
 //! struct PingMethod;
 //!
@@ -37,7 +37,7 @@
 //! let registry = MethodRegistry::new(register_methods![PingMethod]);
 //! ```
 
-// Module declarations
+// Core module declarations
 pub mod auth;
 pub mod builders;
 pub mod logger;
@@ -55,11 +55,21 @@ pub mod shutdown;
 pub mod streaming;
 
 pub mod traits;
-pub mod transport;
+pub mod transports;
 pub mod types;
 
 #[cfg(feature = "stateful")]
 pub mod stateful;
+
+// Contrib modules at top level
+#[cfg(feature = "healthcheck")]
+pub mod healthcheck;
+
+#[cfg(feature = "tower")]
+pub mod middleware;
+
+#[cfg(any(feature = "logging", feature = "prometheus", feature = "opentelemetry"))]
+pub mod observability;
 
 // Re-export async_trait for users implementing traits
 pub use async_trait::async_trait;
@@ -80,9 +90,6 @@ pub use traits::*;
 // Re-export registry
 pub use registry::*;
 
-// Re-export transport functionality when needed
-// pub use transport::*;
-
 // Re-export stateful module when stateful feature is enabled
 #[cfg(feature = "stateful")]
 pub use stateful::*;
@@ -98,3 +105,54 @@ pub use shutdown::*;
 // Re-export audit_logging module when audit-logging feature is enabled
 #[cfg(feature = "audit-logging")]
 pub use audit_logging::*;
+
+// Re-export transports
+pub use transports::SecurityConfig;
+
+#[cfg(feature = "tcp")]
+pub use transports::{TcpServer, TcpServerBuilder};
+
+#[cfg(feature = "tcp-stream")]
+pub use transports::{TcpStreamClient, TcpStreamClientBuilder, TcpStreamServer, TcpStreamServerBuilder};
+
+#[cfg(feature = "tcp-stream-tls")]
+pub use transports::{TcpStreamTlsClient, TcpStreamTlsServer, TcpStreamTlsServerBuilder, TlsConfig};
+
+#[cfg(feature = "axum")]
+pub use transports::axum;
+
+// Re-export healthcheck when feature is enabled
+#[cfg(feature = "healthcheck")]
+pub use healthcheck::*;
+
+// Re-export middleware when feature is enabled
+#[cfg(feature = "tower")]
+pub use middleware::*;
+
+// Re-export observability types when feature is enabled
+#[cfg(any(feature = "logging", feature = "prometheus", feature = "opentelemetry"))]
+pub use observability::{ObservabilityBuilder, ObservableProcessor};
+
+#[cfg(feature = "prometheus")]
+pub use observability::prometheus as obs_prometheus;
+
+#[cfg(feature = "opentelemetry")]
+pub use observability::tracing as obs_tracing;
+
+// Re-export tower when feature is enabled
+#[cfg(feature = "tower")]
+pub use tower;
+
+// Re-export prometheus crate when feature is enabled
+#[cfg(feature = "prometheus")]
+pub use prometheus;
+
+// Re-export OpenTelemetry crates when feature is enabled
+#[cfg(feature = "opentelemetry")]
+pub use opentelemetry;
+
+#[cfg(feature = "opentelemetry")]
+pub use opentelemetry_otlp;
+
+#[cfg(feature = "opentelemetry")]
+pub use opentelemetry_sdk;

@@ -16,8 +16,8 @@
 //! cd examples/tls_example && ./generate_certs.sh
 //! ```
 
-use ash_rpc_core::transport::tcp_tls::{TcpStreamTlsServer, TlsConfig};
-use ash_rpc_core::*;
+use ash_rpc::transport::tcp_tls::{TcpStreamTlsServer, TlsConfig};
+use ash_rpc::*;
 use serde_json::json;
 use std::sync::Arc;
 use std::time::Duration;

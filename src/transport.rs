@@ -33,3 +33,7 @@ pub use tcp_stream::{
 // Re-export TLS transport
 #[cfg(feature = "tcp-stream-tls")]
 pub use tcp_tls::{TcpStreamTlsClient, TcpStreamTlsServer, TcpStreamTlsServerBuilder, TlsConfig};
+
+// Re-export Axum transport from contrib
+#[cfg(feature = "axum")]
+pub use crate::contrib::transports::axum;

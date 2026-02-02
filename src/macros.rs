@@ -241,7 +241,7 @@ macro_rules! rpc_error_obj {
 #[macro_export]
 macro_rules! rpc_tcp_server {
     ($addr:expr_2021, $processor:expr_2021) => {{
-        let server = $crate::transport::tcp::TcpServer::builder($addr)
+        let server = $crate::transports::tcp::TcpServer::builder($addr)
             .processor($processor)
             .build()?;
         server.run()
@@ -263,7 +263,7 @@ macro_rules! rpc_tcp_server {
 macro_rules! rpc_tcp_stream_server {
     ($addr:expr_2021, $processor:expr_2021) => {
         async move {
-            let server = $crate::transport::tcp_stream::TcpStreamServer::builder($addr)
+            let server = $crate::transports::tcp_stream::TcpStreamServer::builder($addr)
                 .processor($processor)
                 .build()?;
             server.run().await
@@ -285,7 +285,7 @@ macro_rules! rpc_tcp_stream_server {
 #[macro_export]
 macro_rules! rpc_tcp_stream_client {
     ($addr:expr_2021) => {{
-        $crate::transport::tcp_stream::TcpStreamClient::builder($addr)
+        $crate::transports::tcp_stream::TcpStreamClient::builder($addr)
             .build()
             .connect()
     }};

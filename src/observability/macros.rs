@@ -42,7 +42,7 @@ macro_rules! observable_setup {
         $(,)?
     ) => {{
         #[allow(unused_imports)]
-        use ash_rpc_core::logger::{Logger, TracingLogger};
+        use crate::logger::{Logger, TracingLogger};
 
         // Setup logger
         let logger: ::std::sync::Arc<dyn Logger> = ::std::sync::Arc::new(TracingLogger::new());
@@ -126,7 +126,7 @@ macro_rules! observable_setup {
         $(,)?
     ) => {{
         #[allow(unused_imports)]
-        use ash_rpc_core::logger::{Logger, TracingLogger};
+        use crate::logger::{Logger, TracingLogger};
 
         let logger: ::std::sync::Arc<dyn Logger> = ::std::sync::Arc::new(TracingLogger::new());
         logger.info(
@@ -174,7 +174,7 @@ macro_rules! observable_setup {
         $(,)?
     ) => {{
         #[allow(unused_imports)]
-        use ash_rpc_core::logger::{Logger, TracingLogger};
+        use crate::logger::{Logger, TracingLogger};
 
         let logger: ::std::sync::Arc<dyn Logger> = ::std::sync::Arc::new(TracingLogger::new());
         logger.info(
@@ -223,7 +223,7 @@ macro_rules! observable_setup {
 pub struct ObservabilityStack {
     #[cfg(feature = "prometheus")]
     pub metrics: ::std::sync::Arc<super::prometheus::PrometheusMetrics>,
-    pub logger: ::std::sync::Arc<dyn ash_rpc_core::logger::Logger>,
+    pub logger: ::std::sync::Arc<dyn crate::logger::Logger>,
 }
 
 impl ObservabilityStack {
@@ -234,7 +234,7 @@ impl ObservabilityStack {
     }
 
     /// Get the logger
-    pub fn logger(&self) -> ::std::sync::Arc<dyn ash_rpc_core::logger::Logger> {
+    pub fn logger(&self) -> ::std::sync::Arc<dyn crate::logger::Logger> {
         ::std::sync::Arc::clone(&self.logger)
     }
 }

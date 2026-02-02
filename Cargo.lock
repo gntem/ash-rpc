@@ -27,39 +27,26 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a23eb6b1614318a8071c9b2521f36b424b2c83db5eb3a0fead4a6c0809af6e61"
 
 [[package]]
-name = "ash-rpc-contrib"
+name = "ash-rpc"
 version = "3.3.0"
 dependencies = [
- "ash-rpc-core",
  "async-trait",
  "axum 0.8.8",
- "opentelemetry 0.31.0",
- "opentelemetry-otlp",
- "opentelemetry_sdk 0.31.0",
- "prometheus",
- "serde",
- "serde_json",
- "tokio",
- "tower 0.5.3",
- "tracing",
-]
-
-[[package]]
-name = "ash-rpc-core"
-version = "3.3.0"
-dependencies = [
- "ash-rpc-contrib",
- "async-trait",
  "chrono",
  "dashmap",
  "http-body-util",
  "hyper",
  "hyper-util",
+ "opentelemetry 0.31.0",
+ "opentelemetry-otlp",
+ "opentelemetry_sdk 0.31.0",
+ "prometheus",
  "rand 0.9.2",
  "serde",
  "serde_json",
  "tokio",
  "tokio-rustls",
+ "tower 0.5.3",
  "tracing",
  "tracing-subscriber",
  "uuid",

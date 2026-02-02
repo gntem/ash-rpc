@@ -1,6 +1,6 @@
 //! OpenTelemetry tracing for JSON-RPC
 
-use ash_rpc_core::Message;
+use crate::Message;
 use opentelemetry::{
     KeyValue, global,
     trace::{Span, Status, Tracer},

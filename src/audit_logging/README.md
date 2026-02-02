@@ -359,7 +359,7 @@ Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-ash-rpc-core = { version = "3.2.1", features = ["audit-logging"] }
+ash-rpc = { version = "3.2.1", features = ["audit-logging"] }
 ```
 
 ## Future Enhancements

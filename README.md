@@ -1,9 +1,7 @@
 # ASH-RPC
 
-[![ash-rpc-core on crates.io](https://img.shields.io/crates/v/ash-rpc-core)](https://crates.io/crates/ash-rpc-core)
-[![ash-rpc-core docs](https://img.shields.io/docsrs/ash-rpc-core)](https://docs.rs/ash-rpc-core)
-[![ash-rpc-contrib on crates.io](https://img.shields.io/crates/v/ash-rpc-contrib)](https://crates.io/crates/ash-rpc-contrib)
-[![ash-rpc-contrib docs](https://img.shields.io/docsrs/ash-rpc-contrib)](https://docs.rs/ash-rpc-contrib)
+[![ash-rpc on crates.io](https://img.shields.io/crates/v/ash-rpc)](https://crates.io/crates/ash-rpc)
+[![ash-rpc docs](https://img.shields.io/docsrs/ash-rpc)](https://docs.rs/ash-rpc)
 [![codecov](https://codecov.io/github/gntem/ash-rpc/graph/badge.svg?token=W4OEIPHTIG)](https://codecov.io/github/gntem/ash-rpc)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
 
@@ -11,15 +9,11 @@ A modular, production-ready JSON-RPC 2.0 implementation for Rust with security, 
 
 ## Overview
 
-ash-rpc provides a complete JSON-RPC 2.0 ecosystem with enterprise-grade features for building distributed systems. The framework is split into two packages that can be used independently or together.
+ash-rpc provides a complete JSON-RPC 2.0 ecosystem with enterprise-grade features for building distributed systems.
 
-## Architecture
+## Features
 
-### ash-rpc-core
-
-Core JSON-RPC 2.0 implementation with comprehensive transport and security features.
-
-**Key Features**
+**Core JSON-RPC 2.0**
 
 - Full JSON-RPC 2.0 specification support (requests, responses, notifications, batch operations)
 - Multiple transport layers: TCP, TCP streaming, TLS-encrypted connections
@@ -32,19 +26,7 @@ Core JSON-RPC 2.0 implementation with comprehensive transport and security featu
 - Graceful shutdown with connection draining
 - Type-safe builders for requests, responses, and configurations
 
-**Installation**
-
-```bash
-cargo add ash-rpc-core --features tcp,stateful,streaming,shutdown
-```
-
-**Available Features**: `tcp`, `tcp-stream`, `tcp-stream-tls`, `stateful`, `streaming`, `shutdown`
-
-### ash-rpc-contrib
-
-Extended transport implementations and observability utilities for production deployments.
-
-**Key Features**
+**Contrib Features (Optional)**
 
 - HTTP transport with Axum web framework integration
 - Health check endpoints for service monitoring
@@ -57,15 +39,23 @@ Extended transport implementations and observability utilities for production de
 **Installation**
 
 ```bash
-cargo add ash-rpc-contrib --features axum,healthcheck,observability
+# Core features
+cargo add ash-rpc --features tcp,stateful,streaming,shutdown
+
+# With contrib features
+cargo add ash-rpc --features axum,healthcheck,observability
 ```
+
+**Available Features**: 
+- Core: `tcp`, `tcp-stream`, `tcp-stream-tls`, `stateful`, `streaming`, `shutdown`, `audit-logging`
+- Contrib: `axum`, `healthcheck`, `tower`, `logging`, `prometheus`, `opentelemetry`, `observability`
 
 ## Quick Start
 
 ### Basic Method Handler
 
 ```rust
-use ash_rpc_core::*;
+use ash_rpc::*;
 
 struct CalculatorMethod;
 

@@ -1,7 +1,7 @@
 //! Example demonstrating the healthcheck functionality from ash-rpc-contrib
 
-use ash_rpc_contrib::healthcheck::HealthcheckMethod;
-use ash_rpc_core::*;
+use ash_rpc::contrib::healthcheck::HealthcheckMethod;
+use ash_rpc::*;
 
 #[tokio::main]
 async fn main() {

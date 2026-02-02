@@ -3,7 +3,7 @@
 //! Provides a standard health check method that can be used to monitor
 //! service availability and health status.
 
-use ash_rpc_core::*;
+use crate::*;
 use serde::{Deserialize, Serialize};
 
 /// Health check response structure
@@ -60,7 +60,7 @@ impl Default for HealthcheckMethod {
     }
 }
 
-#[ash_rpc_core::async_trait]
+#[crate::async_trait]
 impl JsonRPCMethod for HealthcheckMethod {
     fn method_name(&self) -> &'static str {
         "healthcheck"

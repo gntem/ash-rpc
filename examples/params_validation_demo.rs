@@ -1,4 +1,4 @@
-use ash_rpc_core::*;
+use ash_rpc::*;
 
 // Example showing rpc_params! macro for parameter validation
 rpc_method!(

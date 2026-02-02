@@ -10,7 +10,7 @@
 //! Run with: cargo run --example security_config_example --features tcp
 
 #[cfg(feature = "tcp")]
-use ash_rpc_core::{
+use ash_rpc::{
     MethodRegistry, ProcessorCapabilitiesBuilder, SecurityConfigBuilder,
     transport::tcp::TcpServerBuilder,
 };

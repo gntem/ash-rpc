@@ -7,11 +7,11 @@
 //! - Healthcheck endpoint
 //! - Financial data access tracking
 
-use ash_rpc_core::audit_logging::{
+use ash_rpc::audit_logging::{
     AuditBackend, AuditEvent, AuditEventType, AuditIntegrity, AuditProcessor, AuditResult,
     AuditSeverity, SequenceIntegrity, StdoutAuditBackend,
 };
-use ash_rpc_core::{
+use ash_rpc::{
     stateful::{ServiceContext, StatefulJsonRPCMethod, StatefulMethodRegistry, StatefulProcessor},
     Error, Message, MessageProcessor, RequestId, Response,
 };

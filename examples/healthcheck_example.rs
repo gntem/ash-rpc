@@ -1,6 +1,6 @@
 //! Example demonstrating a simple healthcheck functionality
 
-use ash_rpc_core::*;
+use ash_rpc::*;
 
 struct HealthcheckMethod;
 

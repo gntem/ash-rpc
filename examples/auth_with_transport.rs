@@ -5,7 +5,7 @@
 //!
 //! This example demonstrates the pattern without requiring actual TLS setup.
 
-use ash_rpc_core::*;
+use ash_rpc::*;
 use serde_json::json;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 

@@ -4,7 +4,7 @@ These examples demonstrate how to use ash-rpc with Tower middleware for building
 
 ## Prerequisites
 
-- `tower` feature enabled in `ash-rpc-contrib`
+- `tower` feature enabled in `ash-rpc`
 
 ## Examples
 
@@ -15,7 +15,7 @@ A Tower-based HTTP JSON-RPC calculator service.
 **Run:**
 
 ```bash
-cargo run --example tower_http_simple --features tower -p ash-rpc-contrib
+cargo run --example tower_http_simple --features tower -p ash-rpc
 ```
 
 ### TCP Simple (`tcp_simple.rs`)
@@ -25,7 +25,7 @@ A Tower-based TCP streaming JSON-RPC calculator service.
 **Run:**
 
 ```bash
-cargo run --example tower_tcp_simple --features tower -p ash-rpc-contrib
+cargo run --example tower_tcp_simple --features tower -p ash-rpc
 ```
 
 ## Code Structure

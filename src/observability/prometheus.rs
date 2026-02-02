@@ -190,11 +190,11 @@ impl Default for PrometheusMetricsBuilder {
 /// RPC method handler that exposes metrics in Prometheus format
 pub fn get_metrics_method(
     metrics: Arc<PrometheusMetrics>,
-) -> impl Fn(Option<serde_json::Value>, Option<ash_rpc_core::RequestId>) -> ash_rpc_core::Response {
+) -> impl Fn(Option<serde_json::Value>, Option<crate::RequestId>) -> crate::Response {
     move |_params, id| match metrics.gather_text() {
-        Ok(text) => ash_rpc_core::rpc_success!(text, id),
-        Err(e) => ash_rpc_core::rpc_error!(
-            ash_rpc_core::error_codes::INTERNAL_ERROR,
+        Ok(text) => crate::rpc_success!(text, id),
+        Err(e) => crate::rpc_error!(
+            crate::error_codes::INTERNAL_ERROR,
             format!("Failed to gather metrics: {}", e),
             id
         ),
@@ -204,13 +204,13 @@ pub fn get_metrics_method(
 /// Enhanced health check that includes basic metrics
 pub fn get_health_method(
     metrics: Arc<PrometheusMetrics>,
-) -> impl Fn(Option<serde_json::Value>, Option<ash_rpc_core::RequestId>) -> ash_rpc_core::Response {
+) -> impl Fn(Option<serde_json::Value>, Option<crate::RequestId>) -> crate::Response {
     move |_params, id| {
         let health = serde_json::json!({
             "status": "ok",
             "active_connections": metrics.active_connections.get(),
         });
-        ash_rpc_core::rpc_success!(health, id)
+        crate::rpc_success!(health, id)
     }
 }
 

@@ -260,7 +260,7 @@ impl SecurityConfigBuilder {
     }
 
     /// Build the security configuration with validation
-    pub fn build(self) -> crate::transport::SecurityConfig {
+    pub fn build(self) -> crate::transports::SecurityConfig {
         tracing::info!(
             max_connections = self.max_connections,
             max_request_size = self.max_request_size,
@@ -269,7 +269,7 @@ impl SecurityConfigBuilder {
             "creating security configuration"
         );
 
-        crate::transport::SecurityConfig {
+        crate::transports::SecurityConfig {
             max_connections: self.max_connections,
             max_request_size: self.max_request_size,
             request_timeout: self.request_timeout,

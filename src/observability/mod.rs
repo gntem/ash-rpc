@@ -2,7 +2,7 @@
 //!
 //! Provides metrics collection, distributed tracing, and unified observability wrapper.
 
-use ash_rpc_core::{Message, MessageProcessor, ProcessorCapabilities, Response};
+use crate::{Message, MessageProcessor, ProcessorCapabilities, Response};
 use async_trait::async_trait;
 use std::sync::Arc;
 
@@ -14,7 +14,7 @@ pub mod tracing;
 
 pub mod macros;
 
-use ash_rpc_core::logger::Logger;
+use crate::logger::Logger;
 
 /// Unified observability processor wrapping metrics, tracing, and logging
 pub struct ObservableProcessor {

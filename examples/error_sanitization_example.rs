@@ -9,7 +9,7 @@
 //!
 //! Run with: cargo run --example error_sanitization_example
 
-use ash_rpc_core::{
+use ash_rpc::{
     Error, ErrorBuilder, error_codes,
     sanitization::{CompositeTransform, PatternTransform, Sanitizer, SimplePattern},
 };

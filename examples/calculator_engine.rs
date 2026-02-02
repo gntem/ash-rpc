@@ -1,4 +1,4 @@
-use ash_rpc_core::*;
+use ash_rpc::*;
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 

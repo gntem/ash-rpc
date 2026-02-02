@@ -5,7 +5,7 @@
 //!
 //! Run with: cargo run --example auth_example
 
-use ash_rpc_core::*;
+use ash_rpc::*;
 use serde_json::json;
 use std::collections::HashMap;
 

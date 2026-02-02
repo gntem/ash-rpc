@@ -32,10 +32,10 @@
 //! curl http://localhost:9090/health
 //! ```
 
-use ash_rpc_core::transport::tcp_tls::{TcpStreamTlsServer, TlsConfig};
-use ash_rpc_core::*;
-use ash_rpc_contrib::observability::ObservableProcessor;
-use ash_rpc_contrib::observable_setup;
+use ash_rpc::transport::tcp_tls::{TcpStreamTlsServer, TlsConfig};
+use ash_rpc::*;
+use ash_rpc::contrib::observability::ObservableProcessor;
+use ash_rpc::contrib::observable_setup;
 use axum::{
     extract::State,
     http::StatusCode,
@@ -273,7 +273,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 // Prometheus metrics endpoint handler
 async fn prometheus_metrics(
-    State(metrics): State<Arc<ash_rpc_contrib::observability::prometheus::PrometheusMetrics>>,
+    State(metrics): State<Arc<ash_rpc::contrib::observability::prometheus::PrometheusMetrics>>,
 ) -> impl IntoResponse {
     match metrics.gather_text() {
         Ok(text) => (StatusCode::OK, text).into_response(),
