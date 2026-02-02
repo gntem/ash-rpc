@@ -149,13 +149,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     
     let hello_response = registry.call("hello", 
         Some(serde_json::json!({"name": "OpenAPI"})), 
-        Some(RequestId::Number(1))
+        Some(serde_json::json!(1))
     ).await;
     println!("Hello call result: {}", serde_json::to_string_pretty(&hello_response)?);
 
     let goodbye_response = registry.call("goodbye", 
         Some(serde_json::json!({"name": "OpenAPI"})), 
-        Some(RequestId::Number(2))
+        Some(serde_json::json!(2))
     ).await;
     println!("Goodbye call result: {}", serde_json::to_string_pretty(&goodbye_response)?);
 

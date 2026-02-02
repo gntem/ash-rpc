@@ -32,10 +32,13 @@
 //! curl http://localhost:9090/health
 //! ```
 
-use ash_rpc::transport::tcp_tls::{TcpStreamTlsServer, TlsConfig};
+#[cfg(all(feature = "tcp-stream-tls", feature = "prometheus", feature = "opentelemetry", feature = "logging", feature = "axum"))]
 use ash_rpc::*;
-use ash_rpc::contrib::observability::ObservableProcessor;
-use ash_rpc::contrib::observable_setup;
+
+#[cfg(all(feature = "tcp-stream-tls", feature = "prometheus", feature = "opentelemetry", feature = "logging", feature = "axum"))]
+use ash_rpc::observability::{ObservableProcessor, observable_setup};
+
+#[cfg(all(feature = "tcp-stream-tls", feature = "prometheus", feature = "opentelemetry", feature = "logging", feature = "axum"))]
 use axum::{
     extract::State,
     http::StatusCode,
@@ -143,6 +146,7 @@ impl JsonRPCMethod for ErrorMethod {
     }
 }
 
+#[cfg(all(feature = "tcp-stream-tls", feature = "prometheus", feature = "opentelemetry", feature = "logging", feature = "axum"))]
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("=== TLS TCP Server with Observability ===\n");
@@ -272,8 +276,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 // Prometheus metrics endpoint handler
+#[cfg(all(feature = "tcp-stream-tls", feature = "prometheus", feature = "opentelemetry", feature = "logging", feature = "axum"))]
 async fn prometheus_metrics(
-    State(metrics): State<Arc<ash_rpc::contrib::observability::prometheus::PrometheusMetrics>>,
+    State(metrics): State<Arc<ash_rpc::obs_prometheus::PrometheusMetrics>>,
 ) -> impl IntoResponse {
     match metrics.gather_text() {
         Ok(text) => (StatusCode::OK, text).into_response(),
@@ -286,6 +291,7 @@ async fn prometheus_metrics(
 }
 
 // Health check endpoint handler
+#[cfg(all(feature = "tcp-stream-tls", feature = "prometheus", feature = "opentelemetry", feature = "logging", feature = "axum"))]
 async fn health_check() -> impl IntoResponse {
     (
         StatusCode::OK,
@@ -295,4 +301,9 @@ async fn health_check() -> impl IntoResponse {
             "timestamp": chrono::Utc::now().to_rfc3339()
         })),
     )
+}
+
+#[cfg(not(all(feature = "tcp-stream-tls", feature = "prometheus", feature = "opentelemetry", feature = "logging")))]
+fn main() {
+    eprintln!("This example requires: --features tcp-stream-tls,prometheus,opentelemetry,logging");
 }

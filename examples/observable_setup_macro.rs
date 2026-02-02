@@ -5,8 +5,8 @@ use ::axum::{
     response::{IntoResponse, Json},
     routing::{get, post},
 };
-use ash_rpc::contrib::observability::ObservableProcessor;
-use ash_rpc::contrib::observable_setup;
+use ash_rpc::observability::ObservableProcessor;
+use ash_rpc::observability::observable_setup;
 use ash_rpc::*;
 use std::sync::Arc;
 
@@ -136,7 +136,7 @@ async fn main() {
 async fn handle_rpc(
     State((processor, metrics)): State<(
         Arc<ObservableProcessor>,
-        Arc<ash_rpc::contrib::observability::prometheus::PrometheusMetrics>,
+        Arc<ash_rpc::obs_prometheus::PrometheusMetrics>,
     )>,
     Json(request): Json<serde_json::Value>,
 ) -> impl IntoResponse {
@@ -189,7 +189,7 @@ async fn health_check() -> impl IntoResponse {
 async fn prometheus_metrics(
     State((_, metrics)): State<(
         Arc<ObservableProcessor>,
-        Arc<ash_rpc::contrib::observability::prometheus::PrometheusMetrics>,
+        Arc<ash_rpc::obs_prometheus::PrometheusMetrics>,
     )>,
 ) -> impl IntoResponse {
     match metrics.gather_text() {

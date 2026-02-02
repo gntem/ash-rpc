@@ -1,6 +1,6 @@
 use ash_rpc::logger::{Logger, TracingLogger};
-use ash_rpc::contrib::observability::prometheus::PrometheusMetrics;
-use ash_rpc::contrib::observability::ObservableProcessor;
+use ash_rpc::obs_prometheus::PrometheusMetrics;
+use ash_rpc::observability::ObservableProcessor;
 use ash_rpc::*;
 use ::axum::{
     extract::State,

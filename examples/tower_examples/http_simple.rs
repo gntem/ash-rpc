@@ -1,4 +1,4 @@
-use ash_rpc::contrib::JsonRpcLayer;
+use ash_rpc::JsonRpcLayer;
 use ash_rpc::{Error, Request, Response, error_codes};
 use serde::{Deserialize, Serialize};
 use std::future::Future;

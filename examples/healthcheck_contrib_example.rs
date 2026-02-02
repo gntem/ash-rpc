@@ -1,10 +1,23 @@
-//! Example demonstrating the healthcheck functionality from ash-rpc-contrib
+//! Example demonstrating the healthcheck functionality from ash-rpc
+//!
+//! Run with: cargo run --example healthcheck_contrib_example --features healthcheck
 
-use ash_rpc::contrib::healthcheck::HealthcheckMethod;
 use ash_rpc::*;
+
+#[cfg(feature = "healthcheck")]
+use ash_rpc::healthcheck::HealthcheckMethod;
 
 #[tokio::main]
 async fn main() {
+    #[cfg(not(feature = "healthcheck"))]
+    {
+        eprintln!("This example requires the 'healthcheck' feature.");
+        eprintln!("Run with: cargo run --example healthcheck_contrib_example --features healthcheck");
+        return;
+    }
+
+    #[cfg(feature = "healthcheck")]
+    {
     // Create a registry with healthcheck method
     let healthcheck = HealthcheckMethod::new()
         .service_name("example-service")
@@ -38,5 +51,6 @@ async fn main() {
             "Healthcheck with params response: {}",
             serde_json::to_string_pretty(&response).unwrap()
         );
+    }
     }
 }

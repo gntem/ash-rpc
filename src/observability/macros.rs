@@ -6,7 +6,7 @@
 ///
 /// Basic setup with all features:
 /// ```rust,ignore
-/// use ash_rpc_contrib::observable_setup;
+/// use ash_rpc::observability::observable_setup;
 ///
 /// let observability = observable_setup! {
 ///     service_name: "my-service",

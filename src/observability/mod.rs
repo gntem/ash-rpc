@@ -14,6 +14,9 @@ pub mod tracing;
 
 pub mod macros;
 
+// Re-export the observable_setup macro
+pub use macros::observable_setup;
+
 use crate::logger::Logger;
 
 /// Unified observability processor wrapping metrics, tracing, and logging
