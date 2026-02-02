@@ -35,7 +35,7 @@ dependencies = [
  "axum 0.8.8",
  "opentelemetry 0.31.0",
  "opentelemetry-otlp",
- "opentelemetry_sdk",
+ "opentelemetry_sdk 0.31.0",
  "prometheus",
  "serde",
  "serde_json",
@@ -855,7 +855,7 @@ dependencies = [
  "http",
  "opentelemetry 0.26.0",
  "opentelemetry-proto",
- "opentelemetry_sdk",
+ "opentelemetry_sdk 0.26.0",
  "prost",
  "thiserror 1.0.69",
  "tokio",
@@ -869,7 +869,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c9d3968ce3aefdcca5c27e3c4ea4391b37547726a70893aab52d3de95d5f8b34"
 dependencies = [
  "opentelemetry 0.26.0",
- "opentelemetry_sdk",
+ "opentelemetry_sdk 0.26.0",
  "prost",
  "tonic",
 ]
@@ -891,6 +891,21 @@ dependencies = [
  "rand 0.8.5",
  "serde_json",
  "thiserror 1.0.69",
+]
+
+[[package]]
+name = "opentelemetry_sdk"
+version = "0.31.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e14ae4f5991976fd48df6d843de219ca6d31b01daaab2dad5af2badeded372bd"
+dependencies = [
+ "futures-channel",
+ "futures-executor",
+ "futures-util",
+ "opentelemetry 0.31.0",
+ "percent-encoding",
+ "rand 0.9.2",
+ "thiserror 2.0.17",
  "tokio",
  "tokio-stream",
 ]
