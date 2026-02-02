@@ -848,15 +848,15 @@ mod tests {
     // OpenApiError tests
     #[test]
     fn test_openapi_error_creation() {
-        let error = OpenApiError::new(-32600, "Invalid Request");
-        assert_eq!(error.code, -32600);
+        let error = OpenApiError::new(crate::error_codes::INVALID_REQUEST, "Invalid Request");
+        assert_eq!(error.code, crate::error_codes::INVALID_REQUEST);
         assert_eq!(error.message, "Invalid Request");
         assert!(error.description.is_none());
     }
 
     #[test]
     fn test_openapi_error_with_description() {
-        let error = OpenApiError::new(-32600, "Invalid Request")
+        let error = OpenApiError::new(crate::error_codes::INVALID_REQUEST, "Invalid Request")
             .with_description("The JSON sent is not a valid Request object");
         assert_eq!(
             error.description,
@@ -893,11 +893,11 @@ mod tests {
     // OpenApiMethodSpec additional tests
     #[test]
     fn test_openapi_method_spec_with_error() {
-        let error = OpenApiError::new(-32602, "Invalid params");
+        let error = OpenApiError::new(crate::error_codes::INVALID_PARAMS, "Invalid params");
         let spec = OpenApiMethodSpec::new("method").with_error(error);
 
         assert_eq!(spec.errors.len(), 1);
-        assert_eq!(spec.errors[0].code, -32602);
+        assert_eq!(spec.errors[0].code, crate::error_codes::INVALID_PARAMS);
     }
 
     #[test]

@@ -345,10 +345,11 @@ impl StreamManager {
         // Get the handler for this method
         let handlers = self.handlers.read().await;
         let handler = handlers.get(&method).ok_or_else(|| {
-            crate::Error::new(
+            crate::ErrorBuilder::new(
                 crate::error_codes::METHOD_NOT_FOUND,
                 format!("Stream method not found: {}", method),
             )
+            .build()
         })?;
         let handler = Arc::clone(handler);
         drop(handlers);
@@ -393,10 +394,11 @@ impl StreamManager {
         // Get stream info
         let streams = self.active_streams.read().await;
         let stream_info = streams.get(stream_id).ok_or_else(|| {
-            crate::Error::new(
+            crate::ErrorBuilder::new(
                 crate::error_codes::INVALID_PARAMS,
                 format!("Stream not found: {}", stream_id),
             )
+            .build()
         })?;
 
         let method = stream_info.method.clone();

@@ -93,7 +93,10 @@ mod example {
                         .id(id)
                         .build()),
                     Err(e) => Ok(ResponseBuilder::new()
-                        .error(ErrorBuilder::new(-32001, e.to_string()).build())
+                        .error(
+                            ErrorBuilder::new(ash_rpc::error_codes::INTERNAL_ERROR, e.to_string())
+                                .build(),
+                        )
                         .id(id)
                         .build()),
                 }
@@ -117,7 +120,10 @@ mod example {
                         .id(id)
                         .build()),
                     Err(e) => Ok(ResponseBuilder::new()
-                        .error(ErrorBuilder::new(-32001, e.to_string()).build())
+                        .error(
+                            ErrorBuilder::new(ash_rpc::error_codes::INTERNAL_ERROR, e.to_string())
+                                .build(),
+                        )
                         .id(id)
                         .build()),
                 }
@@ -142,7 +148,10 @@ mod example {
                         .id(id)
                         .build()),
                     Err(e) => Ok(ResponseBuilder::new()
-                        .error(ErrorBuilder::new(-32001, e.to_string()).build())
+                        .error(
+                            ErrorBuilder::new(ash_rpc::error_codes::INTERNAL_ERROR, e.to_string())
+                                .build(),
+                        )
                         .id(id)
                         .build()),
                 }

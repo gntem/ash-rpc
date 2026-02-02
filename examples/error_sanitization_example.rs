@@ -27,10 +27,14 @@ impl Sanitizer for ProductionSanitizer {
             | error_codes::INVALID_PARAMS => error.clone(),
 
             // Internal errors get generic message
-            error_codes::INTERNAL_ERROR => Error::new(error.code(), "Internal server error"),
+            error_codes::INTERNAL_ERROR => {
+                ErrorBuilder::new(error.code(), "Internal server error").build()
+            }
 
             // Custom server errors also get generic message
-            code if code >= -32099 && code <= -32000 => Error::new(error.code(), "Server error"),
+            code if code >= -32099 && code <= -32000 => {
+                ErrorBuilder::new(error.code(), "Server error").build()
+            }
 
             // Other errors: keep message but remove data
             _ => Error {
@@ -77,34 +81,41 @@ fn main() {
 
     // Example 2: Simple callback for quick transforms
     println!("2. Simple callback transformation:");
-    let custom_err = Error::new(-32001, "Failed to process user@example.com");
+    let custom_err = ErrorBuilder::new(
+        crate::error_codes::INTERNAL_ERROR,
+        "Failed to process user@example.com",
+    )
+    .build();
 
-    let sanitized =
-        custom_err.sanitized_with(|err| Error::new(err.code(), "Failed to process user"));
+    let sanitized = custom_err
+        .sanitized_with(|err| ErrorBuilder::new(err.code(), "Failed to process user").build());
 
     println!("   Original:  {}", custom_err.message());
     println!("   Sanitized: {}\n", sanitized.message());
 
     // Example 3: Using PatternTransform for text replacement
     println!("3. Pattern-based transformations:");
-    let pattern_err = Error::new(
-        -32002,
+    let pattern_err = ErrorBuilder::new(
+        crate::error_codes::INTERNAL_ERROR,
         "Authentication failed for password=secret123 and token=abc-xyz-123",
-    );
+    )
+    .build();
 
     let pattern = SimplePattern::new("password=secret123", "password=[REDACTED]");
     let transformed_msg = pattern.apply(pattern_err.message());
-    let sanitized = pattern_err.sanitized_with(|_| Error::new(pattern_err.code(), transformed_msg));
+    let sanitized = pattern_err
+        .sanitized_with(|_| ErrorBuilder::new(pattern_err.code(), transformed_msg).build());
 
     println!("   Original:  {}", pattern_err.message());
     println!("   Sanitized: {}\n", sanitized.message());
 
     // Example 4: Composite transformations
     println!("4. Composite pattern transformations:");
-    let multi_err = Error::new(
-        -32003,
+    let multi_err = ErrorBuilder::new(
+        crate::error_codes::INTERNAL_ERROR,
         "Error: password=secret, token=abc123, apikey=xyz789",
-    );
+    )
+    .build();
 
     let composite = CompositeTransform::new()
         .add_transform(SimplePattern::new("password=secret", "password=[REDACTED]"))
@@ -112,7 +123,8 @@ fn main() {
         .add_transform(SimplePattern::new("apikey=xyz789", "apikey=[REDACTED]"));
 
     let transformed = composite.apply(multi_err.message());
-    let sanitized = multi_err.sanitized_with(|_| Error::new(multi_err.code(), transformed));
+    let sanitized =
+        multi_err.sanitized_with(|_| ErrorBuilder::new(multi_err.code(), transformed).build());
 
     println!("   Original:  {}", multi_err.message());
     println!("   Sanitized: {}\n", sanitized.message());
@@ -120,23 +132,29 @@ fn main() {
     // Example 5: Conditional sanitization based on error code
     println!("5. Conditional sanitization logic:");
     let errors = vec![
-        Error::new(
+        ErrorBuilder::new(
             error_codes::INVALID_PARAMS,
             "Missing required field 'email'",
-        ),
-        Error::new(
+        )
+        .build(),
+        ErrorBuilder::new(
             error_codes::INTERNAL_ERROR,
             "Database query failed: syntax error",
-        ),
-        Error::new(-32050, "Custom error with sensitive data"),
+        )
+        .build(),
+        ErrorBuilder::new(
+            crate::error_codes::INTERNAL_ERROR,
+            "Custom error with sensitive data",
+        )
+        .build(),
     ];
 
     for err in errors {
         let sanitized = err.sanitized_with(|e| {
             if e.code() == error_codes::INTERNAL_ERROR {
-                Error::new(e.code(), "Internal server error")
+                ErrorBuilder::new(e.code(), "Internal server error").build()
             } else if e.code() >= -32099 && e.code() <= -32000 {
-                Error::new(e.code(), "Server error")
+                ErrorBuilder::new(e.code(), "Server error").build()
             } else {
                 e.clone()
             }

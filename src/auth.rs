@@ -222,7 +222,10 @@ pub trait AuthPolicy: Send + Sync {
     fn unauthorized_error(&self, method: &str) -> Response {
         let _ = method;
         crate::ResponseBuilder::new()
-            .error(crate::Error::new(-32001, "Unauthorized"))
+            .error(
+                crate::ErrorBuilder::new(crate::error_codes::INTERNAL_ERROR, "Unauthorized")
+                    .build(),
+            )
             .id(None)
             .build()
     }
@@ -339,7 +342,7 @@ mod tests {
         let response = policy.unauthorized_error("test_method");
         assert!(response.error.is_some());
         let error = response.error.unwrap();
-        assert_eq!(error.code, -32001);
+        assert_eq!(error.code, crate::error_codes::INTERNAL_ERROR);
         assert_eq!(error.message, "Unauthorized");
     }
 

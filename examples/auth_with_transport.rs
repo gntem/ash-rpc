@@ -47,7 +47,13 @@ impl auth::AuthPolicy for IpWhitelistPolicy {
 
     fn unauthorized_error(&self, _method: &str) -> Response {
         ResponseBuilder::new()
-            .error(ErrorBuilder::new(-32001, "Unauthorized: Your IP is not whitelisted").build())
+            .error(
+                ErrorBuilder::new(
+                    ash_rpc::error_codes::INTERNAL_ERROR,
+                    "Unauthorized: Your IP is not whitelisted",
+                )
+                .build(),
+            )
             .build()
     }
 }
@@ -142,8 +148,11 @@ impl auth::AuthPolicy for CertificateAuthPolicy {
     fn unauthorized_error(&self, _method: &str) -> Response {
         ResponseBuilder::new()
             .error(
-                ErrorBuilder::new(-32001, "Unauthorized: Valid client certificate required")
-                    .build(),
+                ErrorBuilder::new(
+                    ash_rpc::error_codes::INTERNAL_ERROR,
+                    "Unauthorized: Valid client certificate required",
+                )
+                .build(),
             )
             .build()
     }

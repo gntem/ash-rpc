@@ -16,7 +16,13 @@ mod example {
                         .build();
                 }
                 ResponseBuilder::new()
-                    .error(ErrorBuilder::new(-32602, "Invalid parameters").build())
+                    .error(
+                        ErrorBuilder::new(
+                            ash_rpc::error_codes::INVALID_PARAMS,
+                            "Invalid parameters",
+                        )
+                        .build(),
+                    )
                     .id(id)
                     .build()
             })
@@ -31,7 +37,13 @@ mod example {
                         .build();
                 }
                 ResponseBuilder::new()
-                    .error(ErrorBuilder::new(-32602, "Invalid parameters").build())
+                    .error(
+                        ErrorBuilder::new(
+                            ash_rpc::error_codes::INVALID_PARAMS,
+                            "Invalid parameters",
+                        )
+                        .build(),
+                    )
                     .id(id)
                     .build()
             });

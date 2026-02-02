@@ -34,13 +34,13 @@ macro_rules! rpc_success {
 /// # Usage:
 /// ```text
 /// // Error with explicit code, message and ID
-/// rpc_error!(-32602, "Invalid parameters", Some(1))
+/// rpc_error!(error_codes::INVALID_PARAMS, "Invalid parameters", Some(1))
 ///
 /// // Error with code and message, ID from variable
-/// rpc_error!(-32602, "Invalid parameters", id)
+/// rpc_error!(error_codes::INVALID_PARAMS, "Invalid parameters", id)
 ///
 /// // Error without ID
-/// rpc_error!(-32601, "Method not found")
+/// rpc_error!(error_codes::METHOD_NOT_FOUND, "Method not found")
 ///
 /// // Error using predefined error codes
 /// rpc_error!(error_codes::INVALID_PARAMS, "Invalid parameters", id)
@@ -66,10 +66,10 @@ macro_rules! rpc_error {
 /// # Usage:
 /// ```text
 /// // Error with data
-/// rpc_error_with_data!(-32602, "Invalid parameters", {"expected": "array"}, Some(1))
+/// rpc_error_with_data!(error_codes::INVALID_PARAMS, "Invalid parameters", {"expected": "array"}, Some(1))
 ///
 /// // Error with data but no ID
-/// rpc_error_with_data!(-32602, "Invalid parameters", {"expected": "array"})
+/// rpc_error_with_data!(error_codes::INVALID_PARAMS, "Invalid parameters", {"expected": "array"})
 /// ```
 #[macro_export]
 macro_rules! rpc_error_with_data {
@@ -206,10 +206,10 @@ macro_rules! rpc_notification {
 /// # Usage:
 /// ```text
 /// // Error with code and message
-/// rpc_error_obj!(-32602, "Invalid parameters")
+/// rpc_error_obj!(error_codes::INVALID_PARAMS, "Invalid parameters")
 ///
 /// // Error with code, message and data
-/// rpc_error_obj!(-32602, "Invalid parameters", {"expected": "array"})
+/// rpc_error_obj!(error_codes::INVALID_PARAMS, "Invalid parameters", {"expected": "array"})
 /// ```
 #[macro_export]
 macro_rules! rpc_error_obj {

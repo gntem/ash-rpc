@@ -23,7 +23,7 @@ mod example {
                                             ResponseBuilder::new()
                                                 .error(
                                                     ash_rpc::ErrorBuilder::new(
-                                                        -32602,
+                                                        ash_rpc::error_codes::INVALID_PARAMS,
                                                         "Invalid parameters: expected numbers",
                                                     )
                                                     .build(),
@@ -37,7 +37,7 @@ mod example {
                                         ResponseBuilder::new()
                                             .error(
                                                 ash_rpc::ErrorBuilder::new(
-                                                    -32602,
+                                                    ash_rpc::error_codes::INVALID_PARAMS,
                                                     "Missing parameters: a and b required",
                                                 )
                                                 .build(),
@@ -51,7 +51,7 @@ mod example {
                                     ResponseBuilder::new()
                                         .error(
                                             ash_rpc::ErrorBuilder::new(
-                                                -32602,
+                                                ash_rpc::error_codes::INVALID_PARAMS,
                                                 "Missing parameters",
                                             )
                                             .build(),
@@ -71,7 +71,7 @@ mod example {
                                             ResponseBuilder::new()
                                                 .error(
                                                     ash_rpc::ErrorBuilder::new(
-                                                        -32602,
+                                                        ash_rpc::error_codes::INVALID_PARAMS,
                                                         "Invalid parameters: expected numbers",
                                                     )
                                                     .build(),
@@ -85,7 +85,7 @@ mod example {
                                         ResponseBuilder::new()
                                             .error(
                                                 ash_rpc::ErrorBuilder::new(
-                                                    -32602,
+                                                    ash_rpc::error_codes::INVALID_PARAMS,
                                                     "Missing parameters: a and b required",
                                                 )
                                                 .build(),
@@ -99,7 +99,7 @@ mod example {
                                     ResponseBuilder::new()
                                         .error(
                                             ash_rpc::ErrorBuilder::new(
-                                                -32602,
+                                                ash_rpc::error_codes::INVALID_PARAMS,
                                                 "Missing parameters",
                                             )
                                             .build(),
@@ -113,8 +113,11 @@ mod example {
                             return Some(
                                 ResponseBuilder::new()
                                     .error(
-                                        ash_rpc::ErrorBuilder::new(-32601, "Method not found")
-                                            .build(),
+                                        ash_rpc::ErrorBuilder::new(
+                                            ash_rpc::error_codes::METHOD_NOT_FOUND,
+                                            "Method not found",
+                                        )
+                                        .build(),
                                     )
                                     .id(req.id)
                                     .build(),

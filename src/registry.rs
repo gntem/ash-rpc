@@ -377,8 +377,11 @@ mod tests {
         fn unauthorized_error(&self, method: &str) -> Response {
             ResponseBuilder::new()
                 .error(
-                    ErrorBuilder::new(-32001, format!("Access denied for method '{}'", method))
-                        .build(),
+                    ErrorBuilder::new(
+                        crate::error_codes::INTERNAL_ERROR,
+                        format!("Access denied for method '{}'", method),
+                    )
+                    .build(),
                 )
                 .build()
         }
@@ -427,7 +430,7 @@ mod tests {
         assert!(response.error.is_some());
 
         let error = response.error.unwrap();
-        assert_eq!(error.code, -32001);
+        assert_eq!(error.code, crate::error_codes::INTERNAL_ERROR);
         assert!(error.message.contains("Access denied"));
     }
 

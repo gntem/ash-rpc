@@ -474,7 +474,7 @@ mod tests {
 
     #[test]
     fn test_response_error() {
-        let error = Error::new(-32600, "Invalid request");
+        let error = crate::ErrorBuilder::new(-32600, "Invalid request").build();
         let response = Response::error(error.clone(), Some(json!(1)));
 
         assert!(!response.is_success());
@@ -503,7 +503,7 @@ mod tests {
 
     #[test]
     fn test_response_take_error() {
-        let error = Error::new(-32600, "Error");
+        let error = crate::ErrorBuilder::new(-32600, "Error").build();
         let response = Response::error(error.clone(), Some(json!(1)));
         let taken = response.take_error();
         assert!(taken.is_some());
@@ -513,7 +513,7 @@ mod tests {
     // Error tests
     #[test]
     fn test_error_creation() {
-        let error = Error::new(-32600, "Test error");
+        let error = crate::ErrorBuilder::new(-32600, "Test error").build();
         assert_eq!(error.code(), -32600);
         assert_eq!(error.message(), "Test error");
         assert!(error.data().is_none());
@@ -522,28 +522,60 @@ mod tests {
     #[test]
     fn test_error_with_data() {
         let data = json!({"details": "more info"});
-        let error = Error::new(-32000, "Error").with_data(data.clone());
+        let error = crate::ErrorBuilder::new(-32000, "Error")
+            .data(data.clone())
+            .build();
         assert_eq!(error.data(), Some(&data));
     }
 
     #[test]
     fn test_error_type_checks() {
-        assert!(Error::new(error_codes::PARSE_ERROR, "msg").is_parse_error());
-        assert!(Error::new(error_codes::INVALID_REQUEST, "msg").is_invalid_request());
-        assert!(Error::new(error_codes::METHOD_NOT_FOUND, "msg").is_method_not_found());
-        assert!(Error::new(error_codes::INVALID_PARAMS, "msg").is_invalid_params());
-        assert!(Error::new(error_codes::INTERNAL_ERROR, "msg").is_internal_error());
-        assert!(Error::new(-32001, "msg").is_server_error());
-        assert!(!Error::new(-32700, "msg").is_server_error());
+        assert!(
+            crate::ErrorBuilder::new(error_codes::PARSE_ERROR, "msg")
+                .build()
+                .is_parse_error()
+        );
+        assert!(
+            crate::ErrorBuilder::new(error_codes::INVALID_REQUEST, "msg")
+                .build()
+                .is_invalid_request()
+        );
+        assert!(
+            crate::ErrorBuilder::new(error_codes::METHOD_NOT_FOUND, "msg")
+                .build()
+                .is_method_not_found()
+        );
+        assert!(
+            crate::ErrorBuilder::new(error_codes::INVALID_PARAMS, "msg")
+                .build()
+                .is_invalid_params()
+        );
+        assert!(
+            crate::ErrorBuilder::new(error_codes::INTERNAL_ERROR, "msg")
+                .build()
+                .is_internal_error()
+        );
+        assert!(
+            crate::ErrorBuilder::new(-32001, "msg")
+                .build()
+                .is_server_error()
+        );
+        assert!(
+            !crate::ErrorBuilder::new(-32700, "msg")
+                .build()
+                .is_server_error()
+        );
     }
 
     #[test]
     fn test_error_sanitization() {
-        let error = Error::new(
+        let error = crate::ErrorBuilder::new(
             -32603,
             "Internal database connection failed: postgres://user:pass@host",
-        );
-        let sanitized = error.sanitized_with(|e| Error::new(e.code, "Internal server error"));
+        )
+        .build();
+        let sanitized = error
+            .sanitized_with(|e| crate::ErrorBuilder::new(e.code, "Internal server error").build());
 
         assert_eq!(sanitized.code(), error.code());
         assert_eq!(sanitized.message(), "Internal server error");
@@ -790,7 +822,7 @@ mod tests {
 
     #[test]
     fn test_response_error_info() {
-        let error = Error::new(-32600, "Invalid Request");
+        let error = crate::ErrorBuilder::new(-32600, "Invalid Request").build();
         let response = Response::error(error.clone(), Some(json!(1)));
         assert!(response.error_info().is_some());
         assert_eq!(response.error_info().unwrap().code, -32600);
@@ -805,64 +837,70 @@ mod tests {
     // Additional Error tests
     #[test]
     fn test_error_code_accessor() {
-        let error = Error::new(-32001, "Custom error");
+        let error = crate::ErrorBuilder::new(-32001, "Custom error").build();
         assert_eq!(error.code(), -32001);
     }
 
     #[test]
     fn test_error_message_accessor() {
-        let error = Error::new(-32002, "Test message");
+        let error = crate::ErrorBuilder::new(-32002, "Test message").build();
         assert_eq!(error.message(), "Test message");
     }
 
     #[test]
     fn test_error_data_accessor() {
         let data = json!({"detail": "info"});
-        let error = Error::new(-32003, "Error").with_data(data.clone());
+        let error = crate::ErrorBuilder::new(-32003, "Error")
+            .data(data.clone())
+            .build();
         assert_eq!(error.data(), Some(&data));
     }
 
     #[test]
     fn test_error_data_none() {
-        let error = Error::new(-32004, "Error");
+        let error = crate::ErrorBuilder::new(-32004, "Error").build();
         assert_eq!(error.data(), None);
     }
 
     #[test]
     fn test_error_is_invalid_params() {
-        let error = Error::new(error_codes::INVALID_PARAMS, "Invalid");
+        let error = crate::ErrorBuilder::new(error_codes::INVALID_PARAMS, "Invalid").build();
         assert!(error.is_invalid_params());
         assert!(!error.is_parse_error());
     }
 
     #[test]
     fn test_error_is_internal_error() {
-        let error = Error::new(error_codes::INTERNAL_ERROR, "Internal");
+        let error = crate::ErrorBuilder::new(error_codes::INTERNAL_ERROR, "Internal").build();
         assert!(error.is_internal_error());
         assert!(!error.is_server_error());
     }
 
     #[test]
     fn test_error_is_server_error() {
-        let error = Error::new(-32050, "Server error");
+        let error = crate::ErrorBuilder::new(-32050, "Server error").build();
         assert!(error.is_server_error());
         assert!(!error.is_internal_error());
 
         // Boundary tests
-        let error_min = Error::new(-32099, "Min");
+        let error_min = crate::ErrorBuilder::new(-32099, "Min").build();
         assert!(error_min.is_server_error());
 
-        let error_max = Error::new(-32000, "Max");
+        let error_max = crate::ErrorBuilder::new(-32000, "Max").build();
         assert!(error_max.is_server_error());
 
-        let error_out = Error::new(-31999, "Out of range");
+        let error_out = crate::ErrorBuilder::new(-31999, "Out of range").build();
         assert!(!error_out.is_server_error());
     }
 
     #[test]
     fn test_error_sanitized_with() {
-        let error = Error::new(-32603, "Database connection failed: host=db.internal");
-        let sanitized = error.sanitized_with(|e| Error::new(e.code(), "Internal server error"));
+        let error =
+            crate::ErrorBuilder::new(-32603, "Database connection failed: host=db.internal")
+                .build();
+        let sanitized = error.sanitized_with(|e| {
+            crate::ErrorBuilder::new(e.code(), "Internal server error").build()
+        });
 
         assert_eq!(sanitized.code(), -32603);
         assert_eq!(sanitized.message(), "Internal server error");

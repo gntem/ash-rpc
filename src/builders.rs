@@ -379,7 +379,9 @@ mod tests {
 
     #[test]
     fn test_response_builder_error() {
-        let error = crate::Error::new(-32600, "Invalid request");
+        let error =
+            crate::ErrorBuilder::new(crate::error_codes::INVALID_REQUEST, "Invalid request")
+                .build();
         let id = serde_json::json!(2);
 
         let response = ResponseBuilder::new()
@@ -388,7 +390,10 @@ mod tests {
             .build();
 
         assert!(response.result.is_none());
-        assert_eq!(response.error.unwrap().code, error.code);
+        assert_eq!(
+            response.error.unwrap().code,
+            crate::error_codes::INVALID_REQUEST
+        );
         assert_eq!(response.id, Some(id));
     }
 
@@ -432,8 +437,8 @@ mod tests {
     // ErrorBuilder tests
     #[test]
     fn test_error_builder_basic() {
-        let error = ErrorBuilder::new(-32600, "Test error").build();
-        assert_eq!(error.code, -32600);
+        let error = ErrorBuilder::new(crate::error_codes::INVALID_REQUEST, "Test error").build();
+        assert_eq!(error.code, crate::error_codes::INVALID_REQUEST);
         assert_eq!(error.message, "Test error");
         assert!(error.data.is_none());
     }
@@ -441,7 +446,7 @@ mod tests {
     #[test]
     fn test_error_builder_with_data() {
         let data = serde_json::json!({"detail": "more info"});
-        let error = ErrorBuilder::new(-32000, "Error")
+        let error = ErrorBuilder::new(crate::error_codes::INTERNAL_ERROR, "Error")
             .data(data.clone())
             .build();
         assert_eq!(error.data, Some(data));
@@ -449,7 +454,11 @@ mod tests {
 
     #[test]
     fn test_error_builder_string_conversion() {
-        let error = ErrorBuilder::new(-32603, String::from("Dynamic error")).build();
+        let error = ErrorBuilder::new(
+            crate::error_codes::INTERNAL_ERROR,
+            String::from("Dynamic error"),
+        )
+        .build();
         assert_eq!(error.message, "Dynamic error");
     }
 
@@ -621,7 +630,7 @@ mod tests {
 
     #[test]
     fn test_response_builder_full_error() {
-        let error = ErrorBuilder::new(-32001, "Custom error")
+        let error = ErrorBuilder::new(crate::error_codes::INTERNAL_ERROR, "Custom error")
             .data(serde_json::json!({"field": "value"}))
             .build();
 
@@ -645,7 +654,7 @@ mod tests {
 
     #[test]
     fn test_error_builder_multiple_data() {
-        let error = ErrorBuilder::new(-32000, "Error")
+        let error = ErrorBuilder::new(crate::error_codes::INTERNAL_ERROR, "Error")
             .data(serde_json::json!({"key1": "value1"}))
             .build();
 

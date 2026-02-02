@@ -94,7 +94,7 @@ impl JsonRPCMethod for GoodbyeMethod {
             }))
             .with_tag("greetings")
             .with_error(
-                OpenApiError::new(-32602, "Invalid params")
+                ash_rpc::OpenApiError::new(ash_rpc::error_codes::INVALID_PARAMS, "Invalid params")
                     .with_description("Required 'name' parameter is missing or invalid"),
             )
             .with_example(

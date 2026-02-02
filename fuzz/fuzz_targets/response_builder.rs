@@ -31,16 +31,16 @@ fuzz_target!(|data: &[u8]| {
         }
 
         if input.use_error {
-            let mut error = ash_rpc::Error::new(input.error_code, &input.error_message);
+            let mut error_builder = ash_rpc::ErrorBuilder::new(input.error_code, &input.error_message);
 
             if input.use_error_data {
                 if let Ok(data) = serde_json::from_slice::<serde_json::Value>(&input.error_data_raw)
                 {
-                    error = error.with_data(data);
+                    error_builder = error_builder.data(data);
                 }
             }
 
-            builder = builder.error(error);
+            builder = builder.error(error_builder.build());
         }
 
         if input.use_id {

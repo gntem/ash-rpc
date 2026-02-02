@@ -51,7 +51,7 @@ impl auth::AuthPolicy for ApiKeyAuth {
         ResponseBuilder::new()
             .error(
                 ErrorBuilder::new(
-                    -32001,
+                    ash_rpc::error_codes::INTERNAL_ERROR,
                     format!(
                         "Unauthorized: valid API key required for method '{}'",
                         method
@@ -143,7 +143,7 @@ impl auth::AuthPolicy for RbacPolicy {
         ResponseBuilder::new()
             .error(
                 ErrorBuilder::new(
-                    -32002,
+                    ash_rpc::error_codes::INTERNAL_ERROR,
                     format!("Forbidden: insufficient permissions for '{}'", method),
                 )
                 .build(),
@@ -254,7 +254,10 @@ impl auth::AuthPolicy for RateLimiter {
 
     fn unauthorized_error(&self, _method: &str) -> Response {
         ResponseBuilder::new()
-            .error(ErrorBuilder::new(-32003, "Rate limit exceeded").build())
+            .error(
+                ErrorBuilder::new(ash_rpc::error_codes::INTERNAL_ERROR, "Rate limit exceeded")
+                    .build(),
+            )
             .build()
     }
 }

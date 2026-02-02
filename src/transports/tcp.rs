@@ -248,10 +248,21 @@ mod tests {
                             req.id,
                         ))
                     } else if req.method == "error" {
-                        Some(Response::error(Error::new(-32000, "Test error"), req.id))
+                        Some(Response::error(
+                            crate::ErrorBuilder::new(
+                                crate::error_codes::INTERNAL_ERROR,
+                                "Test error",
+                            )
+                            .build(),
+                            req.id,
+                        ))
                     } else {
                         Some(Response::error(
-                            Error::new(error_codes::METHOD_NOT_FOUND, "Method not found"),
+                            crate::ErrorBuilder::new(
+                                error_codes::METHOD_NOT_FOUND,
+                                "Method not found",
+                            )
+                            .build(),
                             req.id,
                         ))
                     }
@@ -425,7 +436,7 @@ mod tests {
         let resp: Response = serde_json::from_str(&response).unwrap();
         assert!(resp.error.is_some());
         let error = resp.error.unwrap();
-        assert_eq!(error.code, -32000);
+        assert_eq!(error.code, crate::error_codes::INTERNAL_ERROR);
         assert_eq!(error.message, "Test error");
     }
 

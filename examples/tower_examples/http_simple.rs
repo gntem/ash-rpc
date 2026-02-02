@@ -36,16 +36,18 @@ impl Service<Request> for CalculatorService {
                 "add" => {
                     let params: AddParams = match req.params() {
                         Some(params) => serde_json::from_value(params.clone()).map_err(|_| {
-                            Error::new(
+                            ash_rpc::ErrorBuilder::new(
                                 error_codes::INVALID_PARAMS,
                                 "Invalid parameters for add method",
                             )
+                            .build()
                         })?,
                         None => {
-                            return Err(Error::new(
+                            return Err(ash_rpc::ErrorBuilder::new(
                                 error_codes::INVALID_PARAMS,
                                 "Missing parameters for add method",
-                            ));
+                            )
+                            .build());
                         }
                     };
 
@@ -58,10 +60,11 @@ impl Service<Request> for CalculatorService {
                         req.id.clone(),
                     ))
                 }
-                _ => Err(Error::new(
+                _ => Err(ash_rpc::ErrorBuilder::new(
                     error_codes::METHOD_NOT_FOUND,
                     format!("Method '{}' not found", req.method()),
-                )),
+                )
+                .build()),
             }
         })
     }
@@ -75,7 +78,9 @@ where
     let json_rpc_req: Request = match serde_json::from_str(&request_body) {
         Ok(req) => req,
         Err(_) => {
-            let error = Error::new(error_codes::PARSE_ERROR, "Invalid JSON-RPC request");
+            let error =
+                ash_rpc::ErrorBuilder::new(error_codes::PARSE_ERROR, "Invalid JSON-RPC request")
+                    .build();
             let response = Response::error(error, None);
             return serde_json::to_string(&response).unwrap();
         }

@@ -94,7 +94,7 @@ impl StatefulJsonRPCMethod<AppState> for GetFinancialInfo {
                 Err(e) => {
                     warn!("Invalid parameters: {}", e);
                     return Ok(Response::error(
-                        Error::new(-32602, "Invalid params: expected {accessor: string}"),
+                        ash_rpc::ErrorBuilder::new(ash_rpc::error_codes::INVALID_PARAMS, "Invalid params: expected {accessor: string}").build(),
                         id,
                     ));
                 }
@@ -102,7 +102,7 @@ impl StatefulJsonRPCMethod<AppState> for GetFinancialInfo {
             None => {
                 warn!("Missing parameters");
                 return Ok(Response::error(
-                    Error::new(-32602, "Missing accessor parameter"),
+                    ash_rpc::ErrorBuilder::new(ash_rpc::error_codes::INVALID_PARAMS, "Missing accessor parameter").build(),
                     id,
                 ));
             }
@@ -160,7 +160,7 @@ impl StatefulJsonRPCMethod<AppState> for GetFinancialInfo {
                 context.audit_integrity.add_integrity(&mut audit_event);
                 context.audit_backend.log_audit(&audit_event);
 
-                Ok(Response::error(Error::new(-32001, "Account not found"), id))
+                Ok(Response::error(ash_rpc::ErrorBuilder::new(ash_rpc::error_codes::INTERNAL_ERROR, "Account not found").build(), id))
             }
             Err(e) => {
                 error!("Database error: {}", e);
@@ -178,7 +178,7 @@ impl StatefulJsonRPCMethod<AppState> for GetFinancialInfo {
                 context.audit_integrity.add_integrity(&mut audit_event);
                 context.audit_backend.log_audit(&audit_event);
 
-                Ok(Response::error(Error::new(-32000, "Internal server error"), id))
+                Ok(Response::error(ash_rpc::ErrorBuilder::new(ash_rpc::error_codes::INTERNAL_ERROR, "Internal server error").build(), id))
             }
         }
     }
@@ -390,7 +390,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                                                     Err(e) => {
                                                         warn!("Failed to parse message: {}", e);
                                                         let error_response = Response::error(
-                                                            Error::new(-32700, "Parse error"),
+                                                            ash_rpc::ErrorBuilder::new(ash_rpc::error_codes::PARSE_ERROR, "Parse error").build(),
                                                             None,
                                                         );
                                                         if let Ok(json) = serde_json::to_string(&error_response) {

@@ -53,10 +53,13 @@ impl AuthPolicy for AuditingAuthPolicy {
 
     fn unauthorized_error(&self, method: &str) -> Response {
         ResponseBuilder::new()
-            .error(ash_rpc::Error::new(
-                -32001,
-                format!("Access denied to method: {}", method),
-            ))
+            .error(
+                ash_rpc::ErrorBuilder::new(
+                    ash_rpc::error_codes::INTERNAL_ERROR,
+                    format!("Access denied to method: {}", method),
+                )
+                .build(),
+            )
             .id(None)
             .build()
     }
