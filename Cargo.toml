@@ -11,7 +11,7 @@ keywords = ["json-rpc", "rpc", "json", "tcp", "async"]
 categories = ["network-programming", "web-programming", "asynchronous"]
 authors = ["Giorgos Ntemiris <ntemirisgiorgos3@gmail.com>"]
 readme = "README.md"
-exclude = ["examples/", "core/fuzz"]
+exclude = ["examples/", "fuzz"]
 
 [features]
 default = []
