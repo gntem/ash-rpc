@@ -6,7 +6,7 @@
 //! Create method implementations using the `JsonRPCMethod` trait:
 //!
 //! ```rust
-//! use ash_rpc_core::*;
+//! use ash_rpc::*;
 //!
 //! struct PingMethod;
 //!

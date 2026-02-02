@@ -14,8 +14,9 @@ pub mod tracing;
 
 pub mod macros;
 
-// Re-export the observable_setup macro
-pub use macros::observable_setup;
+// Re-export the observable_setup macro from the crate root
+#[doc(inline)]
+pub use crate::observable_setup;
 
 use crate::logger::Logger;
 

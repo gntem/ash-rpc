@@ -8,9 +8,7 @@
 //! - Batch request support
 //! - Error handling with proper HTTP status codes
 
-use crate::{
-    ErrorBuilder, Message, MessageProcessor, Response, ResponseBuilder, error_codes,
-};
+use crate::{ErrorBuilder, Message, MessageProcessor, Response, ResponseBuilder, error_codes};
 use axum::{Router, extract::State, http::StatusCode, response::Json, routing::post};
 use std::sync::Arc;
 

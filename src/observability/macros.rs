@@ -42,7 +42,7 @@ macro_rules! observable_setup {
         $(,)?
     ) => {{
         #[allow(unused_imports)]
-        use crate::logger::{Logger, TracingLogger};
+        use $crate::logger::{Logger, TracingLogger};
 
         // Setup logger
         let logger: ::std::sync::Arc<dyn Logger> = ::std::sync::Arc::new(TracingLogger::new());
@@ -126,7 +126,7 @@ macro_rules! observable_setup {
         $(,)?
     ) => {{
         #[allow(unused_imports)]
-        use crate::logger::{Logger, TracingLogger};
+        use $crate::logger::{Logger, TracingLogger};
 
         let logger: ::std::sync::Arc<dyn Logger> = ::std::sync::Arc::new(TracingLogger::new());
         logger.info(
@@ -174,7 +174,7 @@ macro_rules! observable_setup {
         $(,)?
     ) => {{
         #[allow(unused_imports)]
-        use crate::logger::{Logger, TracingLogger};
+        use $crate::logger::{Logger, TracingLogger};
 
         let logger: ::std::sync::Arc<dyn Logger> = ::std::sync::Arc::new(TracingLogger::new());
         logger.info(

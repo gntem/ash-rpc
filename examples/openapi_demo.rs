@@ -9,11 +9,7 @@ impl JsonRPCMethod for HelloMethod {
         "hello"
     }
 
-    async fn call(
-        &self,
-        params: Option<serde_json::Value>,
-        id: Option<RequestId>,
-    ) -> Response {
+    async fn call(&self, params: Option<serde_json::Value>, id: Option<RequestId>) -> Response {
         if let Some(params) = params {
             if let Ok(name) = serde_json::from_value::<String>(params["name"].clone()) {
                 rpc_success!(format!("Hello, {}!", name), id)
@@ -66,11 +62,7 @@ impl JsonRPCMethod for GoodbyeMethod {
         "goodbye"
     }
 
-    async fn call(
-        &self,
-        params: Option<serde_json::Value>,
-        id: Option<RequestId>,
-    ) -> Response {
+    async fn call(&self, params: Option<serde_json::Value>, id: Option<RequestId>) -> Response {
         if let Some(params) = params {
             if let Ok(name) = serde_json::from_value::<String>(params["name"].clone()) {
                 rpc_success!(format!("Goodbye, {}!", name), id)
@@ -101,13 +93,15 @@ impl JsonRPCMethod for GoodbyeMethod {
                 "description": "Goodbye message"
             }))
             .with_tag("greetings")
-            .with_error(OpenApiError::new(-32602, "Invalid params")
-                .with_description("Required 'name' parameter is missing or invalid"))
+            .with_error(
+                OpenApiError::new(-32602, "Invalid params")
+                    .with_description("Required 'name' parameter is missing or invalid"),
+            )
             .with_example(
                 OpenApiExample::new("basic_goodbye")
                     .with_summary("Basic goodbye example")
                     .with_params(serde_json::json!({"name": "Bob"}))
-                    .with_result(serde_json::json!("Goodbye, Bob!"))
+                    .with_result(serde_json::json!("Goodbye, Bob!")),
             )
     }
 }
@@ -117,22 +111,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     println!("=== OpenAPI Documentation Generation Demo ===\n");
 
     // Create registry with methods
-    let registry = MethodRegistry::new(register_methods![
-        HelloMethod,
-        GoodbyeMethod,
-    ]);
+    let registry = MethodRegistry::new(register_methods![HelloMethod, GoodbyeMethod,]);
 
     // Generate OpenAPI specification
     let openapi_spec = registry.generate_openapi_spec_with_info(
         "Greeting Service API",
-        "1.0.0", 
+        "1.0.0",
         Some("A simple greeting service demonstrating OpenAPI documentation generation"),
         vec![
             OpenApiServer::new("http://localhost:3000/rpc")
                 .with_description("Local development server"),
-            OpenApiServer::new("https://api.example.com/rpc")
-                .with_description("Production server"),
-        ]
+            OpenApiServer::new("https://api.example.com/rpc").with_description("Production server"),
+        ],
     );
 
     // Export as JSON
@@ -146,18 +136,30 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
 
     // Test some method calls
     println!("\n=== Testing Method Calls ===");
-    
-    let hello_response = registry.call("hello", 
-        Some(serde_json::json!({"name": "OpenAPI"})), 
-        Some(serde_json::json!(1))
-    ).await;
-    println!("Hello call result: {}", serde_json::to_string_pretty(&hello_response)?);
 
-    let goodbye_response = registry.call("goodbye", 
-        Some(serde_json::json!({"name": "OpenAPI"})), 
-        Some(serde_json::json!(2))
-    ).await;
-    println!("Goodbye call result: {}", serde_json::to_string_pretty(&goodbye_response)?);
+    let hello_response = registry
+        .call(
+            "hello",
+            Some(serde_json::json!({"name": "OpenAPI"})),
+            Some(serde_json::json!(1)),
+        )
+        .await;
+    println!(
+        "Hello call result: {}",
+        serde_json::to_string_pretty(&hello_response)?
+    );
+
+    let goodbye_response = registry
+        .call(
+            "goodbye",
+            Some(serde_json::json!({"name": "OpenAPI"})),
+            Some(serde_json::json!(2)),
+        )
+        .await;
+    println!(
+        "Goodbye call result: {}",
+        serde_json::to_string_pretty(&goodbye_response)?
+    );
 
     Ok(())
 }

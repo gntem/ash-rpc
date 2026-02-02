@@ -2,55 +2,57 @@
 //!
 //! Run with: cargo run --example healthcheck_contrib_example --features healthcheck
 
-use ash_rpc::*;
-
 #[cfg(feature = "healthcheck")]
 use ash_rpc::healthcheck::HealthcheckMethod;
+#[cfg(feature = "healthcheck")]
+use ash_rpc::*;
 
 #[tokio::main]
 async fn main() {
     #[cfg(not(feature = "healthcheck"))]
     {
         eprintln!("This example requires the 'healthcheck' feature.");
-        eprintln!("Run with: cargo run --example healthcheck_contrib_example --features healthcheck");
+        eprintln!(
+            "Run with: cargo run --example healthcheck_contrib_example --features healthcheck"
+        );
         return;
     }
 
     #[cfg(feature = "healthcheck")]
     {
-    // Create a registry with healthcheck method
-    let healthcheck = HealthcheckMethod::new()
-        .service_name("example-service")
-        .with_version("1.0.0");
+        // Create a registry with healthcheck method
+        let healthcheck = HealthcheckMethod::new()
+            .service_name("example-service")
+            .with_version("1.0.0");
 
-    let registry = MethodRegistry::new(register_methods![healthcheck]);
+        let registry = MethodRegistry::new(register_methods![healthcheck]);
 
-    // Create a healthcheck request
-    let request = RequestBuilder::new("healthcheck")
-        .id(serde_json::json!(1))
-        .build();
+        // Create a healthcheck request
+        let request = RequestBuilder::new("healthcheck")
+            .id(serde_json::json!(1))
+            .build();
 
-    // Process the request
-    let message = Message::Request(request);
-    if let Some(response) = registry.process_message(message).await {
-        println!(
-            "Healthcheck response: {}",
-            serde_json::to_string_pretty(&response).unwrap()
-        );
-    }
+        // Process the request
+        let message = Message::Request(request);
+        if let Some(response) = registry.process_message(message).await {
+            println!(
+                "Healthcheck response: {}",
+                serde_json::to_string_pretty(&response).unwrap()
+            );
+        }
 
-    // Test with parameters (they should be ignored)
-    let request_with_params = RequestBuilder::new("healthcheck")
-        .params(serde_json::json!({"service": "api", "version": "1.0"}))
-        .id(serde_json::json!(2))
-        .build();
+        // Test with parameters (they should be ignored)
+        let request_with_params = RequestBuilder::new("healthcheck")
+            .params(serde_json::json!({"service": "api", "version": "1.0"}))
+            .id(serde_json::json!(2))
+            .build();
 
-    let message_with_params = Message::Request(request_with_params);
-    if let Some(response) = registry.process_message(message_with_params).await {
-        println!(
-            "Healthcheck with params response: {}",
-            serde_json::to_string_pretty(&response).unwrap()
-        );
-    }
+        let message_with_params = Message::Request(request_with_params);
+        if let Some(response) = registry.process_message(message_with_params).await {
+            println!(
+                "Healthcheck with params response: {}",
+                serde_json::to_string_pretty(&response).unwrap()
+            );
+        }
     }
 }

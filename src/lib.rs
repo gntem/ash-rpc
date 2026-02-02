@@ -113,10 +113,14 @@ pub use transports::SecurityConfig;
 pub use transports::{TcpServer, TcpServerBuilder};
 
 #[cfg(feature = "tcp-stream")]
-pub use transports::{TcpStreamClient, TcpStreamClientBuilder, TcpStreamServer, TcpStreamServerBuilder};
+pub use transports::{
+    TcpStreamClient, TcpStreamClientBuilder, TcpStreamServer, TcpStreamServerBuilder,
+};
 
 #[cfg(feature = "tcp-stream-tls")]
-pub use transports::{TcpStreamTlsClient, TcpStreamTlsServer, TcpStreamTlsServerBuilder, TlsConfig};
+pub use transports::{
+    TcpStreamTlsClient, TcpStreamTlsServer, TcpStreamTlsServerBuilder, TlsConfig,
+};
 
 #[cfg(feature = "axum")]
 pub use transports::axum;

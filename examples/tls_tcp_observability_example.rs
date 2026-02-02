@@ -32,25 +32,58 @@
 //! curl http://localhost:9090/health
 //! ```
 
-#[cfg(all(feature = "tcp-stream-tls", feature = "prometheus", feature = "opentelemetry", feature = "logging", feature = "axum"))]
+#[cfg(all(
+    feature = "tcp-stream-tls",
+    feature = "prometheus",
+    feature = "opentelemetry",
+    feature = "logging",
+    feature = "axum"
+))]
 use ash_rpc::*;
 
-#[cfg(all(feature = "tcp-stream-tls", feature = "prometheus", feature = "opentelemetry", feature = "logging", feature = "axum"))]
+#[cfg(all(
+    feature = "tcp-stream-tls",
+    feature = "prometheus",
+    feature = "opentelemetry",
+    feature = "logging",
+    feature = "axum"
+))]
 use ash_rpc::observability::{ObservableProcessor, observable_setup};
 
-#[cfg(all(feature = "tcp-stream-tls", feature = "prometheus", feature = "opentelemetry", feature = "logging", feature = "axum"))]
-use axum::{
-    extract::State,
-    http::StatusCode,
-    response::IntoResponse,
-    routing::get,
-    Router,
-};
+#[cfg(all(
+    feature = "tcp-stream-tls",
+    feature = "prometheus",
+    feature = "opentelemetry",
+    feature = "logging",
+    feature = "axum"
+))]
+use axum::{Router, extract::State, http::StatusCode, response::IntoResponse, routing::get};
+#[cfg(all(
+    feature = "tcp-stream-tls",
+    feature = "prometheus",
+    feature = "opentelemetry",
+    feature = "logging",
+    feature = "axum"
+))]
 use std::sync::Arc;
 
 // Define RPC methods
+#[cfg(all(
+    feature = "tcp-stream-tls",
+    feature = "prometheus",
+    feature = "opentelemetry",
+    feature = "logging",
+    feature = "axum"
+))]
 struct PingMethod;
 
+#[cfg(all(
+    feature = "tcp-stream-tls",
+    feature = "prometheus",
+    feature = "opentelemetry",
+    feature = "logging",
+    feature = "axum"
+))]
 #[async_trait::async_trait]
 impl JsonRPCMethod for PingMethod {
     fn method_name(&self) -> &'static str {
@@ -62,8 +95,22 @@ impl JsonRPCMethod for PingMethod {
     }
 }
 
+#[cfg(all(
+    feature = "tcp-stream-tls",
+    feature = "prometheus",
+    feature = "opentelemetry",
+    feature = "logging",
+    feature = "axum"
+))]
 struct EchoMethod;
 
+#[cfg(all(
+    feature = "tcp-stream-tls",
+    feature = "prometheus",
+    feature = "opentelemetry",
+    feature = "logging",
+    feature = "axum"
+))]
 #[async_trait::async_trait]
 impl JsonRPCMethod for EchoMethod {
     fn method_name(&self) -> &'static str {
@@ -75,8 +122,22 @@ impl JsonRPCMethod for EchoMethod {
     }
 }
 
+#[cfg(all(
+    feature = "tcp-stream-tls",
+    feature = "prometheus",
+    feature = "opentelemetry",
+    feature = "logging",
+    feature = "axum"
+))]
 struct AddMethod;
 
+#[cfg(all(
+    feature = "tcp-stream-tls",
+    feature = "prometheus",
+    feature = "opentelemetry",
+    feature = "logging",
+    feature = "axum"
+))]
 #[async_trait::async_trait]
 impl JsonRPCMethod for AddMethod {
     fn method_name(&self) -> &'static str {
@@ -97,8 +158,22 @@ impl JsonRPCMethod for AddMethod {
     }
 }
 
+#[cfg(all(
+    feature = "tcp-stream-tls",
+    feature = "prometheus",
+    feature = "opentelemetry",
+    feature = "logging",
+    feature = "axum"
+))]
 struct MultiplyMethod;
 
+#[cfg(all(
+    feature = "tcp-stream-tls",
+    feature = "prometheus",
+    feature = "opentelemetry",
+    feature = "logging",
+    feature = "axum"
+))]
 #[async_trait::async_trait]
 impl JsonRPCMethod for MultiplyMethod {
     fn method_name(&self) -> &'static str {
@@ -119,8 +194,22 @@ impl JsonRPCMethod for MultiplyMethod {
     }
 }
 
+#[cfg(all(
+    feature = "tcp-stream-tls",
+    feature = "prometheus",
+    feature = "opentelemetry",
+    feature = "logging",
+    feature = "axum"
+))]
 struct SlowOperationMethod;
 
+#[cfg(all(
+    feature = "tcp-stream-tls",
+    feature = "prometheus",
+    feature = "opentelemetry",
+    feature = "logging",
+    feature = "axum"
+))]
 #[async_trait::async_trait]
 impl JsonRPCMethod for SlowOperationMethod {
     fn method_name(&self) -> &'static str {
@@ -133,8 +222,22 @@ impl JsonRPCMethod for SlowOperationMethod {
     }
 }
 
+#[cfg(all(
+    feature = "tcp-stream-tls",
+    feature = "prometheus",
+    feature = "opentelemetry",
+    feature = "logging",
+    feature = "axum"
+))]
 struct ErrorMethod;
 
+#[cfg(all(
+    feature = "tcp-stream-tls",
+    feature = "prometheus",
+    feature = "opentelemetry",
+    feature = "logging",
+    feature = "axum"
+))]
 #[async_trait::async_trait]
 impl JsonRPCMethod for ErrorMethod {
     fn method_name(&self) -> &'static str {
@@ -146,7 +249,13 @@ impl JsonRPCMethod for ErrorMethod {
     }
 }
 
-#[cfg(all(feature = "tcp-stream-tls", feature = "prometheus", feature = "opentelemetry", feature = "logging", feature = "axum"))]
+#[cfg(all(
+    feature = "tcp-stream-tls",
+    feature = "prometheus",
+    feature = "opentelemetry",
+    feature = "logging",
+    feature = "axum"
+))]
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("=== TLS TCP Server with Observability ===\n");
@@ -191,7 +300,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         "Methods registered",
         &[
             ("count", &registry.method_count().to_string().as_str()),
-            ("methods", &"ping, echo, add, multiply, slow_operation, error_test"),
+            (
+                "methods",
+                &"ping, echo, add, multiply, slow_operation, error_test",
+            ),
         ],
     );
 
@@ -276,7 +388,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 // Prometheus metrics endpoint handler
-#[cfg(all(feature = "tcp-stream-tls", feature = "prometheus", feature = "opentelemetry", feature = "logging", feature = "axum"))]
+#[cfg(all(
+    feature = "tcp-stream-tls",
+    feature = "prometheus",
+    feature = "opentelemetry",
+    feature = "logging",
+    feature = "axum"
+))]
 async fn prometheus_metrics(
     State(metrics): State<Arc<ash_rpc::obs_prometheus::PrometheusMetrics>>,
 ) -> impl IntoResponse {
@@ -291,7 +409,13 @@ async fn prometheus_metrics(
 }
 
 // Health check endpoint handler
-#[cfg(all(feature = "tcp-stream-tls", feature = "prometheus", feature = "opentelemetry", feature = "logging", feature = "axum"))]
+#[cfg(all(
+    feature = "tcp-stream-tls",
+    feature = "prometheus",
+    feature = "opentelemetry",
+    feature = "logging",
+    feature = "axum"
+))]
 async fn health_check() -> impl IntoResponse {
     (
         StatusCode::OK,
@@ -303,7 +427,12 @@ async fn health_check() -> impl IntoResponse {
     )
 }
 
-#[cfg(not(all(feature = "tcp-stream-tls", feature = "prometheus", feature = "opentelemetry", feature = "logging")))]
+#[cfg(not(all(
+    feature = "tcp-stream-tls",
+    feature = "prometheus",
+    feature = "opentelemetry",
+    feature = "logging"
+)))]
 fn main() {
     eprintln!("This example requires: --features tcp-stream-tls,prometheus,opentelemetry,logging");
 }

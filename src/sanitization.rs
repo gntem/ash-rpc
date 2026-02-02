@@ -6,8 +6,8 @@
 //!
 //! # Example
 //! ```
-//! use ash_rpc_core::sanitization::Sanitizer;
-//! use ash_rpc_core::Error;
+//! use ash_rpc::sanitization::Sanitizer;
+//! use ash_rpc::Error;
 //!
 //! struct MyCustomSanitizer;
 //!

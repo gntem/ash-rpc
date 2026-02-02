@@ -10,7 +10,7 @@
 //!
 //! # Example
 //! ```
-//! use ash_rpc_core::auth::{AuthPolicy, ConnectionContext};
+//! use ash_rpc::auth::{AuthPolicy, ConnectionContext};
 //!
 //! struct MyAuth;
 //!
@@ -96,7 +96,7 @@ impl ConnectionContext {
 ///
 /// # Example: TLS Certificate Extraction
 /// ```text
-/// use ash_rpc_core::auth::{ContextExtractor, ConnectionContext};
+/// use ash_rpc::auth::{ContextExtractor, ConnectionContext};
 ///
 /// struct TlsContextExtractor;
 ///

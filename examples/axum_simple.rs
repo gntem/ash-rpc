@@ -1,8 +1,6 @@
 #[cfg(feature = "axum")]
 mod example {
-    use ash_rpc::{
-        ErrorBuilder, MethodRegistry, ResponseBuilder, transport::axum::AxumRpcLayer,
-    };
+    use ash_rpc::{ErrorBuilder, MethodRegistry, ResponseBuilder, transport::axum::AxumRpcLayer};
     use axum::Router;
 
     pub async fn run_server() -> Result<(), Box<dyn std::error::Error>> {

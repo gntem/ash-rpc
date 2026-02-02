@@ -216,7 +216,7 @@ impl Error {
     ///
     /// # Example
     /// ```
-    /// # use ash_rpc_core::Error;
+    /// # use ash_rpc::Error;
     /// # const INTERNAL_ERROR: i32 = -32603;
     /// # let error = Error::new(INTERNAL_ERROR, "Something went wrong");
     /// let sanitized = error.sanitized_with(|err| {
@@ -376,7 +376,7 @@ impl Message {
 ///
 /// # Example
 /// ```rust
-/// use ash_rpc_core::{ErrorBuilder, error_codes};
+/// use ash_rpc::{ErrorBuilder, error_codes};
 ///
 /// let error = ErrorBuilder::new(error_codes::METHOD_NOT_FOUND, "Method not found")
 ///     .build();
