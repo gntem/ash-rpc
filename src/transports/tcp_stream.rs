@@ -416,8 +416,8 @@ mod tests {
     #[test]
     fn test_security_config_defaults() {
         let config = SecurityConfig::default();
-        assert!(config.max_connections > 0 || config.max_connections == 0);
-        // Just ensure defaults are set
+        // Verify default max_connections is set to a reasonable value
+        assert!(config.max_connections > 0);
     }
 
     #[test]

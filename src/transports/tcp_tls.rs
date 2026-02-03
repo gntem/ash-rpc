@@ -455,6 +455,7 @@ WjANMQswCQYDVQQDDAJjYTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEB
 AL5vZvZvZvZvZvZvZvZvZvZvZvZvZvZvZvZvZvZvZvZvZvZvZvZvZvZvZvZvZv
 -----END CERTIFICATE-----";
 
+    #[allow(dead_code)]
     const TEST_KEY_PEM: &[u8] = b"-----BEGIN PRIVATE KEY-----
 MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC+b2b2b2b2b2b2
 b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2
@@ -576,7 +577,7 @@ b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2
     #[test]
     fn test_no_verifier_supported_schemes() {
         use tokio_rustls::rustls::client::danger::ServerCertVerifier;
-        
+
         let verifier = NoVerifier;
         let schemes = verifier.supported_verify_schemes();
         assert!(!schemes.is_empty());

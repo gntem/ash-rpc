@@ -123,7 +123,7 @@ impl Default for AxumRpcBuilder {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{Message, Request, RequestBuilder, Response};
+    use crate::{Message, RequestBuilder, Response};
     use std::sync::Arc;
 
     // Mock message processor for testing

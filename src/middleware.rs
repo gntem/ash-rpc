@@ -159,7 +159,6 @@ impl Default for JsonRpcMiddlewareBuilder {
 mod tests {
     use super::*;
     use std::task::Poll;
-    use tower::ServiceExt;
 
     // Mock service for testing
     #[derive(Clone)]
@@ -252,9 +251,9 @@ mod tests {
         let service = MockService;
         let middleware = JsonRpcMiddleware::new(service);
 
-        // Just verify the middleware can be polled
+        // Just verify the middleware can be created
         // We can't easily test poll_ready without futures crate
-        drop(middleware);
+        let _ = middleware;
     }
 
     #[test]

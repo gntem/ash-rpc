@@ -164,7 +164,7 @@ mod tests {
 
     #[test]
     fn test_noop_logger_default() {
-        let logger = NoopLogger::default();
+        let logger = NoopLogger;
         logger.info("test", &[]);
         // Should not panic
     }
@@ -205,7 +205,7 @@ mod tests {
 
     #[test]
     fn test_tracing_logger_default() {
-        let logger = TracingLogger::default();
+        let logger = TracingLogger;
 
         // Basic test - should not panic
         logger.info("test", &[]);
