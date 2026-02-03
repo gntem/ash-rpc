@@ -76,7 +76,7 @@ jobs:
         uses: taiki-e/install-action@cargo-llvm-cov
       
       - name: Generate code coverage
-        run: cargo llvm-cov --lib -p ash-rpc-core --all-features --lcov --output-path lcov.info
+        run: cargo llvm-cov --lib -p ash-rpc --all-features --lcov --output-path lcov.info
       
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
@@ -85,7 +85,7 @@ jobs:
           fail_ci_if_error: false
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: core
-          name: ash-rpc-core
+          name: ash-rpc
           verbose: true
         env:
           CODECOV_COMMENT: ${{ github.event_name == 'pull_request' }}
@@ -114,11 +114,11 @@ jobs:
       
       - name: Check feature - no-default
         if: matrix.features == 'no-default'
-        run: cargo check -p ash-rpc-core --no-default-features
+        run: cargo check -p ash-rpc --no-default-features
       
       - name: Check feature - all-features
         if: matrix.features == 'all-features'
-        run: cargo check -p ash-rpc-core --all-features
+        run: cargo check -p ash-rpc --all-features
 
   documentation:
     name: Documentation

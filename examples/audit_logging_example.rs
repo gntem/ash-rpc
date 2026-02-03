@@ -7,8 +7,8 @@
 //! - Using sequence integrity checking
 //! - Enriching events with connection context
 
-use ash_rpc_core::audit_logging::*;
-use ash_rpc_core::{
+use ash_rpc::audit_logging::*;
+use ash_rpc::{
     MessageProcessor, MethodRegistry, RequestBuilder, Response, ResponseBuilder,
     auth::{AuthPolicy, ConnectionContext},
 };
@@ -53,10 +53,13 @@ impl AuthPolicy for AuditingAuthPolicy {
 
     fn unauthorized_error(&self, method: &str) -> Response {
         ResponseBuilder::new()
-            .error(ash_rpc_core::Error::new(
-                -32001,
-                format!("Access denied to method: {}", method),
-            ))
+            .error(
+                ash_rpc::ErrorBuilder::new(
+                    ash_rpc::error_codes::INTERNAL_ERROR,
+                    format!("Access denied to method: {}", method),
+                )
+                .build(),
+            )
             .id(None)
             .build()
     }
@@ -108,7 +111,7 @@ async fn example_basic_audit() {
 
     println!("Processing request: get_balance");
     let _ = audit_processor
-        .process_message(ash_rpc_core::Message::Request(request))
+        .process_message(ash_rpc::Message::Request(request))
         .await;
     println!("Audit events logged to stdout (check above for JSON output)\n");
 }
@@ -148,7 +151,7 @@ async fn example_audit_with_auth() {
         .build();
 
     let _ = audit_processor
-        .process_message(ash_rpc_core::Message::Request(request))
+        .process_message(ash_rpc::Message::Request(request))
         .await;
     println!("Authorization check logged (allowed)\n");
 
@@ -160,7 +163,7 @@ async fn example_audit_with_auth() {
         .build();
 
     let _ = audit_processor
-        .process_message(ash_rpc_core::Message::Request(request))
+        .process_message(ash_rpc::Message::Request(request))
         .await;
     println!("Authorization denial logged (denied - critical severity)\n");
 }
@@ -202,7 +205,7 @@ async fn example_multi_backend() {
         .build();
 
     let _ = audit_processor
-        .process_message(ash_rpc_core::Message::Request(request))
+        .process_message(ash_rpc::Message::Request(request))
         .await;
     println!("Events logged to both stdout and stderr with sequence+checksum\n");
 }

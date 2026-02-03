@@ -1,5 +1,5 @@
-use ash_rpc_core::transport::tcp::TcpServer;
-use ash_rpc_core::*;
+use ash_rpc::transport::tcp::TcpServer;
+use ash_rpc::*;
 
 fn main() -> Result<(), std::io::Error> {
     let logger = StdoutLogger;

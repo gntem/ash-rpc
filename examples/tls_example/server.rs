@@ -1,4 +1,4 @@
-use ash_rpc_core::{
+use ash_rpc::{
     JsonRPCMethod, MethodRegistry, RequestId, Response,
     transport::tcp_stream_tls::{TcpStreamTlsClient, TcpStreamTlsServer, TlsConfig},
 };
@@ -13,7 +13,7 @@ impl JsonRPCMethod for PingMethod {
     }
 
     async fn call(&self, _params: Option<serde_json::Value>, id: Option<RequestId>) -> Response {
-        ash_rpc_core::rpc_success!("pong", id)
+        ash_rpc::rpc_success!("pong", id)
     }
 }
 
@@ -28,7 +28,7 @@ impl JsonRPCMethod for EchoMethod {
 
     async fn call(&self, params: Option<serde_json::Value>, id: Option<RequestId>) -> Response {
         let message = params.unwrap_or_else(|| serde_json::json!(""));
-        ash_rpc_core::rpc_success!(message, id)
+        ash_rpc::rpc_success!(message, id)
     }
 }
 
@@ -50,7 +50,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     // Create method registry
-    let registry = MethodRegistry::new(ash_rpc_core::register_methods![PingMethod, EchoMethod]);
+    let registry = MethodRegistry::new(ash_rpc::register_methods![PingMethod, EchoMethod]);
 
     println!(
         " Loaded {} methods: {:?}",
@@ -89,7 +89,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Test ping
     println!("Testing 'ping' method:");
-    let ping_request = ash_rpc_core::rpc_request!("ping", 1);
+    let ping_request = ash_rpc::rpc_request!("ping", 1);
     client.send_request(&ping_request).await?;
     let ping_response = client.recv_response().await?;
     println!("  Request:  {}", serde_json::to_string(&ping_request)?);
@@ -100,7 +100,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Test echo
     println!("Testing 'echo' method:");
-    let echo_request = ash_rpc_core::rpc_request!(
+    let echo_request = ash_rpc::rpc_request!(
         "echo",
         serde_json::json!({"message": "Hello, secure world!", "encrypted": true}),
         2

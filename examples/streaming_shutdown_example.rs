@@ -10,8 +10,8 @@
 //! cargo run --example streaming_shutdown_example --features tcp-stream,streaming,shutdown
 //! ```
 
-use ash_rpc_core::transport::TcpStreamServer;
-use ash_rpc_core::*;
+use ash_rpc::transport::TcpStreamServer;
+use ash_rpc::*;
 use serde_json::json;
 use std::sync::Arc;
 use std::time::Duration;

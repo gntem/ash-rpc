@@ -1,8 +1,6 @@
 #[cfg(feature = "axum")]
 mod example {
-    use ash_rpc_core::{
-        ErrorBuilder, MethodRegistry, ResponseBuilder, transport::axum::AxumRpcLayer,
-    };
+    use ash_rpc::{ErrorBuilder, MethodRegistry, ResponseBuilder, transport::axum::AxumRpcLayer};
     use axum::Router;
 
     pub async fn run_server() -> Result<(), Box<dyn std::error::Error>> {
@@ -18,7 +16,13 @@ mod example {
                         .build();
                 }
                 ResponseBuilder::new()
-                    .error(ErrorBuilder::new(-32602, "Invalid parameters").build())
+                    .error(
+                        ErrorBuilder::new(
+                            ash_rpc::error_codes::INVALID_PARAMS,
+                            "Invalid parameters",
+                        )
+                        .build(),
+                    )
                     .id(id)
                     .build()
             })
@@ -33,7 +37,13 @@ mod example {
                         .build();
                 }
                 ResponseBuilder::new()
-                    .error(ErrorBuilder::new(-32602, "Invalid parameters").build())
+                    .error(
+                        ErrorBuilder::new(
+                            ash_rpc::error_codes::INVALID_PARAMS,
+                            "Invalid parameters",
+                        )
+                        .build(),
+                    )
                     .id(id)
                     .build()
             });

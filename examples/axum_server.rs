@@ -1,14 +1,15 @@
 #[cfg(feature = "axum")]
 mod example {
-    use ash_rpc_core::{
+    use ash_rpc::{
         Message, MessageProcessor, Response, ResponseBuilder, transport::axum::AxumRpcLayer,
     };
     use axum::Router;
 
     struct CalculatorProcessor;
 
+    #[ash_rpc::async_trait]
     impl MessageProcessor for CalculatorProcessor {
-        fn process_message(&self, message: Message) -> Option<Response> {
+        async fn process_message(&self, message: Message) -> Option<Response> {
             match message {
                 Message::Request(req) => {
                     let result = match req.method.as_str() {
@@ -21,8 +22,8 @@ mod example {
                                         return Some(
                                             ResponseBuilder::new()
                                                 .error(
-                                                    ash_rpc_core::ErrorBuilder::new(
-                                                        -32602,
+                                                    ash_rpc::ErrorBuilder::new(
+                                                        ash_rpc::error_codes::INVALID_PARAMS,
                                                         "Invalid parameters: expected numbers",
                                                     )
                                                     .build(),
@@ -35,8 +36,8 @@ mod example {
                                     return Some(
                                         ResponseBuilder::new()
                                             .error(
-                                                ash_rpc_core::ErrorBuilder::new(
-                                                    -32602,
+                                                ash_rpc::ErrorBuilder::new(
+                                                    ash_rpc::error_codes::INVALID_PARAMS,
                                                     "Missing parameters: a and b required",
                                                 )
                                                 .build(),
@@ -49,8 +50,8 @@ mod example {
                                 return Some(
                                     ResponseBuilder::new()
                                         .error(
-                                            ash_rpc_core::ErrorBuilder::new(
-                                                -32602,
+                                            ash_rpc::ErrorBuilder::new(
+                                                ash_rpc::error_codes::INVALID_PARAMS,
                                                 "Missing parameters",
                                             )
                                             .build(),
@@ -69,8 +70,8 @@ mod example {
                                         return Some(
                                             ResponseBuilder::new()
                                                 .error(
-                                                    ash_rpc_core::ErrorBuilder::new(
-                                                        -32602,
+                                                    ash_rpc::ErrorBuilder::new(
+                                                        ash_rpc::error_codes::INVALID_PARAMS,
                                                         "Invalid parameters: expected numbers",
                                                     )
                                                     .build(),
@@ -83,8 +84,8 @@ mod example {
                                     return Some(
                                         ResponseBuilder::new()
                                             .error(
-                                                ash_rpc_core::ErrorBuilder::new(
-                                                    -32602,
+                                                ash_rpc::ErrorBuilder::new(
+                                                    ash_rpc::error_codes::INVALID_PARAMS,
                                                     "Missing parameters: a and b required",
                                                 )
                                                 .build(),
@@ -97,8 +98,8 @@ mod example {
                                 return Some(
                                     ResponseBuilder::new()
                                         .error(
-                                            ash_rpc_core::ErrorBuilder::new(
-                                                -32602,
+                                            ash_rpc::ErrorBuilder::new(
+                                                ash_rpc::error_codes::INVALID_PARAMS,
                                                 "Missing parameters",
                                             )
                                             .build(),
@@ -112,8 +113,11 @@ mod example {
                             return Some(
                                 ResponseBuilder::new()
                                     .error(
-                                        ash_rpc_core::ErrorBuilder::new(-32601, "Method not found")
-                                            .build(),
+                                        ash_rpc::ErrorBuilder::new(
+                                            ash_rpc::error_codes::METHOD_NOT_FOUND,
+                                            "Method not found",
+                                        )
+                                        .build(),
                                     )
                                     .id(req.id)
                                     .build(),

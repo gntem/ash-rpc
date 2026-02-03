@@ -1,6 +1,6 @@
 # TLS-Enabled JSON-RPC Server Example
 
-This example demonstrates how to use ash-rpc-core with TLS encryption for secure communication.
+This example demonstrates how to use ash-rpc with TLS encryption for secure communication.
 
 ## Prerequisites
 

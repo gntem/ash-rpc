@@ -1,11 +1,11 @@
-use ash_rpc_core::*;
+use ash_rpc::*;
 use serde_json::json;
 use std::time::Duration;
 
 #[cfg(feature = "tcp")]
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    use ash_rpc_core::transport::tcp::{SecurityConfig, TcpServerBuilder};
+    use ash_rpc::transport::tcp::{SecurityConfig, TcpServerBuilder};
 
     // Define a simple ping method
     struct PingMethod;

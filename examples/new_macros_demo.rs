@@ -1,4 +1,4 @@
-use ash_rpc_core::*;
+use ash_rpc::*;
 
 // Define methods using the new rpc_method! macro
 rpc_method!(PingMethod, "ping", |_params, id| {

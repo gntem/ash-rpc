@@ -1,5 +1,5 @@
-use ash_rpc_contrib::JsonRpcLayer;
-use ash_rpc_core::{Error, Request, Response, error_codes};
+use ash_rpc::JsonRpcLayer;
+use ash_rpc::{Error, Request, Response, error_codes};
 use serde::{Deserialize, Serialize};
 use std::future::Future;
 use std::pin::Pin;
@@ -37,16 +37,18 @@ impl Service<Request> for CalculatorService {
                 "add" => {
                     let params: AddParams = match req.params() {
                         Some(params) => serde_json::from_value(params.clone()).map_err(|_| {
-                            Error::new(
+                            ash_rpc::ErrorBuilder::new(
                                 error_codes::INVALID_PARAMS,
                                 "Invalid parameters for add method",
                             )
+                            .build()
                         })?,
                         None => {
-                            return Err(Error::new(
+                            return Err(ash_rpc::ErrorBuilder::new(
                                 error_codes::INVALID_PARAMS,
                                 "Missing parameters for add method",
-                            ));
+                            )
+                            .build());
                         }
                     };
 
@@ -59,10 +61,11 @@ impl Service<Request> for CalculatorService {
                         req.id.clone(),
                     ))
                 }
-                _ => Err(Error::new(
+                _ => Err(ash_rpc::ErrorBuilder::new(
                     error_codes::METHOD_NOT_FOUND,
                     format!("Method '{}' not found", req.method()),
-                )),
+                )
+                .build()),
             }
         })
     }
@@ -96,8 +99,11 @@ where
                         }
                     }
                     Err(_) => {
-                        let error =
-                            Error::new(error_codes::PARSE_ERROR, "Invalid JSON-RPC request");
+                        let error = ash_rpc::ErrorBuilder::new(
+                            error_codes::PARSE_ERROR,
+                            "Invalid JSON-RPC request",
+                        )
+                        .build();
                         Response::error(error, None)
                     }
                 };

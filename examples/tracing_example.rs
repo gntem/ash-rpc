@@ -1,4 +1,4 @@
-use ash_rpc_core::*;
+use ash_rpc::*;
 use serde_json::json;
 use tracing_subscriber::{EnvFilter, fmt, prelude::*};
 

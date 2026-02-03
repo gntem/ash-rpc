@@ -12,8 +12,8 @@
 //! cargo run --example tls_streaming_client --features tcp-stream-tls
 //! ```
 
-use ash_rpc_core::Request;
-use ash_rpc_core::transport::tcp_tls::TcpStreamTlsClient;
+use ash_rpc::Request;
+use ash_rpc::transport::tcp_tls::TcpStreamTlsClient;
 use serde_json::json;
 use std::time::Duration;
 

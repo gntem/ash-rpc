@@ -1,5 +1,5 @@
-use ash_rpc_core::stateful::{ServiceContext, StatefulMethodRegistry, StatefulProcessor};
-use ash_rpc_core::{MessageProcessor, ResponseBuilder};
+use ash_rpc::stateful::{ServiceContext, StatefulMethodRegistry, StatefulProcessor};
+use ash_rpc::{MessageProcessor, ResponseBuilder};
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
@@ -167,7 +167,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("Created stateful processor with database context");
     println!("Available methods: get, set, delete, list");
 
-    let request = ash_rpc_core::RequestBuilder::new("set")
+    let request = ash_rpc::RequestBuilder::new("set")
         .params(serde_json::json!({
             "key": "test",
             "value": "Hello, World!"
@@ -175,7 +175,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .id(serde_json::json!(1))
         .build();
 
-    if let Some(response) = processor.process_message(ash_rpc_core::Message::Request(request)) {
+    if let Some(response) = processor.process_message(ash_rpc::Message::Request(request)) {
         println!("Response: {}", serde_json::to_string_pretty(&response)?);
     }
 

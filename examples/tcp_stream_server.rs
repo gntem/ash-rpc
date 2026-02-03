@@ -1,6 +1,6 @@
 #[cfg(feature = "tcp-stream")]
 mod example {
-    use ash_rpc_core::{
+    use ash_rpc::{
         Message, MessageProcessor, Response, ResponseBuilder,
         transport::tcp_stream::TcpStreamServer,
     };
