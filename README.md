@@ -2,7 +2,7 @@
 
 [![ash-rpc on crates.io](https://img.shields.io/crates/v/ash-rpc)](https://crates.io/crates/ash-rpc)
 [![ash-rpc docs](https://img.shields.io/docsrs/ash-rpc)](https://docs.rs/ash-rpc)
-[![codecov](https://codecov.io/github/gntem/ash-rpc/graph/badge.svg?token=W4OEIPHTIG)](https://codecov.io/github/gntem/ash-rpc)
+[![codecov](https://codecov.io/github/ashforge-rs/ash-rpc/graph/badge.svg?token=W4OEIPHTIG)](https://codecov.io/github/ashforge-rs/ash-rpc)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
 
 A modular, production-ready JSON-RPC 2.0 implementation for Rust with security, observability, and multiple transport layers.

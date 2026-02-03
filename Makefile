@@ -130,7 +130,7 @@ release:
 	@echo "✓ Release $(VERSION) prepared!"
 	@echo ""
 	@echo "GitHub Actions will handle publishing to crates.io when the tag is pushed."
-	@echo "Check the release workflow at: https://github.com/gntem/ash-rpc/actions"
+	@echo "Check the release workflow at: https://github.com/ashforge-rs/ash-rpc/actions"
 
 release-patch:
 	@echo "=== Patch Release ==="
