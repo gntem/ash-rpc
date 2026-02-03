@@ -276,3 +276,215 @@ impl TcpStreamClient {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{Message, RequestBuilder, Response, ResponseBuilder};
+
+    // Mock message processor for testing
+    struct MockProcessor;
+
+    #[async_trait::async_trait]
+    impl MessageProcessor for MockProcessor {
+        async fn process_message(&self, message: Message) -> Option<Response> {
+            match message {
+                Message::Request(req) => {
+                    let result = serde_json::json!({"result": "success"});
+                    Some(
+                        ResponseBuilder::new()
+                            .success(result)
+                            .id(req.id.clone())
+                            .build(),
+                    )
+                }
+                _ => None,
+            }
+        }
+    }
+
+    #[test]
+    fn test_tcp_stream_server_builder_new() {
+        let builder = TcpStreamServerBuilder::new("127.0.0.1:8080");
+        assert_eq!(builder.addr, "127.0.0.1:8080");
+        assert!(builder.processor.is_none());
+    }
+
+    #[test]
+    fn test_tcp_stream_server_builder_processor() {
+        let processor = MockProcessor;
+        let builder = TcpStreamServerBuilder::new("127.0.0.1:8080").processor(processor);
+        assert!(builder.processor.is_some());
+    }
+
+    #[test]
+    fn test_tcp_stream_server_builder_security_config() {
+        let security_config = SecurityConfig {
+            max_connections: 10,
+            max_request_size: 1024,
+            request_timeout: std::time::Duration::from_secs(30),
+            idle_timeout: std::time::Duration::from_secs(60),
+        };
+        let builder =
+            TcpStreamServerBuilder::new("127.0.0.1:8080").security_config(security_config.clone());
+        assert_eq!(builder.security_config.max_connections, 10);
+        assert_eq!(builder.security_config.max_request_size, 1024);
+    }
+
+    #[test]
+    fn test_tcp_stream_server_builder_max_connections() {
+        let builder = TcpStreamServerBuilder::new("127.0.0.1:8080").max_connections(50);
+        assert_eq!(builder.security_config.max_connections, 50);
+    }
+
+    #[test]
+    fn test_tcp_stream_server_builder_max_request_size() {
+        let builder = TcpStreamServerBuilder::new("127.0.0.1:8080").max_request_size(2048);
+        assert_eq!(builder.security_config.max_request_size, 2048);
+    }
+
+    #[test]
+    fn test_tcp_stream_server_builder_request_timeout() {
+        let timeout = std::time::Duration::from_secs(10);
+        let builder = TcpStreamServerBuilder::new("127.0.0.1:8080").request_timeout(timeout);
+        assert_eq!(builder.security_config.request_timeout, timeout);
+    }
+
+    #[test]
+    fn test_tcp_stream_server_builder_build_success() {
+        let processor = MockProcessor;
+        let builder = TcpStreamServerBuilder::new("127.0.0.1:8080").processor(processor);
+
+        let result = builder.build();
+        assert!(result.is_ok());
+
+        let server = result.unwrap();
+        assert_eq!(server.addr, "127.0.0.1:8080");
+    }
+
+    #[test]
+    fn test_tcp_stream_server_builder_build_no_processor() {
+        let builder = TcpStreamServerBuilder::new("127.0.0.1:8080");
+        let result = builder.build();
+        assert!(result.is_err());
+        if let Err(e) = result {
+            assert_eq!(e.kind(), std::io::ErrorKind::InvalidInput);
+        }
+    }
+
+    #[test]
+    fn test_tcp_stream_server_builder_chain() {
+        let processor = MockProcessor;
+        let builder = TcpStreamServerBuilder::new("127.0.0.1:8080")
+            .processor(processor)
+            .max_connections(100)
+            .max_request_size(4096)
+            .request_timeout(std::time::Duration::from_secs(20));
+
+        let server = builder.build().unwrap();
+        assert_eq!(server.security_config.max_connections, 100);
+        assert_eq!(server.security_config.max_request_size, 4096);
+        assert_eq!(
+            server.security_config.request_timeout,
+            std::time::Duration::from_secs(20)
+        );
+    }
+
+    #[test]
+    fn test_tcp_stream_server_builder_static_method() {
+        let _builder = TcpStreamServer::builder("127.0.0.1:8080");
+        // Just ensure it compiles
+    }
+
+    #[test]
+    fn test_tcp_stream_server_active_connections() {
+        let processor = MockProcessor;
+        let server = TcpStreamServerBuilder::new("127.0.0.1:8080")
+            .processor(processor)
+            .build()
+            .unwrap();
+
+        assert_eq!(server.active_connections.load(Ordering::Relaxed), 0);
+    }
+
+    #[test]
+    fn test_tcp_stream_client_builder_new() {
+        let builder = TcpStreamClientBuilder::new("127.0.0.1:8080");
+        assert_eq!(builder.addr, "127.0.0.1:8080");
+    }
+
+    #[test]
+    fn test_security_config_defaults() {
+        let config = SecurityConfig::default();
+        // Verify default max_connections is set to a reasonable value
+        assert!(config.max_connections > 0);
+    }
+
+    #[test]
+    fn test_multiple_builders() {
+        let processor1 = MockProcessor;
+        let processor2 = MockProcessor;
+
+        let _server1 = TcpStreamServerBuilder::new("127.0.0.1:8080")
+            .processor(processor1)
+            .build()
+            .unwrap();
+
+        let _server2 = TcpStreamServerBuilder::new("127.0.0.1:8081")
+            .processor(processor2)
+            .max_connections(10)
+            .build()
+            .unwrap();
+    }
+
+    #[test]
+    fn test_builder_with_different_addresses() {
+        let processor = MockProcessor;
+
+        let server1 = TcpStreamServerBuilder::new("0.0.0.0:3000")
+            .processor(MockProcessor)
+            .build()
+            .unwrap();
+        assert_eq!(server1.addr, "0.0.0.0:3000");
+
+        let server2 = TcpStreamServerBuilder::new("localhost:4000")
+            .processor(processor)
+            .build()
+            .unwrap();
+        assert_eq!(server2.addr, "localhost:4000");
+    }
+
+    #[test]
+    fn test_security_config_clone() {
+        let config1 = SecurityConfig {
+            max_connections: 10,
+            max_request_size: 1024,
+            request_timeout: std::time::Duration::from_secs(30),
+            idle_timeout: std::time::Duration::from_secs(60),
+        };
+        let config2 = config1.clone();
+
+        assert_eq!(config1.max_connections, config2.max_connections);
+        assert_eq!(config1.max_request_size, config2.max_request_size);
+    }
+
+    #[tokio::test]
+    async fn test_message_serialization() {
+        let request = RequestBuilder::new("test_method")
+            .id(serde_json::Value::Number(1.into()))
+            .params(serde_json::json!({"key": "value"}))
+            .build();
+
+        let message = Message::Request(request);
+        let json = serde_json::to_string(&message).unwrap();
+        let parsed: Message = serde_json::from_str(&json).unwrap();
+
+        match parsed {
+            Message::Request(req) => {
+                assert_eq!(req.method, "test_method");
+                assert_eq!(req.id, Some(serde_json::Value::Number(1.into())));
+            }
+            _ => panic!("Expected Request"),
+        }
+    }
+}

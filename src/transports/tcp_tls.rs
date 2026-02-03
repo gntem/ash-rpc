@@ -420,3 +420,269 @@ impl tokio_rustls::rustls::client::danger::ServerCertVerifier for NoVerifier {
         ]
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{Message, RequestBuilder, Response, ResponseBuilder};
+
+    // Mock message processor for testing
+    struct MockProcessor;
+
+    #[async_trait::async_trait]
+    impl MessageProcessor for MockProcessor {
+        async fn process_message(&self, message: Message) -> Option<Response> {
+            match message {
+                Message::Request(req) => {
+                    let result = serde_json::json!({"result": "success"});
+                    Some(
+                        ResponseBuilder::new()
+                            .success(result)
+                            .id(req.id.clone())
+                            .build(),
+                    )
+                }
+                _ => None,
+            }
+        }
+    }
+
+    // Test certificate and key (self-signed for testing)
+    const TEST_CERT_PEM: &[u8] = b"-----BEGIN CERTIFICATE-----
+MIIC+jCCAeKgAwIBAgIUXvZVvZvZvZvZvZvZvZvZvZvZvZwwDQYJKoZIhvcNAQEL
+BQAwDTELMAkGA1UEAwwCY2EwHhcNMjQwMTAxMDAwMDAwWhcNMjUwMTAxMDAwMDAw
+WjANMQswCQYDVQQDDAJjYTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEB
+AL5vZvZvZvZvZvZvZvZvZvZvZvZvZvZvZvZvZvZvZvZvZvZvZvZvZvZvZvZvZv
+-----END CERTIFICATE-----";
+
+    #[allow(dead_code)]
+    const TEST_KEY_PEM: &[u8] = b"-----BEGIN PRIVATE KEY-----
+MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC+b2b2b2b2b2b2
+b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2
+-----END PRIVATE KEY-----";
+
+    #[test]
+    fn test_tcp_stream_tls_server_builder_new() {
+        let builder = TcpStreamTlsServerBuilder::new("127.0.0.1:8443");
+        assert_eq!(builder.addr, "127.0.0.1:8443");
+        assert!(builder.processor.is_none());
+        assert!(builder.tls_config.is_none());
+    }
+
+    #[test]
+    fn test_tcp_stream_tls_server_builder_processor() {
+        let processor = MockProcessor;
+        let builder = TcpStreamTlsServerBuilder::new("127.0.0.1:8443").processor(processor);
+        assert!(builder.processor.is_some());
+    }
+
+    #[test]
+    fn test_tcp_stream_tls_server_builder_security_config() {
+        let security_config = SecurityConfig {
+            max_connections: 10,
+            max_request_size: 1024,
+            request_timeout: std::time::Duration::from_secs(30),
+            idle_timeout: std::time::Duration::from_secs(60),
+        };
+        let builder = TcpStreamTlsServerBuilder::new("127.0.0.1:8443")
+            .security_config(security_config.clone());
+        assert_eq!(builder.security_config.max_connections, 10);
+        assert_eq!(builder.security_config.max_request_size, 1024);
+    }
+
+    #[test]
+    fn test_tcp_stream_tls_server_builder_max_connections() {
+        let builder = TcpStreamTlsServerBuilder::new("127.0.0.1:8443").max_connections(50);
+        assert_eq!(builder.security_config.max_connections, 50);
+    }
+
+    #[test]
+    fn test_tcp_stream_tls_server_builder_max_request_size() {
+        let builder = TcpStreamTlsServerBuilder::new("127.0.0.1:8443").max_request_size(2048);
+        assert_eq!(builder.security_config.max_request_size, 2048);
+    }
+
+    #[test]
+    fn test_tcp_stream_tls_server_builder_request_timeout() {
+        let timeout = std::time::Duration::from_secs(10);
+        let builder = TcpStreamTlsServerBuilder::new("127.0.0.1:8443").request_timeout(timeout);
+        assert_eq!(builder.security_config.request_timeout, timeout);
+    }
+
+    #[test]
+    fn test_tcp_stream_tls_server_builder_build_no_processor() {
+        let builder = TcpStreamTlsServerBuilder::new("127.0.0.1:8443");
+        let result = builder.build();
+        assert!(result.is_err());
+        if let Err(e) = result {
+            assert_eq!(e.kind(), std::io::ErrorKind::InvalidInput);
+        }
+    }
+
+    #[test]
+    fn test_tcp_stream_tls_server_builder_chain() {
+        let processor = MockProcessor;
+        let builder = TcpStreamTlsServerBuilder::new("127.0.0.1:8443")
+            .processor(processor)
+            .max_connections(100)
+            .max_request_size(4096)
+            .request_timeout(std::time::Duration::from_secs(20));
+
+        assert_eq!(builder.security_config.max_connections, 100);
+        assert_eq!(builder.security_config.max_request_size, 4096);
+    }
+
+    #[test]
+    fn test_tcp_stream_tls_server_builder_static_method() {
+        let _builder = TcpStreamTlsServer::builder("127.0.0.1:8443");
+        // Just ensure it compiles
+    }
+
+    #[test]
+    fn test_tls_config_clone() {
+        // We can't easily test TlsConfig without valid certs,
+        // but we can test the builder pattern
+        let builder = TcpStreamTlsServerBuilder::new("127.0.0.1:8443");
+        assert!(builder.tls_config.is_none());
+    }
+
+    #[test]
+    fn test_multiple_tls_server_builders() {
+        let processor1 = MockProcessor;
+        let processor2 = MockProcessor;
+
+        let _builder1 = TcpStreamTlsServerBuilder::new("127.0.0.1:8443")
+            .processor(processor1)
+            .max_connections(10);
+
+        let _builder2 = TcpStreamTlsServerBuilder::new("127.0.0.1:8444")
+            .processor(processor2)
+            .max_connections(20);
+    }
+
+    #[test]
+    fn test_builder_with_different_addresses() {
+        let _builder1 = TcpStreamTlsServerBuilder::new("0.0.0.0:3443").processor(MockProcessor);
+
+        let _builder2 = TcpStreamTlsServerBuilder::new("localhost:4443").processor(MockProcessor);
+    }
+
+    #[test]
+    fn test_no_verifier_debug() {
+        let verifier = NoVerifier;
+        let debug_str = format!("{:?}", verifier);
+        assert_eq!(debug_str, "NoVerifier");
+    }
+
+    #[test]
+    fn test_no_verifier_supported_schemes() {
+        use tokio_rustls::rustls::client::danger::ServerCertVerifier;
+
+        let verifier = NoVerifier;
+        let schemes = verifier.supported_verify_schemes();
+        assert!(!schemes.is_empty());
+        assert!(schemes.len() >= 9);
+    }
+
+    #[test]
+    fn test_security_config_with_tls() {
+        let security_config = SecurityConfig {
+            max_connections: 100,
+            max_request_size: 8192,
+            request_timeout: std::time::Duration::from_secs(60),
+            idle_timeout: std::time::Duration::from_secs(120),
+        };
+
+        let builder = TcpStreamTlsServerBuilder::new("127.0.0.1:8443")
+            .processor(MockProcessor)
+            .security_config(security_config.clone());
+
+        assert_eq!(builder.security_config.max_connections, 100);
+        assert_eq!(builder.security_config.max_request_size, 8192);
+        assert_eq!(
+            builder.security_config.request_timeout,
+            std::time::Duration::from_secs(60)
+        );
+        assert_eq!(
+            builder.security_config.idle_timeout,
+            std::time::Duration::from_secs(120)
+        );
+    }
+
+    #[test]
+    fn test_tls_config_from_pem_bytes_no_keys() {
+        // Test with cert but no keys
+        let result = TlsConfig::from_pem_bytes(TEST_CERT_PEM, b"");
+        // This should fail because there are no keys
+        assert!(result.is_err());
+    }
+
+    #[tokio::test]
+    async fn test_message_serialization_tls() {
+        let request = RequestBuilder::new("tls_test_method")
+            .id(serde_json::Value::Number(1.into()))
+            .params(serde_json::json!({"secure": true}))
+            .build();
+
+        let message = Message::Request(request);
+        let json = serde_json::to_string(&message).unwrap();
+        let parsed: Message = serde_json::from_str(&json).unwrap();
+
+        match parsed {
+            Message::Request(req) => {
+                assert_eq!(req.method, "tls_test_method");
+                assert_eq!(req.id, Some(serde_json::Value::Number(1.into())));
+            }
+            _ => panic!("Expected Request"),
+        }
+    }
+
+    #[test]
+    fn test_builder_without_tls_config() {
+        let processor = MockProcessor;
+        let builder = TcpStreamTlsServerBuilder::new("127.0.0.1:8443").processor(processor);
+
+        // Should fail because no TLS config is set
+        let result = builder.build();
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_security_config_defaults_with_tls() {
+        let config = SecurityConfig::default();
+        let builder = TcpStreamTlsServerBuilder::new("127.0.0.1:8443")
+            .processor(MockProcessor)
+            .security_config(config);
+
+        // Just ensure it compiles and doesn't panic
+        assert!(builder.processor.is_some());
+    }
+
+    #[test]
+    fn test_tls_server_active_connections_initialization() {
+        // We can't fully build without a valid TLS config,
+        // but we can test the builder chain
+        let builder = TcpStreamTlsServerBuilder::new("127.0.0.1:8443")
+            .processor(MockProcessor)
+            .max_connections(50);
+
+        assert_eq!(builder.security_config.max_connections, 50);
+    }
+
+    #[test]
+    fn test_idle_timeout_configuration() {
+        let timeout = std::time::Duration::from_secs(300);
+        let security_config = SecurityConfig {
+            max_connections: 100,
+            max_request_size: 4096,
+            request_timeout: std::time::Duration::from_secs(30),
+            idle_timeout: timeout,
+        };
+
+        let builder = TcpStreamTlsServerBuilder::new("127.0.0.1:8443")
+            .processor(MockProcessor)
+            .security_config(security_config);
+
+        assert_eq!(builder.security_config.idle_timeout, timeout);
+    }
+}

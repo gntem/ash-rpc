@@ -364,6 +364,6 @@ mod tests {
 
         assert_eq!(config.grace_period, Duration::from_secs(10));
         assert_eq!(config.force_timeout, Duration::from_secs(20));
-        assert_eq!(config.handle_signals, false);
+        assert!(!config.handle_signals);
     }
 }
