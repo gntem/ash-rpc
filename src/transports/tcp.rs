@@ -229,7 +229,7 @@ async fn handle_client(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{Error, Request, Response, error_codes};
+    use crate::{Request, Response, error_codes};
     use std::time::Duration;
     use tokio::io::{AsyncReadExt, AsyncWriteExt};
     use tokio::net::TcpStream;
