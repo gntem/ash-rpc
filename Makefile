@@ -126,11 +126,7 @@ release:
 	@echo ""
 	@echo "Step 4: Creating and pushing tag..."
 	@$(MAKE) tag VERSION=$(VERSION)
-	@echo ""
-	@echo "✓ Release $(VERSION) prepared!"
-	@echo ""
-	@echo "GitHub Actions will handle publishing to crates.io when the tag is pushed."
-	@echo "Check the release workflow at: https://github.com/ashforge-rs/ash-rpc/actions"
+	@echo "Call 'publish' to publish the new version to crates.io."
 
 release-patch:
 	@echo "=== Patch Release ==="
