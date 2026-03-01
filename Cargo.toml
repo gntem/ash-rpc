@@ -36,7 +36,7 @@ observability = ["logging", "prometheus", "opentelemetry"]
 [dependencies]
 # Core dependencies
 tracing = "0.1"
-uuid = { version = "1.0", features = ["v4", "serde"] }
+uuid = { version = "1.21", features = ["v4", "serde"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 async-trait = "0.1"
@@ -53,14 +53,14 @@ opentelemetry_sdk = { version = "0.31", features = ["rt-tokio"], optional = true
 
 [dev-dependencies]
 tokio = { version = "1.47", features = ["full"] }
-uuid = { version = "1.18", features = ["v4"] }
+uuid = { version = "1.21", features = ["v4"] }
 hyper = { version = "1.8", features = ["full"] }
 hyper-util = { version = "0.1", features = ["full"] }
 http-body-util = "0.1"
 dashmap = "6.1"
 tracing-subscriber = { version = "0.3", features = ["fmt", "env-filter"] }
 chrono = "0.4"
-rand = "0.9"
+rand = "0.10"
 tower = "0.5"
 
 [[example]]
