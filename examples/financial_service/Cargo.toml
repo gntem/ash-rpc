@@ -5,8 +5,7 @@ edition = "2024"
 publish = false
 
 [dependencies]
-ash-rpc-core = { path = "../../core", features = ["tcp", "stateful", "audit-logging"] }
-ash-rpc-contrib = { path = "../../contrib", features = ["healthcheck", "logging", "audit-logging"] }
+ash-rpc = { version = "4.1.1", features = ["tcp", "stateful", "audit-logging", "healthcheck", "logging"] }
 tokio = { version = "1.47", features = ["full"] }
 sqlx = { version = "0.8", features = ["runtime-tokio", "sqlite"] }
 serde = { version = "1.0", features = ["derive"] }
