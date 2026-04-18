@@ -80,7 +80,7 @@ impl JsonRPCMethod for CalculatorMethod {
 ### TCP Server with Security
 
 ```rust
-use ash_rpc_core::*;
+use ash_rpc::*;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -106,8 +106,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 ### HTTP Server with Axum
 
 ```rust
-use ash_rpc_core::*;
-use ash_rpc_contrib::*;
+use ash_rpc::*;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -122,9 +121,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .route("/rpc", axum::routing::post(rpc_handler))
         .with_state(processor);
 
-    axum::Server::bind(&"127.0.0.1:3000".parse()?)
-        .serve(app.into_make_service())
-        .await?;
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:3000").await?;
+    axum::serve(listener, app).await?;
 
     Ok(())
 }
@@ -133,7 +131,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 ### Observability Integration
 
 ```rust
-use ash_rpc_contrib::observable_setup;
+use ash_rpc::*;
+use ash_rpc::observable_setup;
 
 let observability = observable_setup! {
     service_name: "calculator-service",
@@ -152,7 +151,7 @@ let observable_processor = ObservableProcessor::builder(processor)
 ### Authentication and Authorization
 
 ```rust
-use ash_rpc_core::*;
+use ash_rpc::*;
 
 struct TokenAuth {
     valid_tokens: Vec<String>,
@@ -182,7 +181,7 @@ let registry = MethodRegistry::new(register_methods![CalculatorMethod])
 ### Streaming and Subscriptions
 
 ```rust
-use ash_rpc_core::*;
+use ash_rpc::*;
 use tokio::sync::mpsc;
 
 struct PriceStreamHandler;

@@ -2,6 +2,8 @@
 
 cargo clippy \
     "$@" \
+    -W clippy::all \
+    -W clippy::pedantic \
     -D clippy::unwrap_used \
     -D clippy::expect_used \
     -D clippy::panic \
@@ -36,34 +38,4 @@ cargo clippy \
     -D clippy::string_slice \
     -D clippy::string_add \
     -D clippy::str_to_string \
-    -D clippy::missing_panics_doc \
-    -W clippy::all \
-    -W clippy::pedantic \
-    -D clippy::too_many_lines \
-    -D clippy::too_many_arguments \
-    -D clippy::fn_params_excessive_bools \
-    -D clippy::wildcard_imports \
-    -D clippy::let_underscore_must_use \
-    -D clippy::missing_errors_doc \
-    -D clippy::missing_safety_doc \
-    -D clippy::undocumented_unsafe_blocks \
-    -D clippy::multiple_unsafe_ops_per_block \
-    -D clippy::indexing_slicing \
-    -D clippy::arithmetic_side_effects \
-    -D clippy::float_arithmetic \
-    -D clippy::as_conversions \
-    -D clippy::cast_possible_truncation \
-    -D clippy::cast_possible_wrap \
-    -D clippy::cast_precision_loss \
-    -D clippy::cast_sign_loss \
-    -D clippy::mem_forget \
-    -D clippy::panic_in_result_fn \
-    -D clippy::shadow_reuse \
-    -D clippy::shadow_same \
-    -D clippy::shadow_unrelated \
-    -D clippy::string_slice \
-    -D clippy::string_add \
-    -D clippy::str_to_string \
-    -D clippy::missing_panics_doc \
-    -W clippy::all \
-    -W clippy::pedantic
+    -D clippy::missing_panics_doc
