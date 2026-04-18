@@ -2,6 +2,7 @@
 name = "ash-rpc"
 version = "4.1.2"
 edition = "2024"
+rust-version = "1.88"
 description = "A comprehensive JSON-RPC 2.0 implementation with multiple transport layers and advanced features"
 license = "Apache-2.0"
 repository = "https://github.com/ashforge-rs/ash-rpc"
@@ -12,6 +13,10 @@ categories = ["network-programming", "web-programming", "asynchronous"]
 authors = ["Giorgos Ntemiris <ntemirisgiorgos3@gmail.com>"]
 readme = "README.md"
 exclude = ["examples/", "fuzz"]
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
 
 [features]
 default = []
