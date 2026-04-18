@@ -4,6 +4,7 @@
 
 | Version | Supported          |
 | ------- | ------------------ |
+| 4.x.x   | Supported |
 | 3.x.x   | Supported |
 | 2.x.x   | Not supported |
 | 1.x.x   | Not supported |
