@@ -297,7 +297,10 @@ pub struct OcsfEvent {
 
 /// Returns `(class_uid, category_uid, class_name, category_name, activity_id, activity_name)`
 /// for the given event type / result combination.
-fn classify(event_type: AuditEventType, result: AuditResult) -> (i32, i32, &'static str, &'static str, i32, &'static str) {
+fn classify(
+    event_type: AuditEventType,
+    result: AuditResult,
+) -> (i32, i32, &'static str, &'static str, i32, &'static str) {
     match event_type {
         AuditEventType::MethodInvocation | AuditEventType::ErrorOccurred => {
             // API Activity (6003), category Application Activity (6)
@@ -307,12 +310,26 @@ fn classify(event_type: AuditEventType, result: AuditResult) -> (i32, i32, &'sta
         AuditEventType::AuthenticationAttempt => {
             // Authentication (3002), category IAM (3)
             // activity_id 1 = Logon
-            (3002, 3, "Authentication", "Identity & Access Management", 1, "Logon")
+            (
+                3002,
+                3,
+                "Authentication",
+                "Identity & Access Management",
+                1,
+                "Logon",
+            )
         }
         AuditEventType::AuthorizationCheck => {
             // Authorize Session (3003), category IAM (3)
             // activity_id 1 = Authorize
-            (3003, 3, "Authorize Session", "Identity & Access Management", 1, "Authorize")
+            (
+                3003,
+                3,
+                "Authorize Session",
+                "Identity & Access Management",
+                1,
+                "Authorize",
+            )
         }
         AuditEventType::SecurityViolation => {
             // Security Finding (2001), category Findings (2)
@@ -333,12 +350,26 @@ fn classify(event_type: AuditEventType, result: AuditResult) -> (i32, i32, &'sta
         AuditEventType::ConfigurationChange => {
             // Entity Management (3004), category IAM (3)
             // activity_id 2 = Update
-            (3004, 3, "Entity Management", "Identity & Access Management", 2, "Update")
+            (
+                3004,
+                3,
+                "Entity Management",
+                "Identity & Access Management",
+                2,
+                "Update",
+            )
         }
         AuditEventType::AdminAction => {
             // Account Change (3001), category IAM (3)
             // activity_id 99 = Other
-            (3001, 3, "Account Change", "Identity & Access Management", 99, "Other")
+            (
+                3001,
+                3,
+                "Account Change",
+                "Identity & Access Management",
+                99,
+                "Other",
+            )
         }
     }
 }
@@ -468,12 +499,10 @@ pub fn to_ocsf(event: &AuditEvent, product: &OcsfProduct) -> OcsfEvent {
 
     // For non-API events the method goes into the message field.
     let message = if class_uid != 6003 {
-        event.method.as_deref().map(|m| {
-            format!(
-                "{event_type:?}: {m}",
-                event_type = event.event_type,
-            )
-        })
+        event
+            .method
+            .as_deref()
+            .map(|m| format!("{event_type:?}: {m}", event_type = event.event_type,))
     } else {
         event.error.clone()
     };
@@ -662,8 +691,7 @@ mod tests {
             .build();
         let ocsf = to_ocsf(&event, &OcsfProduct::default());
         let json = serde_json::to_string(&ocsf).expect("must serialize");
-        let parsed: serde_json::Value =
-            serde_json::from_str(&json).expect("must be valid JSON");
+        let parsed: serde_json::Value = serde_json::from_str(&json).expect("must be valid JSON");
         assert_eq!(parsed["class_uid"], 6003);
         assert_eq!(parsed["metadata"]["version"], OCSF_SCHEMA_VERSION);
         assert_eq!(parsed["actor"]["user"]["uid"], "user:alice");

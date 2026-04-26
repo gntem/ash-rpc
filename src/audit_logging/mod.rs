@@ -13,9 +13,9 @@ mod processor;
 pub use backends::*;
 pub use integrity::*;
 pub use ocsf::{
-    to_ocsf, OcsfActor, OcsfApi, OcsfApiRequest, OcsfApiResponse, OcsfApiService,
-    OcsfEvent, OcsfMetadata, OcsfNetworkEndpoint, OcsfProduct, OcsfSession,
-    OcsfStderrBackend, OcsfStdoutBackend, OcsfUser, OCSF_SCHEMA_VERSION,
+    OCSF_SCHEMA_VERSION, OcsfActor, OcsfApi, OcsfApiRequest, OcsfApiResponse, OcsfApiService,
+    OcsfEvent, OcsfMetadata, OcsfNetworkEndpoint, OcsfProduct, OcsfSession, OcsfStderrBackend,
+    OcsfStdoutBackend, OcsfUser, to_ocsf,
 };
 pub use processor::*;
 
