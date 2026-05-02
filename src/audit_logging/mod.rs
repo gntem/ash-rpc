@@ -7,10 +7,16 @@
 
 mod backends;
 mod integrity;
+pub mod ocsf;
 mod processor;
 
 pub use backends::*;
 pub use integrity::*;
+pub use ocsf::{
+    OCSF_SCHEMA_VERSION, OcsfActor, OcsfApi, OcsfApiRequest, OcsfApiResponse, OcsfApiService,
+    OcsfEvent, OcsfMetadata, OcsfNetworkEndpoint, OcsfProduct, OcsfSession, OcsfStderrBackend,
+    OcsfStdoutBackend, OcsfUser, to_ocsf,
+};
 pub use processor::*;
 
 use serde::{Deserialize, Serialize};
